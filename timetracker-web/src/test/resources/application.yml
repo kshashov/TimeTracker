@@ -1,0 +1,33 @@
+spring:
+  profiles:
+    default:
+      dev
+  datasource:
+    # PostgreSQL
+    url: jdbc:postgresql://rogue.db.elephantsql.com:5432/fbdkoakq
+    username: fbdkoakq
+    password: rL7HFkcEbAyi640n6H_BJtoeoeXzCDAS
+    platform: postgres
+    driver-class-name: org.postgresql.Driver
+    # connection pool
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 3
+  jpa:
+    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create #none
+      show-sql: true
+
+jasypt:
+  encryptor:
+    bean:
+      timeTrackerStringEncryptor
+
+#TIMETRACKER_ENCRYPTOR_SECRET:
+#  password
+
+secret:
+  property:
+    ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)
+
