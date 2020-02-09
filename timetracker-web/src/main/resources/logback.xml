@@ -20,6 +20,14 @@
         </encoder>
     </appender>
 
+    <springProfile name="test">
+        <root level="debug">
+            <appender-ref ref="STDOUT"/>
+        </root>
+
+        <logger name="com.github.kshashov" level="trace"/>
+    </springProfile>
+
     <springProfile name="dev">
         <root level="debug">
             <appender-ref ref="STDOUT"/>

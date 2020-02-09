@@ -1,0 +1,40 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  datasource:
+    # H2
+    url: jdbc:h2:mem:testdb #file:~/testdb # mem:testdb
+    username: sa
+    password: password
+    platform: h2
+    driver-class-name: org.h2.Driver
+    # connection pool
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 3
+  jpa:
+    hibernate:
+      ddl-auto: create #none
+      show-sql: true
+      dialect: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 225595139383-ed8qhoq4vbuvj5g5aldhf3lobd5ljkqb.apps.googleusercontent.com
+            client-secret: TR-3ZimYu79O4Tb6KL4RLDtq
+
+jasypt:
+  encryptor:
+    bean:
+      timeTrackerStringEncryptor
+
+#TIMETRACKER_ENCRYPTOR_SECRET:
+#  password
+
+secret:
+  property:
+    ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)

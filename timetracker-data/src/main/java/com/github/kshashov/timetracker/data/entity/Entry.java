@@ -1,16 +1,18 @@
 package com.github.kshashov.timetracker.data.entity;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "entries", schema = "public")
-public class Entry {
+public class Entry implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

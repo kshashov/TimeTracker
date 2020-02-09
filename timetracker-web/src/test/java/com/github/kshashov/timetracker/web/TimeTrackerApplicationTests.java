@@ -8,15 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {TimeTrackerApplication.class})
-class TimeTrackerApplicationTests {
+class TimeTrackerApplicationTests extends BaseIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(TimeTrackerApplicationTests.class);
 
     @Autowired

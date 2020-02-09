@@ -13,7 +13,7 @@ public class SpringConfigFileLoader implements ConfigFileLoader {
 
     @Override
     public Properties load(final String fileName) throws IOException {
-        var resource = ResourceUtils.findNamedResource(fileName);
+        Resource resource = ResourceUtils.findNamedResource(fileName);
         return PropertiesLoaderUtils.loadProperties(resource);
     }
 

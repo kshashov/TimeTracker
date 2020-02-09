@@ -2,12 +2,14 @@ package com.github.kshashov.timetracker.data.entity.user;
 
 
 import com.github.kshashov.timetracker.data.entity.BaseEntity;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "users", schema = "public")
 public class User implements BaseEntity {
@@ -17,15 +19,10 @@ public class User implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @NotNull
-    @Column(name = "login")
-    private String login;
-
-    @NotNull
-    @Column(name = "password")
-    private String password;
-
+    @Column(name = "name", unique = true)
+    private String name;
 }

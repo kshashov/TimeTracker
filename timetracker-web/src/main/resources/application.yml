@@ -1,9 +1,0 @@
-spring:
-  profiles:
-    default: dev
-
-#TIMETRACKER_ENCRYPTOR_SECRET
-
-jasypt:
-  encryptor:
-    bean: imeTrackerStringEncryptor

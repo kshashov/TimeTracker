@@ -1,12 +1,14 @@
 package com.github.kshashov.timetracker.data.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "projects", schema = "public")
 public class Project implements BaseEntity {
@@ -16,15 +18,13 @@ public class Project implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "title")
+    @Column(name = "title", unique = true)
     private String title;
 
     @NotNull
     @Column(name = "active")
     private Boolean isActive;
 
-    @NotNull
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "project_id")
+    @OneToMany(mappedBy = "project")
     private Set<Action> actions;
 }
