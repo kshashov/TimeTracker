@@ -43,6 +43,11 @@ public class ProjectsService {
         return project;
     }
 
+    public Project saveProject(User user, Project project) {
+        projectsRepository.save(project);
+        return project;
+    }
+
 /*    public List<ProjectRoles> findProjectsWithRoles(User user) {
         // TODO find available for user
     }

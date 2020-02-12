@@ -78,6 +78,11 @@ public class Projects extends SplitViewFrame {
         setViewContent(createContent());
         setViewDetails(createDetailsDrawer());
 
+        projectInfoView.addOnProjectUpdatedEventListener(event -> {
+            projectsService.saveProject(user, event.getProject());
+            reloadProjects();
+        });
+
         reloadProjects();
     }
 

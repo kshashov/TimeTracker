@@ -28,16 +28,23 @@ public class ProjectUserEditorDialog extends AbstractEditorDialog<ProjectRoles> 
 
         getBinder().forField(role)
                 .withValidator(Objects::nonNull, "Role is empty")
-                .bind(ProjectRoles::getRole, ProjectRoles::setRole);
+                .bind(
+                        pr -> roles.stream().filter(r -> r.getId().equals(pr.getRole().getId())).findFirst().get(),
+                        ProjectRoles::setRole
+                );
 
         return role;
     }
 
     protected TextField createUserField() {
         user.setReadOnly(true);
-        getBinder().forField(user).withNullRepresentation("")
-                .bind(pr -> pr.getUser().getName(), (pr, s) -> {
-                });
+        getBinder().forField(user)
+                .withNullRepresentation("")
+                .bind(
+                        pr -> pr.getUser().getName(),
+                        (pr, s) -> {
+                        }
+                );
 
         return user;
     }
