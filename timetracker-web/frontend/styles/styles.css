@@ -63,7 +63,3 @@ vaadin-grid-cell-content {
 vaadin-text-field {
   align-self: auto;
 }
-
-:host([theme="no-padding-dialog"]) [part="content"] {
-  padding:0;
-}

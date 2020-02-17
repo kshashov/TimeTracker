@@ -9,6 +9,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.transaction.TransactionAwareCacheManagerProxy;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -17,6 +21,7 @@ import org.springframework.core.env.Environment;
 import java.util.Locale;
 
 @SpringBootApplication(scanBasePackages = "com.github.kshashov.timetracker")
+@EnableCaching
 @EnableAutoConfiguration(exclude = {WebMvcAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
 public class TimeTrackerApplication {
 
@@ -50,5 +55,11 @@ public class TimeTrackerApplication {
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+
+    @Bean
+    public CacheManager cacheManager() {
+        CacheManager cacheManager = new ConcurrentMapCacheManager();
+        return new TransactionAwareCacheManagerProxy(cacheManager);
     }
 }

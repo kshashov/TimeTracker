@@ -1,16 +1,14 @@
 package com.github.kshashov.timetracker.web.mvc.views;
 
 import com.github.kshashov.timetracker.data.entity.Project;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRoles;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
-import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.service.ProjectsService;
+import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.mvc.MainLayout;
 import com.github.kshashov.timetracker.web.mvc.components.FlexBoxLayout;
-import com.github.kshashov.timetracker.web.mvc.components.detailsdrawer.DetailsDrawer;
-import com.github.kshashov.timetracker.web.mvc.components.detailsdrawer.DetailsDrawerHeader;
+import com.github.kshashov.timetracker.web.mvc.components.detail.Detail;
+import com.github.kshashov.timetracker.web.mvc.components.detail.DetailHeader;
 import com.github.kshashov.timetracker.web.mvc.layout.size.Horizontal;
 import com.github.kshashov.timetracker.web.mvc.layout.size.Top;
 import com.github.kshashov.timetracker.web.mvc.util.css.BoxSizing;
@@ -18,76 +16,82 @@ import com.github.kshashov.timetracker.web.mvc.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.mvc.view.component.ProjectActionsView;
 import com.github.kshashov.timetracker.web.mvc.view.component.ProjectInfoView;
 import com.github.kshashov.timetracker.web.mvc.view.component.ProjectUsersView;
+import com.github.kshashov.timetracker.web.mvc.view.component.UserProjectsView;
 import com.github.kshashov.timetracker.web.mvc.view.component.dialog.ProjectEditorDialog;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
+import com.github.kshashov.timetracker.web.security.HasUser;
+import com.github.kshashov.timetracker.web.security.ProjectPermissionType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Route(value = "projects", layout = MainLayout.class)
 @PageTitle("Projects")
-public class Projects extends SplitViewFrame {
+public class Projects extends MasterDetail implements HasUser {
 
     private final ProjectsService projectsService;
-    private final ProjectRolesRepository projectRolesRepository;
+    private final RolePermissionsHelper rolePermissionsHelper;
+
     private final User user;
-    private final Grid<ProjectRoles> projectsGrid = new Grid<>();
-    private final ListDataProvider<ProjectRoles> projectsDataProvider = new ListDataProvider<>(new ArrayList<>());
-    private final Map<Long, Role> roles;
     private final Span permissionsWarning = new Span("You do not have sufficient permissions to this project");
+
+    private final UserProjectsView userProjectsView;
     private final ProjectActionsView projectActionsView;
     private final ProjectInfoView projectInfoView;
     private final ProjectUsersView projectUsersView;
 
-    private DetailsDrawer detailsDrawer;
-    private DetailsDrawerHeader detailsDrawerHeader;
-    private Project selectedProject;
+    private Detail detailsDrawer;
+    private DetailHeader detailsDrawerHeader;
 
     @Autowired
     public Projects(
-            RolesRepository rolesRepository,
+            RolePermissionsHelper rolePermissionsHelper,
             ProjectsService projectsService,
-            ProjectRolesRepository projectRolesRepository,
+            UserProjectsView userProjectsView,
             ProjectActionsView projectActionsView,
             ProjectUsersView projectUsersView,
             ProjectInfoView projectInfoView) {
-        this.projectsService = projectsService;
-        this.projectRolesRepository = projectRolesRepository;
+        super(Position.RIGHT);
+        setDetailSize(Size.LARGE);
 
+        this.rolePermissionsHelper = rolePermissionsHelper;
+        this.projectsService = projectsService;
+
+        this.userProjectsView = userProjectsView;
         this.projectInfoView = projectInfoView;
         this.projectActionsView = projectActionsView;
         this.projectUsersView = projectUsersView;
 
-        this.user = SecurityUtils.getCurrentUser().getUser();
-        this.roles = rolesRepository.findAllWithPermissions().stream()
-                .collect(Collectors.toMap(Role::getId, r -> r));
+        this.user = getUser();
 
         setViewContent(createContent());
-        setViewDetails(createDetailsDrawer());
+        initDetailsDrawer();
 
         projectInfoView.addOnProjectUpdatedEventListener(event -> {
             projectsService.saveProject(user, event.getProject());
-            reloadProjects();
+            userProjectsView.reloadProjects();
         });
 
-        reloadProjects();
+        userProjectsView.addOnProjectSelectedEventListener(event -> {
+            if (event.getProject() == null) {
+                // Hide details if nothing selected
+                detailsDrawer.collapse();
+            } else {
+                // Open project in drawer
+                showProjectDetails(event.getProject(), event.getRole());
+            }
+        });
+
+        resetDetails();
+
+        userProjectsView.reloadProjects();
     }
 
     private Component createContent() {
-        FlexBoxLayout content = new FlexBoxLayout(createProjectsGrid());
+        FlexBoxLayout content = new FlexBoxLayout(userProjectsView);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setHeightFull();
@@ -100,105 +104,70 @@ public class Projects extends SplitViewFrame {
         showCreateProjectDialog(project);
     }
 
-    private Grid<ProjectRoles> createProjectsGrid() {
-        projectsGrid.setDataProvider(projectsDataProvider);
-        projectsGrid.setSizeFull();
-        projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var span = new Span(pr.getProject().getTitle());
-            return span;
-        })).setHeader("Project").setSortable(true).setComparator(Comparator.comparing(o -> o.getProject().getTitle())).setAutoWidth(true);
-        projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var span = new Span(pr.getRole().getTitle());
-            return span;
-        })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getTitle())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
-        projectsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        projectsGrid.addSelectionListener(selectionEvent -> selectionEvent.getFirstSelectedItem().ifPresent(projectRoles -> {
-            showProjectDetails(projectRoles.getProject(), projectRoles.getRole());
-        }));
-        projectsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        return projectsGrid;
-    }
-
-    private void reloadProjects() {
-        var rows = projectRolesRepository.findUserProjectsWithRoles(user.getId());
-        projectsDataProvider.getItems().clear();
-        projectsDataProvider.getItems().addAll(rows);
-        projectsDataProvider.refreshAll();
-
-        if (selectedProject != null) {
-            // Save selection after reload
-            rows.stream()
-                    .filter(projectRoles -> projectRoles.getProject().getId().equals(selectedProject.getId()))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            projectsGrid::select, // select previous project
-                            () -> selectedProject = null); // nothing selected
-        } else if (rows.size() > 0) {
-            // TODO Select first one?
-        }
-
-        // Hide details if nothing selected
-        if (selectedProject == null) {
-            detailsDrawer.hide();
-        }
-
-    }
-
     private void showCreateProjectDialog(Project project) {
         new ProjectEditorDialog("Create Project", updated -> {
             projectsService.createProject(updated, user);
             // TODO check operation result
-            reloadProjects();
+            userProjectsView.reloadProjects();
         }).open(project);
+    }
+
+    private void resetDetails() {
+        detailsDrawerHeader.setTitle("Empty");
+        detailsDrawer.collapse();
+        permissionsWarning.setVisible(false);
+        projectInfoView.setVisible(false);
+        projectActionsView.setVisible(false);
+        projectUsersView.setVisible(false);
     }
 
     private void showProjectDetails(Project project, Role role) {
         detailsDrawerHeader.setTitle(project.getTitle());
-        detailsDrawer.show();
+        detailsDrawer.expand();
 
-        selectedProject = project;
         showProjectInfo(project, role);
         showProjectActions(project, role);
         showProjectUsers(project, role);
     }
 
     private void showProjectInfo(Project project, Role role) {
-        if (roles.get(role.getId()).getPermissions().stream().noneMatch(p -> p.getCode().equalsIgnoreCase("edit_project_info"))) {
-            permissionsWarning.setVisible(true);
-            projectInfoView.setVisible(false);
-        } else {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_INFO)) {
             projectInfoView.setProject(project);
             permissionsWarning.setVisible(false);
             projectInfoView.setVisible(true);
+        } else {
+            permissionsWarning.setVisible(true);
+            projectInfoView.setVisible(false);
         }
     }
 
     private void showProjectActions(Project project, Role role) {
-        if (roles.get(role.getId()).getPermissions().stream().noneMatch(p -> p.getCode().equalsIgnoreCase("edit_project_actions"))) {
-            projectActionsView.setVisible(false);
-        } else {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             projectActionsView.setProject(project);
             projectActionsView.setVisible(true);
+        } else {
+            projectActionsView.setVisible(false);
         }
     }
 
     private void showProjectUsers(Project project, Role role) {
-        if (roles.get(role.getId()).getPermissions().stream().noneMatch(p -> p.getCode().equalsIgnoreCase("edit_project_users"))) {
-            projectUsersView.setVisible(false);
-        } else {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_USERS)) {
             projectUsersView.setProject(project);
             projectUsersView.setVisible(true);
+        } else {
+            projectUsersView.setVisible(false);
         }
     }
 
-    private DetailsDrawer createDetailsDrawer() {
-        detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+    private Detail initDetailsDrawer() {
+        detailsDrawer = getDetailsDrawer();
 
         // Header
-        detailsDrawerHeader = new DetailsDrawerHeader("");
+        detailsDrawerHeader = new DetailHeader("");
         detailsDrawerHeader.addCloseListener(buttonClickEvent -> {
-            detailsDrawer.hide();
-            projectsGrid.deselectAll();
+            userProjectsView.deselectAll();
+            detailsDrawer.collapse();
+            resetDetails();
         });
         detailsDrawer.setHeader(detailsDrawerHeader);
         detailsDrawer.setContent(createDetailsContent());
