@@ -1,9 +1,10 @@
-package com.github.kshashov.timetracker.web.mvc.views;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.ProjectsService;
+import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
+import com.github.kshashov.timetracker.data.utils.OptionalResult;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.mvc.MainLayout;
 import com.github.kshashov.timetracker.web.mvc.components.FlexBoxLayout;
@@ -11,28 +12,27 @@ import com.github.kshashov.timetracker.web.mvc.components.detail.Detail;
 import com.github.kshashov.timetracker.web.mvc.components.detail.DetailHeader;
 import com.github.kshashov.timetracker.web.mvc.layout.size.Horizontal;
 import com.github.kshashov.timetracker.web.mvc.layout.size.Top;
+import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
 import com.github.kshashov.timetracker.web.mvc.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.mvc.util.css.FlexDirection;
-import com.github.kshashov.timetracker.web.mvc.view.component.ProjectActionsView;
-import com.github.kshashov.timetracker.web.mvc.view.component.ProjectInfoView;
-import com.github.kshashov.timetracker.web.mvc.view.component.ProjectUsersView;
-import com.github.kshashov.timetracker.web.mvc.view.component.UserProjectsView;
-import com.github.kshashov.timetracker.web.mvc.view.component.dialog.ProjectEditorDialog;
+import com.github.kshashov.timetracker.web.mvc.views.MasterDetail;
+import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectEditorDialog;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.security.ProjectPermissionType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "projects", layout = MainLayout.class)
 @PageTitle("Projects")
-public class Projects extends MasterDetail implements HasUser {
+public class Projects extends MasterDetail implements HasUser, DataHandler {
 
-    private final ProjectsService projectsService;
+    private final ProjectsAdminService projectsService;
     private final RolePermissionsHelper rolePermissionsHelper;
 
     private final User user;
@@ -49,7 +49,7 @@ public class Projects extends MasterDetail implements HasUser {
     @Autowired
     public Projects(
             RolePermissionsHelper rolePermissionsHelper,
-            ProjectsService projectsService,
+            ProjectsAdminService projectsService,
             UserProjectsView userProjectsView,
             ProjectActionsView projectActionsView,
             ProjectUsersView projectUsersView,
@@ -70,9 +70,9 @@ public class Projects extends MasterDetail implements HasUser {
         setViewContent(createContent());
         initDetailsDrawer();
 
-        projectInfoView.addOnProjectUpdatedEventListener(event -> {
-            projectsService.saveProject(user, event.getProject());
-            userProjectsView.reloadProjects();
+        projectInfoView.setValidator((project, context) -> {
+            var result = onProjectUpdated(project);
+            return result ? ValidationResult.ok() : ValidationResult.error("error");
         });
 
         userProjectsView.addOnProjectSelectedEventListener(event -> {
@@ -105,11 +105,25 @@ public class Projects extends MasterDetail implements HasUser {
     }
 
     private void showCreateProjectDialog(Project project) {
-        new ProjectEditorDialog("Create Project", updated -> {
-            projectsService.createProject(updated, user);
-            // TODO check operation result
-            userProjectsView.reloadProjects();
-        }).open(project);
+        new ProjectEditorDialog("Create Project", this::onProjectCreated).open(project);
+    }
+
+    private boolean onProjectCreated(Project project) {
+        return handleDataManipulation(
+                projectsService.createProject(user, project),
+                result -> userProjectsView.reloadProjects());
+    }
+
+    private boolean onProjectUpdated(Project project) {
+        OptionalResult<Project> result;
+        try {
+            result = projectsService.updateProject(user, project);
+        } catch (Exception ex) {
+            result = OptionalResult.Fail(ex.getMessage());
+        }
+        return handleDataManipulation(
+                result,
+                r -> userProjectsView.reloadProjects());
     }
 
     private void resetDetails() {
@@ -164,6 +178,7 @@ public class Projects extends MasterDetail implements HasUser {
 
         // Header
         detailsDrawerHeader = new DetailHeader("");
+        detailsDrawerHeader.setCanReset(false);
         detailsDrawerHeader.addCloseListener(buttonClickEvent -> {
             userProjectsView.deselectAll();
             detailsDrawer.collapse();
@@ -171,7 +186,6 @@ public class Projects extends MasterDetail implements HasUser {
         });
         detailsDrawer.setHeader(detailsDrawerHeader);
         detailsDrawer.setContent(createDetailsContent());
-
         return detailsDrawer;
     }
 

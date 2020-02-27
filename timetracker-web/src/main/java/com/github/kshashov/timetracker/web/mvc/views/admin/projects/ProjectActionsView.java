@@ -1,9 +1,13 @@
-package com.github.kshashov.timetracker.web.mvc.view.component;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
+import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
-import com.github.kshashov.timetracker.web.mvc.view.component.dialog.ProjectActionEditorDialog;
+import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
+import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
+import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectActionEditorDialog;
+import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -20,14 +24,18 @@ import java.util.Set;
 
 @Scope("prototype")
 @SpringComponent
-public class ProjectActionsView extends VerticalLayout {
+public class ProjectActionsView extends VerticalLayout implements DataHandler {
+    private final ProjectsAdminService adminService;
     private final ActionsRepository actionsRepository;
     private final Grid<Action> actionGrid = new Grid<>();
+    private final User user;
     private Project project;
 
     @Autowired
-    public ProjectActionsView(ActionsRepository actionsRepository) {
+    public ProjectActionsView(ProjectsAdminService adminService, ActionsRepository actionsRepository) {
+        this.adminService = adminService;
         this.actionsRepository = actionsRepository;
+        this.user = SecurityUtils.getCurrentUser().getUser();
         add(new H4("Actions"));
         add(initNewActionButton());
         add(initGrid());
@@ -38,7 +46,7 @@ public class ProjectActionsView extends VerticalLayout {
             var action = new Action();
             action.setProject(project);
             action.setIsActive(true);
-            new ProjectActionEditorDialog("Create Action", this::onActionSaved).open(action);
+            new ProjectActionEditorDialog("Create Action", this::onActionCreated).open(action);
         });
         return button;
     }
@@ -50,10 +58,10 @@ public class ProjectActionsView extends VerticalLayout {
 
             var edit = new Button(
                     VaadinIcon.PENCIL.create(),
-                    (event) -> new ProjectActionEditorDialog("Edit Action", this::onActionSaved).open(a));
+                    (event) -> new ProjectActionEditorDialog("Edit Action", this::onActionUpdated).open(a));
             var delete = new Button(
                     VaadinIcon.FILE_REMOVE.create(),
-                    (event) -> new ProjectActionEditorDialog("Delete Action", this::onActionSaved).open(a));
+                    (event) -> new ProjectActionEditorDialog("Delete Action", this::onActionUpdated).open(a));
 
             layout.add(edit);
             layout.add(delete);
@@ -63,10 +71,12 @@ public class ProjectActionsView extends VerticalLayout {
         return actionGrid;
     }
 
-    private void onActionSaved(Action action) {
-        actionsRepository.save(action);
-        // TODO check result
-        reloadActions();
+    private boolean onActionCreated(Action action) {
+        return handleDataManipulation(adminService.createAction(user, action), (result) -> reloadActions());
+    }
+
+    private boolean onActionUpdated(Action action) {
+        return handleDataManipulation(adminService.updateAction(user, action), (result) -> reloadActions());
     }
 
     private void reloadActions() {

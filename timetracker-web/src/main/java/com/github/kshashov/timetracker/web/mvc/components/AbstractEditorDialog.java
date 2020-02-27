@@ -1,6 +1,5 @@
-package com.github.kshashov.timetracker.web.mvc.view.component.dialog;
+package com.github.kshashov.timetracker.web.mvc.components;
 
-import com.github.kshashov.timetracker.web.mvc.components.ButtonsDialog;
 import com.github.kshashov.timetracker.web.mvc.util.UIUtils;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
@@ -12,7 +11,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
 
@@ -21,13 +20,13 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     private final Button save = UIUtils.createPrimaryButton("Save");
     private final Button cancel = UIUtils.createTertiaryButton("Cancel");
     private final String title;
-    private final Consumer<T> itemSaver;
+    private final Predicate<T> itemSaver;
     private Registration registrationForSave;
     private Registration saveShortcutRegistration;
     private Binder<T> binder = new Binder<>();
     private T currentItem;
 
-    protected AbstractEditorDialog(String title, Consumer<T> itemSaver) {
+    protected AbstractEditorDialog(String title, Predicate<T> itemSaver) {
         this.title = title;
         this.itemSaver = itemSaver;
 
@@ -91,11 +90,10 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     protected abstract void onDialogOpened(T item);
 
     private void saveClicked() {
-        boolean isValid = binder.writeBeanIfValid(currentItem);
-
-        if (isValid) {
-            itemSaver.accept(currentItem);
-            close();
+        if (binder.writeBeanIfValid(currentItem)) {
+            if (itemSaver.test(currentItem)) {
+                close();
+            }
         } else {
             BinderValidationStatus<T> status = binder.validate();
         }

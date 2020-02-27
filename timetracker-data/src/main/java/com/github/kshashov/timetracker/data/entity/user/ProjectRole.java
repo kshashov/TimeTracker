@@ -12,10 +12,10 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Entity
 @Table(name = "project_roles", schema = "public")
-public class ProjectRoles implements BaseEntity {
+public class ProjectRole implements BaseEntity {
 
     @EmbeddedId
-    private ProjectRolesIdentity permissionIdentity;
+    private ProjectRoleIdentity permissionIdentity;
 
     @MapsId("project_id")
     @ManyToOne(fetch = FetchType.LAZY)

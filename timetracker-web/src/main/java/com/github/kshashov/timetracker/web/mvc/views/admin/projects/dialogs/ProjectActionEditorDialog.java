@@ -1,15 +1,16 @@
-package com.github.kshashov.timetracker.web.mvc.view.component.dialog;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs;
 
 import com.github.kshashov.timetracker.data.entity.Action;
+import com.github.kshashov.timetracker.web.mvc.components.AbstractEditorDialog;
 import com.vaadin.flow.component.textfield.TextField;
 import org.apache.logging.log4j.util.Strings;
 
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ProjectActionEditorDialog extends AbstractEditorDialog<Action> {
     private final TextField title = new TextField("Title");
 
-    public ProjectActionEditorDialog(String title, Consumer<Action> itemSaver) {
+    public ProjectActionEditorDialog(String title, Predicate<Action> itemSaver) {
         super(title, itemSaver);
         getFormLayout().add(createTitleField());
     }

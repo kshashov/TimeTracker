@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Embeddable
-public class ProjectRolesIdentity implements Serializable {
+public class ProjectRoleIdentity implements Serializable {
 
     @NotNull
     @Column(name = "project_id")

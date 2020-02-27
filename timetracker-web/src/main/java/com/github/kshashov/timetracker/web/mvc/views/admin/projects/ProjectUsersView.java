@@ -1,16 +1,18 @@
-package com.github.kshashov.timetracker.web.mvc.view.component;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Project;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRoles;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRolesIdentity;
+import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
+import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
-import com.github.kshashov.timetracker.web.mvc.view.component.dialog.ProjectUserCreatorDialog;
-import com.github.kshashov.timetracker.web.mvc.view.component.dialog.ProjectUserEditorDialog;
+import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
+import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectUserCreatorDialog;
+import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectUserEditorDialog;
+import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -31,18 +33,24 @@ import java.util.Set;
 
 @Scope("prototype")
 @SpringComponent
-public class ProjectUsersView extends VerticalLayout {
+public class ProjectUsersView extends VerticalLayout implements DataHandler {
+    private final ProjectsAdminService projectsAdminService;
     private final ProjectRolesRepository projectRolesRepository;
-    private final RolesRepository rolesRepository;
     private final UsersRepository usersRepository;
-    private final Grid<ProjectRoles> usersGrid = new Grid<>();
+    private final Grid<ProjectRole> usersGrid = new Grid<>();
     private final List<Role> roles;
+    private final User user;
     private Project project;
 
     @Autowired
-    public ProjectUsersView(ProjectRolesRepository projectRolesRepository, RolesRepository rolesRepository, UsersRepository usersRepository) {
+    public ProjectUsersView(
+            ProjectsAdminService projectsAdminService,
+            ProjectRolesRepository projectRolesRepository,
+            RolesRepository rolesRepository,
+            UsersRepository usersRepository) {
+        this.user = SecurityUtils.getCurrentUser().getUser();
+        this.projectsAdminService = projectsAdminService;
         this.projectRolesRepository = projectRolesRepository;
-        this.rolesRepository = rolesRepository;
         this.usersRepository = usersRepository;
         // TODO except inactive?
         this.roles = rolesRepository.findAll();
@@ -64,14 +72,14 @@ public class ProjectUsersView extends VerticalLayout {
 
 
         var button = new Button("Add User", event -> {
-            var action = new ProjectRoles();
+            var action = new ProjectRole();
             action.setProject(project);
-            new ProjectUserCreatorDialog("Add User", this::onUserRoleSaved, usersDataProvider, roles).open(action);
+            new ProjectUserCreatorDialog("Add User", this::onUserRoleCreated, usersDataProvider, roles).open(action);
         });
         return button;
     }
 
-    private Grid<ProjectRoles> initUsersGrid() {
+    private Grid<ProjectRole> initUsersGrid() {
         usersGrid.setWidthFull();
         usersGrid.addColumn(new ComponentRenderer<>(pr -> {
             var span = new Span(pr.getUser().getName());
@@ -84,11 +92,13 @@ public class ProjectUsersView extends VerticalLayout {
         usersGrid.addColumn(new ComponentRenderer<>(a -> {
             var layout = new HorizontalLayout();
 
-            var edit = new Button(
-                    VaadinIcon.PENCIL.create(),
-                    (event) -> new ProjectUserEditorDialog("Edit User", this::onUserRoleSaved, roles).open(a));
+            if (!a.getUser().getId().equals(user.getId())) {
+                var edit = new Button(VaadinIcon.PENCIL.create(),
+                        (event) -> new ProjectUserEditorDialog("Edit User", this::onUserRoleUpdated, roles).open(a));
 
-            layout.add(edit);
+                layout.add(edit);
+            }
+
             return layout;
         })).setHeader("").setSortable(false).setAutoWidth(true);
         usersGrid.setSelectionMode(Grid.SelectionMode.NONE);
@@ -96,23 +106,16 @@ public class ProjectUsersView extends VerticalLayout {
         return usersGrid;
     }
 
-    private void onUserRoleAdded(ProjectRoles projectRoles) {
-        // TODO check if already existing
-        onUserRoleSaved(projectRoles);
+    private boolean onUserRoleCreated(ProjectRole projectRole) {
+        return handleDataManipulation(projectsAdminService.createProjectRole(user, projectRole), projectRole1 -> reloadUsers());
     }
 
-    private void onUserRoleSaved(ProjectRoles projectRoles) {
-        var id = new ProjectRolesIdentity();
-        id.setUserId(projectRoles.getUser().getId());
-        id.setProjectId(projectRoles.getProject().getId());
-        projectRoles.setPermissionIdentity(id);
-        projectRolesRepository.save(projectRoles);
-        // TODO check result
-        reloadUsers();
+    private boolean onUserRoleUpdated(ProjectRole projectRole) {
+        return handleDataManipulation(projectsAdminService.updateProjectRole(user, projectRole), projectRole1 -> reloadUsers());
     }
 
     private void reloadUsers() {
-        Set<ProjectRoles> users = projectRolesRepository.findProjectUsersWithRoles(project.getId());
+        Set<ProjectRole> users = projectRolesRepository.findProjectUsersWithRoles(project.getId());
         usersGrid.setItems(users);
     }
 

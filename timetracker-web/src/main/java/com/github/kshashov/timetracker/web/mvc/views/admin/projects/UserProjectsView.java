@@ -1,17 +1,19 @@
-package com.github.kshashov.timetracker.web.mvc.view.component;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Project;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRoles;
+import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.web.mvc.components.FlexBoxLayout;
+import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
@@ -26,14 +28,13 @@ import java.util.Comparator;
 
 @Scope("prototype")
 @SpringComponent
-public class UserProjectsView extends FlexBoxLayout implements HasUser {
+public class UserProjectsView extends FlexBoxLayout implements HasUser, DataHandler {
     private final ProjectRolesRepository projectRolesRepository;
 
     private final User user;
-    private final Grid<ProjectRoles> projectsGrid = new Grid<>();
-    private final ListDataProvider<ProjectRoles> projectsDataProvider = new ListDataProvider<>(new ArrayList<>());
+    private final Grid<ProjectRole> projectsGrid = new Grid<>();
+    private final ListDataProvider<ProjectRole> projectsDataProvider = new ListDataProvider<>(new ArrayList<>());
     private Project selectedProject;
-
 
     @Autowired
     public UserProjectsView(ProjectRolesRepository projectRolesRepository) {
@@ -44,9 +45,10 @@ public class UserProjectsView extends FlexBoxLayout implements HasUser {
         setSizeFull();
     }
 
-    private Grid<ProjectRoles> initProjectsGrid() {
-        projectsGrid.setDataProvider(projectsDataProvider);
+    private Grid<ProjectRole> initProjectsGrid() {
+        projectsGrid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
         projectsGrid.setSizeFull();
+
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
             var span = new Span(pr.getProject().getTitle());
             return span;
@@ -59,28 +61,40 @@ public class UserProjectsView extends FlexBoxLayout implements HasUser {
         projectsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        ((GridSingleSelectionModel<ProjectRoles>) projectsGrid.getSelectionModel()).setDeselectAllowed(false);
         projectsGrid.addSelectionListener(selectionEvent -> selectionEvent.getFirstSelectedItem().ifPresent(
-                projectRoles -> {
-                    selectedProject = projectRoles.getProject();
-                    fireEvent(new ProjectSelectedEvent(this, projectRoles.getProject(), projectRoles.getRole()));
+                projectRole -> {
+                    selectedProject = projectRole.getProject();
+                    fireEvent(new ProjectSelectedEvent(this, projectRole.getProject(), projectRole.getRole()));
                 }
         ));
 
-        projectsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+        projectsGrid.setDataProvider(projectsDataProvider);
         return projectsGrid;
     }
 
     public void reloadProjects() {
+        // Reload items
         var rows = projectRolesRepository.findUserProjectsWithRoles(user.getId());
         projectsDataProvider.getItems().clear();
         projectsDataProvider.getItems().addAll(rows);
         projectsDataProvider.refreshAll();
 
+        if (selectedProject != null) {
+            // Restore selection
+            rows.stream().filter(pr -> pr.getProject().getId().equals(selectedProject.getId()))
+                    .findFirst()
+                    .ifPresentOrElse(projectsGrid::select, () -> selectedProject = null);
+        }
+
         if ((selectedProject == null) && (rows.size() > 0)) {
+            // Select first item
+            Notification.show("select " + rows.iterator().next().getProject().getTitle());
             projectsGrid.select(rows.iterator().next());
         }
     }
 
     public void deselectAll() {
+        selectedProject = null;
         projectsGrid.deselectAll();
     }
 

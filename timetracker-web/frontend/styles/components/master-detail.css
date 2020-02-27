@@ -29,6 +29,7 @@
 
 .master-detail__details {
   flex: 1;
+  overflow-y: auto;
 }
 
 @media(min-width: 720px) {

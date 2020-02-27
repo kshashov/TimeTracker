@@ -11,6 +11,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Route(value = "oauth_login")
+@PageTitle("TimeTracker - Login")
 public class LoginPage extends FlexBoxLayout {
     private static String authorizationRequestBaseUri = "oauth2/authorization";
     private final ClientRegistrationRepository clientRegistrationRepository;

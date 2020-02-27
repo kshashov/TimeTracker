@@ -1,21 +1,22 @@
-package com.github.kshashov.timetracker.web.mvc.view.component.dialog;
+package com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs;
 
-import com.github.kshashov.timetracker.data.entity.user.ProjectRoles;
+import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.web.mvc.components.AbstractEditorDialog;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRoles> {
+public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRole> {
     private final ComboBox<User> user = new ComboBox<>();
     private final Select<Role> role = new Select<>();
 
-    public ProjectUserCreatorDialog(String title, Consumer<ProjectRoles> itemSaver, CallbackDataProvider<User, String> usersDataProvider, List<Role> roles) {
+    public ProjectUserCreatorDialog(String title, Predicate<ProjectRole> itemSaver, CallbackDataProvider<User, String> usersDataProvider, List<Role> roles) {
         super(title, itemSaver);
         getFormLayout().add(createUserField(usersDataProvider));
         getFormLayout().add(createRoleField(roles));
@@ -30,7 +31,7 @@ public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRoles>
 
         getBinder().forField(role)
                 .withValidator(Objects::nonNull, "Role is empty")
-                .bind(ProjectRoles::getRole, ProjectRoles::setRole);
+                .bind(ProjectRole::getRole, ProjectRole::setRole);
 
         return role;
     }
@@ -49,13 +50,13 @@ public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRoles>
 
         getBinder().forField(user)
                 .withValidator(Objects::nonNull, "User is empty")
-                .bind(ProjectRoles::getUser, ProjectRoles::setUser);
+                .bind(ProjectRole::getUser, ProjectRole::setUser);
 
         return user;
     }
 
     @Override
-    protected void onDialogOpened(ProjectRoles item) {
+    protected void onDialogOpened(ProjectRole item) {
 
     }
 }

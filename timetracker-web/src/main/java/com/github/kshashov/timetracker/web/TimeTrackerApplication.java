@@ -17,11 +17,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Locale;
 
 @SpringBootApplication(scanBasePackages = "com.github.kshashov.timetracker")
 @EnableCaching
+@EnableTransactionManagement
 @EnableAutoConfiguration(exclude = {WebMvcAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
 public class TimeTrackerApplication {
 

@@ -10,6 +10,7 @@ import com.github.kshashov.timetracker.web.mvc.util.UIUtils;
 import com.github.kshashov.timetracker.web.mvc.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.mvc.util.css.Overflow;
 import com.github.kshashov.timetracker.web.mvc.views.*;
+import com.github.kshashov.timetracker.web.mvc.views.admin.projects.Projects;
 import com.github.kshashov.timetracker.web.mvc.views.personnel.Accountants;
 import com.github.kshashov.timetracker.web.mvc.views.personnel.Managers;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
@@ -136,7 +137,6 @@ public class MainLayout extends FlexBoxLayout
     private void initNaviItems() {
         NaviMenu menu = naviDrawer.getMenu();
         menu.addNaviItem(VaadinIcon.HOME, "Home", Home.class);
-        menu.addNaviItem(VaadinIcon.FOLDER, "Projects", Projects.class);
         menu.addNaviItem(VaadinIcon.INSTITUTION, "Accounts", Accounts.class);
         menu.addNaviItem(VaadinIcon.CREDIT_CARD, "Payments", Payments.class);
         menu.addNaviItem(VaadinIcon.CHART, "Statistics", Statistics.class);
@@ -177,6 +177,9 @@ public class MainLayout extends FlexBoxLayout
         contextMenu.setOpenOnClick(true);
         contextMenu.addItem("Profile", e -> {
             UI.getCurrent().navigate(UserPage.class, user.getId());
+        });
+        contextMenu.addItem("My projects", e -> {
+            UI.getCurrent().navigate(Projects.class);
         });
         contextMenu.addItem("Log Out", e -> {
             VaadinSession.getCurrent().getSession().invalidate();

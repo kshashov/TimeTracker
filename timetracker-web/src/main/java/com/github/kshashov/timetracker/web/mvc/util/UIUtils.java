@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
@@ -392,7 +393,19 @@ public class UIUtils {
     /* === NOTIFICATIONS === */
 
     public static void showNotification(String text) {
-        Notification.show(text, 3000, Notification.Position.BOTTOM_CENTER);
+        Notification.show(text, 3000, Notification.Position.BOTTOM_END);
+    }
+
+    public static void showSuccessNotification(String message) {
+        Notification notification = new Notification(message, 3000, Notification.Position.BOTTOM_END);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notification.open();
+    }
+
+    public static void showErrorNotification(String message) {
+        Notification notification = new Notification(message, 5000, Notification.Position.BOTTOM_END);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        notification.open();
     }
 
     /* === CSS UTILITIES === */
