@@ -11,7 +11,9 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "users", schema = "public", uniqueConstraints = {
+        @UniqueConstraint(name = "users_unique_email", columnNames = "email")
+})
 public class User implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,10 +21,10 @@ public class User implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     private String email;
 
     @NotNull
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     private String name;
 }

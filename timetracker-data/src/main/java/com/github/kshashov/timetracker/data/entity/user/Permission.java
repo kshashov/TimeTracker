@@ -18,6 +18,6 @@ public class Permission implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "code")
+    @Column(name = "code", unique = true)
     private String code;
 }

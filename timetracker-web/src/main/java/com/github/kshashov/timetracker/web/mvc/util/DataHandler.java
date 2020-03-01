@@ -1,35 +1,47 @@
 package com.github.kshashov.timetracker.web.mvc.util;
 
-import com.github.kshashov.timetracker.data.utils.OptionalResult;
+import com.github.kshashov.timetracker.core.errors.TimeTrackerException;
+import org.apache.logging.log4j.util.Strings;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface DataHandler {
 
-    default <T> boolean handleDataManipulation(OptionalResult<T> dataManipulationResult) {
-        return handleDataManipulation(dataManipulationResult, (result) -> {
+    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation) {
+        return handleDataManipulation(dataManipulation, (result) -> {
         }, () -> {
         });
     }
 
-    default <T> boolean handleDataManipulation(OptionalResult<T> dataManipulationResult, Consumer<T> onSuccess) {
-        return handleDataManipulation(dataManipulationResult, onSuccess, () -> {
+    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess) {
+        return handleDataManipulation(dataManipulation, onSuccess, () -> {
         });
     }
 
-    default <T> boolean handleDataManipulation(OptionalResult<T> dataManipulationResult, Consumer<T> onSuccess, Callback onFailure) {
-        if (dataManipulationResult.hasResult()) {
-            if (dataManipulationResult.hasMessage()) {
-                UIUtils.showSuccessNotification(dataManipulationResult.getMessage());
+    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess, Callback onFail) {
+        boolean isSuccess = false;
+        T result = null;
+        try {
+            result = dataManipulation.get();
+            isSuccess = true;
+        } catch (TimeTrackerException ex) {
+            if (!Strings.isBlank(ex.getMessage())) {
+                UIUtils.showErrorNotification(ex.getMessage());
+            } else {
+                UIUtils.showErrorNotification("Unexpected server error. Please try again later");
             }
-            onSuccess.accept(dataManipulationResult.getResult());
-        } else {
-            if (dataManipulationResult.hasMessage()) {
-                UIUtils.showErrorNotification(dataManipulationResult.getMessage());
-            }
-            onFailure.execute();
+        } catch (Exception ex) {
+            UIUtils.showErrorNotification("Unexpected server error. Please try again later");
         }
-        return dataManipulationResult.hasResult();
+
+        if (isSuccess) {
+            onSuccess.accept(result);
+        } else {
+            onFail.execute();
+        }
+
+        return isSuccess;
     }
 
     @FunctionalInterface

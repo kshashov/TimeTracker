@@ -38,10 +38,6 @@ public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRole> 
 
     protected ComboBox<User> createUserField(CallbackDataProvider<User, String> usersDataProvider) {
         user.setLabel("User");
-/*        user.setRenderer(new ComponentRenderer<>(u -> {
-            var name = u == null? "": u.getName();
-            return new Span(StringUtils.defaultString(name));
-        }));*/
         user.setItemLabelGenerator(u -> u == null ? "" : u.getName());
         user.setAllowCustomValue(false);
         user.setRequiredIndicatorVisible(true);

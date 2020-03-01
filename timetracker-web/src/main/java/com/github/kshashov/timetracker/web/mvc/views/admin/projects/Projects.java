@@ -3,8 +3,7 @@ package com.github.kshashov.timetracker.web.mvc.views.admin.projects;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
-import com.github.kshashov.timetracker.data.utils.OptionalResult;
+import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.mvc.MainLayout;
 import com.github.kshashov.timetracker.web.mvc.components.FlexBoxLayout;
@@ -32,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @PageTitle("Projects")
 public class Projects extends MasterDetail implements HasUser, DataHandler {
 
-    private final ProjectsAdminService projectsService;
+    private final ProjectsService projectsService;
     private final RolePermissionsHelper rolePermissionsHelper;
 
     private final User user;
@@ -49,7 +48,7 @@ public class Projects extends MasterDetail implements HasUser, DataHandler {
     @Autowired
     public Projects(
             RolePermissionsHelper rolePermissionsHelper,
-            ProjectsAdminService projectsService,
+            ProjectsService projectsService,
             UserProjectsView userProjectsView,
             ProjectActionsView projectActionsView,
             ProjectUsersView projectUsersView,
@@ -110,20 +109,14 @@ public class Projects extends MasterDetail implements HasUser, DataHandler {
 
     private boolean onProjectCreated(Project project) {
         return handleDataManipulation(
-                projectsService.createProject(user, project),
+                () -> projectsService.createProject(user, project),
                 result -> userProjectsView.reloadProjects());
     }
 
     private boolean onProjectUpdated(Project project) {
-        OptionalResult<Project> result;
-        try {
-            result = projectsService.updateProject(user, project);
-        } catch (Exception ex) {
-            result = OptionalResult.Fail(ex.getMessage());
-        }
         return handleDataManipulation(
-                result,
-                r -> userProjectsView.reloadProjects());
+                () -> projectsService.updateProject(user, project),
+                result -> userProjectsView.reloadProjects());
     }
 
     private void resetDetails() {

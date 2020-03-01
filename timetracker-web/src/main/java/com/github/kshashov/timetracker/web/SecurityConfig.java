@@ -1,8 +1,6 @@
 package com.github.kshashov.timetracker.web;
 
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
-import com.github.kshashov.timetracker.web.security.CustomOAuth2UserService;
-import com.github.kshashov.timetracker.web.security.CustomOidcUserService;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +17,6 @@ import java.util.stream.Stream;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    CustomOidcUserService oidcUserService;
-
-    @Autowired
-    CustomOAuth2UserService oAuth2UserService;
 
     @Autowired
     ClientRegistrationRepository clientRegistrationRepository;

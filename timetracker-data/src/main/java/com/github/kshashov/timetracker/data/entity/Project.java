@@ -10,7 +10,9 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "projects", schema = "public")
+@Table(name = "projects", schema = "public", uniqueConstraints = {
+        @UniqueConstraint(name = "projects_unique_title", columnNames = "title")
+})
 public class Project implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +20,7 @@ public class Project implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "title", unique = true)
+    @Column(name = "title")
     private String title;
 
     @NotNull

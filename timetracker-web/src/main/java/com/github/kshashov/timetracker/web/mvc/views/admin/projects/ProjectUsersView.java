@@ -7,7 +7,7 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
-import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
+import com.github.kshashov.timetracker.data.service.admin.projects.ProjectUsersServiceImpl;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
 import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectUserCreatorDialog;
@@ -34,7 +34,7 @@ import java.util.Set;
 @Scope("prototype")
 @SpringComponent
 public class ProjectUsersView extends VerticalLayout implements DataHandler {
-    private final ProjectsAdminService projectsAdminService;
+    private final ProjectUsersServiceImpl projectsAdminService;
     private final ProjectRolesRepository projectRolesRepository;
     private final UsersRepository usersRepository;
     private final Grid<ProjectRole> usersGrid = new Grid<>();
@@ -44,7 +44,7 @@ public class ProjectUsersView extends VerticalLayout implements DataHandler {
 
     @Autowired
     public ProjectUsersView(
-            ProjectsAdminService projectsAdminService,
+            ProjectUsersServiceImpl projectsAdminService,
             ProjectRolesRepository projectRolesRepository,
             RolesRepository rolesRepository,
             UsersRepository usersRepository) {
@@ -107,11 +107,15 @@ public class ProjectUsersView extends VerticalLayout implements DataHandler {
     }
 
     private boolean onUserRoleCreated(ProjectRole projectRole) {
-        return handleDataManipulation(projectsAdminService.createProjectRole(user, projectRole), projectRole1 -> reloadUsers());
+        return handleDataManipulation(
+                () -> projectsAdminService.createProjectRole(user, projectRole),
+                result -> reloadUsers());
     }
 
     private boolean onUserRoleUpdated(ProjectRole projectRole) {
-        return handleDataManipulation(projectsAdminService.updateProjectRole(user, projectRole), projectRole1 -> reloadUsers());
+        return handleDataManipulation(
+                () -> projectsAdminService.updateProjectRole(user, projectRole),
+                result -> reloadUsers());
     }
 
     private void reloadUsers() {

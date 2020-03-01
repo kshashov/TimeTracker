@@ -9,8 +9,9 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Entity
-@Table(name = "actions", schema = "public",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"project_id", "title"}))
+@Table(name = "actions", schema = "public", uniqueConstraints = {
+        @UniqueConstraint(name = "actions_unique_project_id_title", columnNames = {"project_id", "title"})
+})
 public class Action implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

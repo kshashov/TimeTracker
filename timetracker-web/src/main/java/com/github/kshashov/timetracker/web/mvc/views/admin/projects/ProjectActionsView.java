@@ -4,7 +4,7 @@ import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
-import com.github.kshashov.timetracker.data.service.ProjectsAdminService;
+import com.github.kshashov.timetracker.data.service.admin.projects.ProjectActionsService;
 import com.github.kshashov.timetracker.web.mvc.util.DataHandler;
 import com.github.kshashov.timetracker.web.mvc.views.admin.projects.dialogs.ProjectActionEditorDialog;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
@@ -20,20 +20,20 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
-import java.util.Set;
+import java.util.List;
 
 @Scope("prototype")
 @SpringComponent
 public class ProjectActionsView extends VerticalLayout implements DataHandler {
-    private final ProjectsAdminService adminService;
+    private final ProjectActionsService actionsService;
     private final ActionsRepository actionsRepository;
     private final Grid<Action> actionGrid = new Grid<>();
     private final User user;
     private Project project;
 
     @Autowired
-    public ProjectActionsView(ProjectsAdminService adminService, ActionsRepository actionsRepository) {
-        this.adminService = adminService;
+    public ProjectActionsView(ProjectActionsService actionsService, ActionsRepository actionsRepository) {
+        this.actionsService = actionsService;
         this.actionsRepository = actionsRepository;
         this.user = SecurityUtils.getCurrentUser().getUser();
         add(new H4("Actions"));
@@ -72,15 +72,19 @@ public class ProjectActionsView extends VerticalLayout implements DataHandler {
     }
 
     private boolean onActionCreated(Action action) {
-        return handleDataManipulation(adminService.createAction(user, action), (result) -> reloadActions());
+        return handleDataManipulation(
+                () -> actionsService.createAction(user, action),
+                result -> reloadActions());
     }
 
     private boolean onActionUpdated(Action action) {
-        return handleDataManipulation(adminService.updateAction(user, action), (result) -> reloadActions());
+        return handleDataManipulation(
+                () -> actionsService.updateAction(user, action),
+                result -> reloadActions());
     }
 
     private void reloadActions() {
-        Set<Action> actions = actionsRepository.findAllByProject(project);
+        List<Action> actions = actionsRepository.findAllByProject(project.getId());
         actionGrid.setItems(actions);
     }
 

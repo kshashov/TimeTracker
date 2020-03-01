@@ -23,7 +23,7 @@ public class ProjectUserEditorDialog extends AbstractEditorDialog<ProjectRole> {
     protected Select<Role> createRoleField(List<Role> roles) {
         role.setLabel("Role");
         role.setItemLabelGenerator(r -> r == null ? "" : r.getTitle());
-        role.setEmptySelectionAllowed(true);
+        role.setEmptySelectionAllowed(false);
         role.setRequiredIndicatorVisible(true);
         role.setItems(roles);
 

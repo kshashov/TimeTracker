@@ -11,14 +11,16 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "roles", schema = "public")
+@Table(name = "roles", schema = "public", uniqueConstraints = {
+        @UniqueConstraint(name = "roles_unique_title", columnNames = "title")
+})
 public class Role implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "title", unique = true)
+    @Column(name = "title")
     private String title;
 
     @NotNull

@@ -1,7 +1,6 @@
 package com.github.kshashov.timetracker.web.mvc.components;
 
 import com.github.kshashov.timetracker.web.mvc.util.UIUtils;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -22,7 +21,6 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     private final String title;
     private final Predicate<T> itemSaver;
     private Registration registrationForSave;
-    private Registration saveShortcutRegistration;
     private Binder<T> binder = new Binder<>();
     private T currentItem;
 
@@ -82,8 +80,6 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
         onDialogOpened(item);
         binder.readBean(currentItem);
 
-        enableShortcuts();
-
         open();
     }
 
@@ -102,19 +98,6 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     @Override
     public void close() {
         super.close();
-        disableShortcuts();
-    }
-
-    private void enableShortcuts() {
-        disableShortcuts();
-        saveShortcutRegistration = save.addClickShortcut(Key.ENTER);
-    }
-
-    private void disableShortcuts() {
-        if (saveShortcutRegistration != null) {
-            saveShortcutRegistration.remove();
-            saveShortcutRegistration = null;
-        }
     }
 }
 

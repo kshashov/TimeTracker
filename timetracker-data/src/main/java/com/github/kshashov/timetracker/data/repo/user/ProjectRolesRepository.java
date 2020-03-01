@@ -10,12 +10,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
 public interface ProjectRolesRepository extends JpaRepository<ProjectRole, ProjectRoleIdentity>, BaseRepo {
 
-    ProjectRole findOneByUserAndProject(User user, Project project);
+    Optional<ProjectRole> findFirstByUserAndProject(User user, Project project);
 
     @Query("SELECT pr FROM ProjectRole pr LEFT JOIN FETCH pr.project WHERE pr.permissionIdentity.userId = :userId")
     Set<ProjectRole> findUserProjectsWithRoles(@Param("userId") Long userId);
