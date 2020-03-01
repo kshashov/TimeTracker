@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.function.Predicate;
@@ -19,14 +20,17 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     private final Button save = UIUtils.createPrimaryButton("Save");
     private final Button cancel = UIUtils.createTertiaryButton("Cancel");
     private final String title;
-    private final Predicate<T> itemSaver;
     private Registration registrationForSave;
     private Binder<T> binder = new Binder<>();
     private T currentItem;
 
     protected AbstractEditorDialog(String title, Predicate<T> itemSaver) {
         this.title = title;
-        this.itemSaver = itemSaver;
+        binder.withValidator((value, context) -> {
+            return itemSaver.test(value)
+                    ? ValidationResult.ok()
+                    : ValidationResult.error("");
+        });
 
         initContent();
         initButtonBar();
@@ -87,9 +91,7 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
 
     private void saveClicked() {
         if (binder.writeBeanIfValid(currentItem)) {
-            if (itemSaver.test(currentItem)) {
-                close();
-            }
+            close();
         } else {
             BinderValidationStatus<T> status = binder.validate();
         }

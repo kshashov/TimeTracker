@@ -192,6 +192,8 @@ public class Projects extends MasterDetail implements HasUser, DataHandler {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
+        MainLayout.get().getAppBar().setTitle("My Projects");
+
         var button = MainLayout.get().getAppBar().addActionItem(VaadinIcon.FILE_ADD, "New Project");
         button.addClickListener(event -> onCreateNewProjectClicked());
     }
