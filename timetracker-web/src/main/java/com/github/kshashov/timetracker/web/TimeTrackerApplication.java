@@ -1,8 +1,10 @@
 package com.github.kshashov.timetracker.web;
 
+import com.github.kshashov.timetracker.web.ui.mvp.AttachPresenterAnnotationBeanPostProcessor;
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -63,5 +65,10 @@ public class TimeTrackerApplication {
     public CacheManager cacheManager() {
         CacheManager cacheManager = new ConcurrentMapCacheManager();
         return new TransactionAwareCacheManagerProxy(cacheManager);
+    }
+
+    @Bean
+    public AttachPresenterAnnotationBeanPostProcessor attachPresenterAnnotationBeanPostProcessor(BeanFactory beanFactory) {
+        return new AttachPresenterAnnotationBeanPostProcessor(beanFactory);
     }
 }
