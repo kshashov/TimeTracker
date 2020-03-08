@@ -1,7 +1,7 @@
 package com.github.kshashov.timetracker.web.backend;
 
-import com.github.kshashov.timetracker.web.mvc.util.UIUtils;
-import com.github.kshashov.timetracker.web.mvc.util.css.lumo.BadgeColor;
+import com.github.kshashov.timetracker.web.ui.util.UIUtils;
+import com.github.kshashov.timetracker.web.ui.util.css.lumo.BadgeColor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 

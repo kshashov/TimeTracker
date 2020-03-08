@@ -1,6 +1,6 @@
 package com.github.kshashov.timetracker.web.backend;
 
-import com.github.kshashov.timetracker.web.mvc.util.UIUtils;
+import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.vaadin.flow.component.html.Image;
 
 import java.time.LocalDate;

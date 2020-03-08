@@ -1,6 +1,6 @@
 package com.github.kshashov.timetracker.web.backend;
 
-import com.github.kshashov.timetracker.web.mvc.util.css.lumo.BadgeColor;
+import com.github.kshashov.timetracker.web.ui.util.css.lumo.BadgeColor;
 
 import java.time.LocalDate;
 import java.util.Collection;
