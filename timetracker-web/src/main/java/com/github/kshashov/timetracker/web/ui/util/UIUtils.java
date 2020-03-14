@@ -38,6 +38,18 @@ public class UIUtils {
 
     // Styles
 
+    public static Button createActionButton(String text) {
+        return createButton(text, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+    }
+
+    public static Button createActionButton(VaadinIcon icon) {
+        return createButton(icon, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+    }
+
+    public static Button createActionButton(String text, VaadinIcon icon) {
+        return createButton(text, icon, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+    }
+
     public static Button createPrimaryButton(String text) {
         return createButton(text, ButtonVariant.LUMO_PRIMARY);
     }
@@ -223,6 +235,14 @@ public class UIUtils {
     }
 
     /* ==== LABELS ==== */
+
+    public static Label createErrorLabel(String text) {
+        return createErrorLabel(FontSize.S, text);
+    }
+
+    public static Label createErrorLabel(FontSize size, String text) {
+        return createLabel(size, TextColor.ERROR, text);
+    }
 
     public static Label createLabel(FontSize size, TextColor color,
                                     String text) {

@@ -6,12 +6,12 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
 
@@ -20,17 +20,20 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     private final Button save = UIUtils.createPrimaryButton("Save");
     private final Button cancel = UIUtils.createTertiaryButton("Cancel");
     private final String title;
+    private Function<? super T, ValidationResult> validator;
     private Registration registrationForSave;
     private Binder<T> binder = new Binder<>();
     private T currentItem;
+    private Label statusText = UIUtils.createErrorLabel("");
 
-    protected AbstractEditorDialog(String title, Predicate<T> itemSaver) {
+    protected AbstractEditorDialog(String title) {
+        this(title, param -> ValidationResult.ok());
+    }
+
+    protected AbstractEditorDialog(String title, Function<? super T, ValidationResult> itemSaver) {
         this.title = title;
-        binder.withValidator((value, context) -> {
-            return itemSaver.test(value)
-                    ? ValidationResult.ok()
-                    : ValidationResult.error("");
-        });
+        this.validator = itemSaver;
+        binder.withValidator((value, context) -> validator.apply(value));
 
         initContent();
         initButtonBar();
@@ -45,9 +48,11 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
 
     private void initTitle() {
         getContent().add(titleField);
+        getContent().add(statusText);
     }
 
     private void initFormLayout() {
+        binder.setStatusLabel(statusText);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("25em", 2));
         Div div = new Div(formLayout);
@@ -75,6 +80,12 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     }
 
     public final void open(T item) {
+        open(item, this.validator);
+    }
+
+    public final void open(T item, Function<? super T, ValidationResult> validator) {
+        this.validator = validator;
+
         currentItem = item;
         titleField.setText(title);
         if (registrationForSave != null) {
@@ -92,8 +103,6 @@ public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
     private void saveClicked() {
         if (binder.writeBeanIfValid(currentItem)) {
             close();
-        } else {
-            BinderValidationStatus<T> status = binder.validate();
         }
     }
 

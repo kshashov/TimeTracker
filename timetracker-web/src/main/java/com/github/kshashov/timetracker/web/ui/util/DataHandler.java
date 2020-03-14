@@ -1,6 +1,7 @@
 package com.github.kshashov.timetracker.web.ui.util;
 
 import com.github.kshashov.timetracker.core.errors.TimeTrackerException;
+import com.vaadin.flow.data.binder.ValidationResult;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.function.Consumer;
@@ -8,18 +9,18 @@ import java.util.function.Supplier;
 
 public interface DataHandler {
 
-    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation) {
+    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation) {
         return handleDataManipulation(dataManipulation, (result) -> {
         }, () -> {
         });
     }
 
-    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess) {
+    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess) {
         return handleDataManipulation(dataManipulation, onSuccess, () -> {
         });
     }
 
-    default <T> boolean handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess, Callback onFail) {
+    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess, Callback onFail) {
         boolean isSuccess = false;
         T result = null;
         try {
@@ -28,6 +29,7 @@ public interface DataHandler {
         } catch (TimeTrackerException ex) {
             if (!Strings.isBlank(ex.getMessage())) {
                 UIUtils.showErrorNotification(ex.getMessage());
+                return ValidationResult.error(ex.getMessage());
             } else {
                 UIUtils.showErrorNotification("Unexpected server error. Please try again later");
             }
@@ -41,7 +43,7 @@ public interface DataHandler {
             onFail.execute();
         }
 
-        return isSuccess;
+        return ValidationResult.ok();
     }
 
     @FunctionalInterface

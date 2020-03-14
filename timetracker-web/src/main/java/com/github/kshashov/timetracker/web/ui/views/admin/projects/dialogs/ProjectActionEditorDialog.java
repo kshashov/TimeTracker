@@ -5,13 +5,15 @@ import com.github.kshashov.timetracker.web.ui.components.AbstractEditorDialog;
 import com.vaadin.flow.component.textfield.TextField;
 import org.apache.logging.log4j.util.Strings;
 
-import java.util.function.Predicate;
-
 public class ProjectActionEditorDialog extends AbstractEditorDialog<Action> {
     private final TextField title = new TextField("Title");
 
-    public ProjectActionEditorDialog(String title, Predicate<Action> itemSaver) {
-        super(title, itemSaver);
+    public ProjectActionEditorDialog(String title) {
+        super(title);
+        init();
+    }
+
+    protected void init() {
         getFormLayout().add(createTitleField());
     }
 

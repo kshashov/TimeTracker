@@ -5,16 +5,17 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.web.ui.components.AbstractEditorDialog;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.ValidationResult;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
-public class ProjectUserEditorDialog extends AbstractEditorDialog<ProjectRole> {
+public class ProjectRoleEditorDialog extends AbstractEditorDialog<ProjectRole> {
     private final TextField user = new TextField("User");
     private final Select<Role> role = new Select<>();
 
-    public ProjectUserEditorDialog(String title, Predicate<ProjectRole> itemSaver, List<Role> roles) {
+    public ProjectRoleEditorDialog(String title, Function<ProjectRole, ValidationResult> itemSaver, List<Role> roles) {
         super(title, itemSaver);
         getFormLayout().add(createUserField());
         getFormLayout().add(createRoleField(roles));
@@ -30,7 +31,7 @@ public class ProjectUserEditorDialog extends AbstractEditorDialog<ProjectRole> {
         getBinder().forField(role)
                 .withValidator(Objects::nonNull, "Role is empty")
                 .bind(
-                        pr -> roles.stream().filter(r -> r.getId().equals(pr.getRole().getId())).findFirst().get(),
+                        pr -> roles.stream().filter(r -> r.getId().equals(pr.getRole().getId())).findFirst().orElse(null),
                         ProjectRole::setRole
                 );
 

@@ -6,17 +6,18 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.web.ui.components.AbstractEditorDialog;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
-public class ProjectUserCreatorDialog extends AbstractEditorDialog<ProjectRole> {
+public class ProjectRoleCreatorDialog extends AbstractEditorDialog<ProjectRole> {
     private final ComboBox<User> user = new ComboBox<>();
     private final Select<Role> role = new Select<>();
 
-    public ProjectUserCreatorDialog(String title, Predicate<ProjectRole> itemSaver, CallbackDataProvider<User, String> usersDataProvider, List<Role> roles) {
+    public ProjectRoleCreatorDialog(String title, Function<ProjectRole, ValidationResult> itemSaver, List<Role> roles, CallbackDataProvider<User, String> usersDataProvider) {
         super(title, itemSaver);
         getFormLayout().add(createUserField(usersDataProvider));
         getFormLayout().add(createRoleField(roles));

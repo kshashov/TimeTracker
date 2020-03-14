@@ -11,7 +11,7 @@ import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
 import com.github.kshashov.timetracker.web.ui.views.*;
-import com.github.kshashov.timetracker.web.ui.views.admin.projects.Projects;
+import com.github.kshashov.timetracker.web.ui.views.admin.projects.ProjectsView;
 import com.github.kshashov.timetracker.web.ui.views.personnel.Accountants;
 import com.github.kshashov.timetracker.web.ui.views.personnel.Managers;
 import com.vaadin.flow.component.Component;
@@ -179,7 +179,7 @@ public class MainLayout extends FlexBoxLayout
             UI.getCurrent().navigate(UserPage.class, user.getId());
         });
         contextMenu.addItem("My projects", e -> {
-            UI.getCurrent().navigate(Projects.class);
+            UI.getCurrent().navigate(ProjectsView.class);
         });
         contextMenu.addItem("Log Out", e -> {
             VaadinSession.getCurrent().getSession().invalidate();

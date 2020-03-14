@@ -16,6 +16,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.kshashov</groupId>
             <artifactId>timetracker-core</artifactId>
         </dependency>

@@ -1,6 +1,7 @@
 package com.github.kshashov.timetracker.web;
 
 import com.github.kshashov.timetracker.web.ui.mvp.AttachPresenterAnnotationBeanPostProcessor;
+import com.google.common.eventbus.EventBus;
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
@@ -70,5 +71,10 @@ public class TimeTrackerApplication {
     @Bean
     public AttachPresenterAnnotationBeanPostProcessor attachPresenterAnnotationBeanPostProcessor(BeanFactory beanFactory) {
         return new AttachPresenterAnnotationBeanPostProcessor(beanFactory);
+    }
+
+    @Bean
+    public EventBus eventBus() {
+        return new EventBus(); // guava event bus
     }
 }
