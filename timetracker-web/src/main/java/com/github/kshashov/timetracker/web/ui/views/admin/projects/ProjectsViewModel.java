@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 @UIScope
 @SpringComponent
-public class ProjectsAdminViewModel implements HasUser, DataHandler {
+public class ProjectsViewModel implements HasUser, DataHandler {
     private final ProjectsService projectsService;
 
     private final BehaviorSubject<ProjectDialog> createProjectDialogObservable = BehaviorSubject.create();
@@ -28,7 +28,7 @@ public class ProjectsAdminViewModel implements HasUser, DataHandler {
     private final User user;
 
     @Autowired
-    public ProjectsAdminViewModel(ProjectsService projectsService, EventBus eventBus) {
+    public ProjectsViewModel(ProjectsService projectsService, EventBus eventBus) {
         this.projectsService = projectsService;
         this.eventBus = eventBus;
         this.user = getUser();
@@ -39,7 +39,7 @@ public class ProjectsAdminViewModel implements HasUser, DataHandler {
         project.setIsActive(true);
 
         // TODO Fire reload event
-        createProjectDialogObservable.onNext(new ProjectsAdminViewModel.ProjectDialog(
+        createProjectDialogObservable.onNext(new ProjectsViewModel.ProjectDialog(
                 project,
                 bean -> handleDataManipulation(
                         () -> projectsService.createProject(user, bean),

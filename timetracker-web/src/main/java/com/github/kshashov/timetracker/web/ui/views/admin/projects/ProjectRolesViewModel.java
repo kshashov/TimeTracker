@@ -10,7 +10,7 @@ import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectUsersServiceImpl;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
-import com.github.kshashov.timetracker.web.security.ProjectPermissionType;
+import com.github.kshashov.timetracker.web.security.ProjectPermission;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -61,12 +61,12 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
         this.roles = rolesRepository.findAll();
         this.usersDataProvider = new CallbackDataProvider<>(
                 query -> {
-                    // TODO filter users for project and string and count
-                    return usersRepository.findAll(query.getFilter().orElse(""), new OffsetLimitRequest(query.getOffset(), query.getLimit())).getContent().stream();
+                    var pageable = new OffsetLimitRequest(query.getOffset(), query.getLimit());
+                    return usersRepository.findMissingProjectUsers(project.getId(), query.getFilter().orElse(""), pageable).getContent().stream();
                 },
                 query -> {
-                    // TODO filter users for project and string and count
-                    return Math.toIntExact(usersRepository.findAll(query.getFilter().orElse(""), new OffsetLimitRequest(query.getOffset(), query.getLimit())).getNumberOfElements());
+                    var pageable = new OffsetLimitRequest(query.getOffset(), query.getLimit());
+                    return usersRepository.findMissingProjectUsers(project.getId(), query.getFilter().orElse(""), pageable).getNumberOfElements();
                 });
     }
 
@@ -119,7 +119,7 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
     }
 
     private void checkAccess(Role role) {
-        hasAccessObservable.onNext(rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_USERS));
+        hasAccessObservable.onNext(rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_USERS));
     }
 
     private void reloadUsers() {

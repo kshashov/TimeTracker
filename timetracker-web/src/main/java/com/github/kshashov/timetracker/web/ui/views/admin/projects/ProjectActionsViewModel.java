@@ -7,7 +7,7 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectActionsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
-import com.github.kshashov.timetracker.web.security.ProjectPermissionType;
+import com.github.kshashov.timetracker.web.security.ProjectPermission;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -92,7 +92,7 @@ public class ProjectActionsViewModel implements DataHandler {
     }
 
     private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_ACTIONS);
+        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_ACTIONS);
         hasAccessObservable.onNext(hasAccess);
         return hasAccess;
     }

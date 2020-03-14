@@ -6,7 +6,7 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
-import com.github.kshashov.timetracker.web.security.ProjectPermissionType;
+import com.github.kshashov.timetracker.web.security.ProjectPermission;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -26,7 +26,7 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
     private final RolePermissionsHelper rolePermissionsHelper;
 
     private final BehaviorSubject<Project> projectObservable = BehaviorSubject.create();
-    private final BehaviorSubject<ProjectsAdminViewModel.ProjectDialog> updateProjectDialogObservable = BehaviorSubject.create();
+    private final BehaviorSubject<ProjectsViewModel.ProjectDialog> updateProjectDialogObservable = BehaviorSubject.create();
     private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
 
     private final ProjectsService projectsService;
@@ -43,7 +43,7 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
 
     public void updateProject(Project project) {
         // TODO Fire fire reload event
-        updateProjectDialogObservable.onNext(new ProjectsAdminViewModel.ProjectDialog(
+        updateProjectDialogObservable.onNext(new ProjectsViewModel.ProjectDialog(
                 project,
                 bean -> handleDataManipulation(
                         () -> projectsService.updateProject(user, bean),
@@ -64,12 +64,12 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
         return projectObservable;
     }
 
-    public Observable<ProjectsAdminViewModel.ProjectDialog> updateProjectDialogs() {
+    public Observable<ProjectsViewModel.ProjectDialog> updateProjectDialogs() {
         return updateProjectDialogObservable;
     }
 
     private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_INFO);
+        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_INFO);
         hasAccessObservable.onNext(hasAccess);
         return hasAccess;
     }

@@ -3,6 +3,7 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
+import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -44,9 +45,8 @@ public class UserProjectsView extends FlexBoxLayout implements HasUser, DataHand
             return span;
         })).setHeader("Project").setSortable(true).setComparator(Comparator.comparing(o -> o.getProject().getTitle())).setAutoWidth(true);
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var span = new Span(pr.getRole().getTitle());
-            return span;
-        })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getTitle())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
+            return new RoleBadge(pr.getRole());
+        })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getCode())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
 
         projectsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        ((GridSingleSelectionModel<ProjectRoles>) projectsGrid.getSelectionModel()).setDeselectAllowed(false);

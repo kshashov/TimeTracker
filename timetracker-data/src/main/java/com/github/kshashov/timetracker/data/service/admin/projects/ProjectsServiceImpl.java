@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
+import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
@@ -107,7 +108,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         ProjectRole projectRole = new ProjectRole();
         projectRole.setUser(user);
         projectRole.setProject(project);
-        projectRole.setRole(rolesRepository.findOneByTitle("project_admin")); // TODO get rid of string literal
+        projectRole.setRole(rolesRepository.findOneByCode(ProjectRoleType.ADMIN.getCode())); // TODO get rid of string literal
         projectUsersService.createProjectRole(projectRole);
 
         return project;

@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @PageTitle("Projects")
 public class ProjectsView extends MasterDetail {
     private final ProjectSelectorViewModel projectSelectorViewModel;
-    private final ProjectsAdminViewModel projectsAdminViewModel;
+    private final ProjectsViewModel projectsAdminViewModel;
 
     private final UserProjectsView userProjectsView;
     private final ProjectActionsView projectActionsView;
@@ -37,7 +37,7 @@ public class ProjectsView extends MasterDetail {
     @Autowired
     public ProjectsView(
             ProjectSelectorViewModel projectSelectorViewModel,
-            ProjectsAdminViewModel projectsAdminViewModel,
+            ProjectsViewModel projectsAdminViewModel,
             UserProjectsView userProjectsView,
             ProjectActionsView projectActionsView,
             ProjectRolesView projectUsersView,

@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Repository
 public interface RolesRepository extends JpaRepository<Role, Long>, BaseRepo {
-    Role findOneByTitle(String title);
+    Role findOneByCode(String code);
 
     @Query("SELECT r FROM Role r LEFT JOIN FETCH r.permissions")
     Set<Role> findAllWithPermissions();

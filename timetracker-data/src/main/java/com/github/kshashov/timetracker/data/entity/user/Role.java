@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "roles", schema = "public", uniqueConstraints = {
-        @UniqueConstraint(name = "roles_unique_title", columnNames = "title")
+        @UniqueConstraint(name = "roles_unique_code", columnNames = "code")
 })
 public class Role implements BaseEntity {
     @Id
@@ -20,8 +20,13 @@ public class Role implements BaseEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "title")
-    private String title;
+    @NotNull
+    @Column(name = "code")
+    private String code;
+
+    @NotNull
+    @Column(name = "description")
+    private String description;
 
     @NotNull
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

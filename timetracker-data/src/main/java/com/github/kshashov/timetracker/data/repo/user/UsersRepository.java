@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 public interface UsersRepository extends JpaRepository<User, Long>, BaseRepo {
     User findOneByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.name LIKE %:name%")
-        // WHERE u.name LIKE %:name%
-    Page<User> findAll(@Param("name") String name, Pageable offsetLimitRequest);
+    @Query("SELECT DISTINCT u FROM User u " +
+            "LEFT JOIN ProjectRole pr ON (u.id = pr.user.id) AND (pr.project.id = :projectId)" +
+            "WHERE (pr = null) AND (u.name LIKE %:name%)")
+    Page<User> findMissingProjectUsers(@Param("projectId") Long projectId, @Param("name") String name, Pageable offsetLimitRequest);
 }

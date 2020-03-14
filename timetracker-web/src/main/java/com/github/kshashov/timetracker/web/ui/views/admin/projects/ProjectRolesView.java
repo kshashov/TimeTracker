@@ -5,6 +5,7 @@ import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
+import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleCreatorDialog;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleEditorDialog;
@@ -49,7 +50,7 @@ public class ProjectRolesView extends VerticalLayout {
 
     private Button initNewUserRoleButton() {
         var button = UIUtils.createButton("Add User", VaadinIcon.FILE_ADD);
-        button.addClickListener(event -> viewModel.createRoleDialogs());
+        button.addClickListener(event -> viewModel.createProjectRole());
         return button;
     }
 
@@ -60,8 +61,7 @@ public class ProjectRolesView extends VerticalLayout {
             return span;
         })).setHeader("User").setSortable(true).setComparator(Comparator.comparing(o -> o.getUser().getName())).setResizable(true);
         usersGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var span = new Span(pr.getRole().getTitle());
-            return span;
+            return new RoleBadge(pr.getRole());
         })).setHeader("Role").setSortable(false).setAutoWidth(true);
         usersGrid.addColumn(new ComponentRenderer<>(a -> {
             var layout = new HorizontalLayout();

@@ -25,7 +25,7 @@ public class ProjectRoleCreatorDialog extends AbstractEditorDialog<ProjectRole> 
 
     protected Select<Role> createRoleField(List<Role> roles) {
         role.setLabel("Role");
-        role.setItemLabelGenerator(r -> r == null ? "" : r.getTitle());
+        role.setItemLabelGenerator(r -> r == null ? "" : r.getCode());
         role.setEmptySelectionAllowed(true);
         role.setRequiredIndicatorVisible(true);
         role.setItems(roles);
