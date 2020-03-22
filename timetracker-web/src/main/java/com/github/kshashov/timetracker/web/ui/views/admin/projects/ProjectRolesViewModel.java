@@ -17,17 +17,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
 import java.util.List;
 import java.util.function.Function;
 
-@UIScope
+@Scope("prototype")
 @SpringComponent
 public class ProjectRolesViewModel extends VerticalLayout implements DataHandler {
     private final ProjectUsersServiceImpl projectsAdminService;

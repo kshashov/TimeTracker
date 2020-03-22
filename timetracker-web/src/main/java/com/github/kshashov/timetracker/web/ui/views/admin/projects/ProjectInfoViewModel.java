@@ -11,16 +11,16 @@ import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
 import java.util.function.Function;
 
-@UIScope
+@Scope("prototype")
 @SpringComponent
 public class ProjectInfoViewModel implements HasUser, DataHandler {
     private final RolePermissionsHelper rolePermissionsHelper;

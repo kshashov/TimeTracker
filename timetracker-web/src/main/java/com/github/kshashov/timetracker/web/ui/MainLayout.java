@@ -7,7 +7,6 @@ import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviDrawer;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviItem;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviMenu;
-import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
 import com.github.kshashov.timetracker.web.ui.views.*;
@@ -32,7 +31,6 @@ import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.theme.lumo.Lumo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,7 +161,6 @@ public class MainLayout extends FlexBoxLayout
         if (user != null) {
             appBar.addRightCorner(createUserInfo());
         }
-        UIUtils.setTheme(Lumo.DARK, appBar);
         setAppHeaderInner(appBar);
     }
 

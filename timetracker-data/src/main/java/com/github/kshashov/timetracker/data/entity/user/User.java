@@ -27,4 +27,8 @@ public class User implements BaseEntity {
     @NotNull
     @Column(name = "name")
     private String name;
+
+    @NotNull
+    @Column(name = "validated")
+    private Boolean isValidated;
 }

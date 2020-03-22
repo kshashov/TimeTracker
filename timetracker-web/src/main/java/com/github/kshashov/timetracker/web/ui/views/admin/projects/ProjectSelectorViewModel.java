@@ -7,13 +7,13 @@ import com.github.kshashov.timetracker.web.security.HasUser;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
+import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
 import java.util.List;
 
-@UIScope
+@Scope("prototype")
 @SpringComponent
 public class ProjectSelectorViewModel implements HasUser {
     private final ProjectRolesRepository projectRolesRepository;

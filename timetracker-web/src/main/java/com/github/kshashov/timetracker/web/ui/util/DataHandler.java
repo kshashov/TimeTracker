@@ -15,12 +15,12 @@ public interface DataHandler {
         });
     }
 
-    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess) {
+    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<? super T> onSuccess) {
         return handleDataManipulation(dataManipulation, onSuccess, () -> {
         });
     }
 
-    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<T> onSuccess, Callback onFail) {
+    default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<? super T> onSuccess, Callback onFail) {
         boolean isSuccess = false;
         T result = null;
         try {

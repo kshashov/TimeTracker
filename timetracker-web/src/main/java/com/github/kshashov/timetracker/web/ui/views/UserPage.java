@@ -3,7 +3,7 @@ package com.github.kshashov.timetracker.web.ui.views;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
-import com.github.kshashov.timetracker.web.security.UserPrinciple;
+import com.github.kshashov.timetracker.web.security.UserPrincipal;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
 import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @PageTitle("User")
 public class UserPage extends ViewFrame implements HasUrlParameter<Long> {
     private final UsersRepository usersRepository;
-    private final UserPrinciple currentUser;
+    private final UserPrincipal currentUser;
     private User user;
     private Binder<User> binder = new Binder<>();
 

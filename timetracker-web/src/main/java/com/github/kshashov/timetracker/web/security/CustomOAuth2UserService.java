@@ -1,7 +1,8 @@
 package com.github.kshashov.timetracker.web.security;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
+import com.github.kshashov.timetracker.data.service.user.UsersService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -17,34 +18,32 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Autowired
-    private UsersRepository usersRepository;
+    private final UsersService usersService;
+
+    @Autowired
+    public CustomOAuth2UserService(UsersService usersService) {
+        this.usersService = usersService;
+    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User auth2User = super.loadUser(userRequest);
-        // TODO check client
-        // TODO populate authorities
+        // TODO populate authorities?
         User user = updateFacebookUser(auth2User.getAttributes());
         return new CustomUser(auth2User, user);
     }
 
     private User updateFacebookUser(Map attributes) {
         var email = (String) attributes.get("email");
-        var name = (String) attributes.get("name");
-        var picture = (String) attributes.get("picture");
-        var id = (String) attributes.get("sub");
+        var name = StringUtils.defaultString((String) attributes.get("name"));
+//        var picture = (String) attributes.get("picture");
+//        var id = (String) attributes.get("sub");
 
-        User user = usersRepository.findOneByEmail(email);
-        if (user == null) {
-            user = new User();
-            user.setName(name);
-            user.setEmail(email);
-            usersRepository.save(user);
-        }
+        User user = usersService.getOrCreateUser(email, name);
         return user;
     }
 
-    private class CustomUser implements OAuth2User, UserPrinciple {
+    private class CustomUser implements OAuth2User, UserPrincipal {
 
         private final OAuth2User auth2User;
         private final User user;

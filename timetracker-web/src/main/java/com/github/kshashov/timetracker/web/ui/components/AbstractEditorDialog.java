@@ -5,7 +5,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -15,7 +14,7 @@ import java.util.function.Function;
 
 public abstract class AbstractEditorDialog<T> extends ButtonsDialog {
 
-    private final H3 titleField = new H3();
+    private final Label titleField = UIUtils.createH3Label("");
     private final FormLayout formLayout = new FormLayout();
     private final Button save = UIUtils.createPrimaryButton("Save");
     private final Button cancel = UIUtils.createTertiaryButton("Cancel");

@@ -1,7 +1,8 @@
 package com.github.kshashov.timetracker.web.security;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
+import com.github.kshashov.timetracker.data.service.user.UsersService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -18,8 +19,12 @@ import java.util.Map;
 @Service
 public class CustomOidcUserService extends OidcUserService {
 
+    private final UsersService usersService;
+
     @Autowired
-    private UsersRepository usersRepository;
+    public CustomOidcUserService(UsersService usersService) {
+        this.usersService = usersService;
+    }
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
@@ -32,21 +37,15 @@ public class CustomOidcUserService extends OidcUserService {
 
     private User updateGoogleUser(Map attributes) {
         var email = (String) attributes.get("email");
-        var name = (String) attributes.get("name");
-        var picture = (String) attributes.get("picture");
-        var id = (String) attributes.get("sub");
+        var name = StringUtils.defaultString((String) attributes.get("name"));
+//        var picture = (String) attributes.get("picture");
+//        var id = (String) attributes.get("sub");
 
-        User user = usersRepository.findOneByEmail(email);
-        if (user == null) {
-            user = new User();
-            user.setName(name);
-            user.setEmail(email);
-            usersRepository.save(user);
-        }
+        User user = usersService.getOrCreateUser(email, name);
         return user;
     }
 
-    private class CustomUser implements OidcUser, UserPrinciple {
+    private class CustomUser implements OidcUser, UserPrincipal {
 
         private final OidcUser oidcUser;
         private final User user;

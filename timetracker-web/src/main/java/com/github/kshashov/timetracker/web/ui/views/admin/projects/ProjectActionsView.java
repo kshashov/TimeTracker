@@ -16,14 +16,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@UIScope
+@Scope("prototype")
 @SpringComponent
 public class ProjectActionsView extends VerticalLayout {
     private final ProjectActionsViewModel viewModel;
