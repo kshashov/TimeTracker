@@ -6,16 +6,11 @@ import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.security.ProjectPermission;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
-import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
-
-import java.util.function.Function;
 
 @UIScope
 @SpringComponent
@@ -35,24 +30,17 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
         projectObservable.onNext(project);
     }
 
-    public Observable<Boolean> hasAccess() {
-        return hasAccessObservable;
-    }
-
     public Observable<Project> project() {
         return projectObservable;
     }
 
-    private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_INFO);
-        hasAccessObservable.onNext(hasAccess);
-        return hasAccess;
+    public Observable<Boolean> hasAccess() {
+        return hasAccessObservable;
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class ProjectDialog {
-        private final Project project;
-        private final Function<Project, ValidationResult> validator;
+    private boolean checkAccess(Role role) {
+        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_MY_LOGS);
+        hasAccessObservable.onNext(hasAccess);
+        return hasAccess;
     }
 }

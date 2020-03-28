@@ -8,12 +8,14 @@ import com.github.kshashov.timetracker.web.ui.components.detail.Detail;
 import com.github.kshashov.timetracker.web.ui.components.detail.DetailHeader;
 import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
+import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.views.MasterDetail;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ import java.util.List;
 public class ProjectsView extends MasterDetail {
     private final ProjectsViewModel projectsViewModel;
     private final List<Subscription> subscriptions = new ArrayList<>();
+
+    private Project selectedProject;
 
     private final ProjectsWidget userProjectsView;
     private final ProjectActionsWidget projectActionsView;
@@ -65,6 +69,7 @@ public class ProjectsView extends MasterDetail {
 
     private void resetDetails() {
         detailsDrawerHeader.setTitle("Empty");
+        detailsDrawerHeader.getActions().setVisible(false);
         detailsDrawer.collapse();
 
         projectInfoView.setVisible(false);
@@ -74,16 +79,23 @@ public class ProjectsView extends MasterDetail {
 
     private void showProjectDetails(Project project, Role role) {
         detailsDrawerHeader.setTitle(project.getTitle());
-        detailsDrawer.expand();
 
         projectInfoView.setProject(project, role);
         projectActionsView.setProject(project, role);
         projectUsersView.setProject(project, role);
+
+        detailsDrawer.expand();
     }
 
     private void initDetailsDrawer() {
         // Header
+        var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
+        edit.addClickListener(e -> projectsViewModel.updateProject(selectedProject));
+        var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+        delete.addClickListener(e -> projectsViewModel.updateProject(selectedProject));
+
         detailsDrawerHeader.setCanReset(false);
+        detailsDrawerHeader.addActions(edit, delete);
         detailsDrawerHeader.addCloseListener(buttonClickEvent -> {
             userProjectsView.deselectAll();
             detailsDrawer.collapse();
@@ -107,11 +119,16 @@ public class ProjectsView extends MasterDetail {
 
         MainLayout.get().getAppBar().setTitle("My Projects");
 
+        subscriptions.add(projectsViewModel.hasProjectAccess()
+                .subscribe(b -> detailsDrawerHeader.getActions().setVisible(b)));
+
         subscriptions.add(projectsViewModel.project()
                 .subscribe(projectRole -> {
                     if (projectRole == null) {
+                        selectedProject = null;
                         resetDetails();
                     } else {
+                        selectedProject = projectRole.getProject();
                         showProjectDetails(projectRole.getProject(), projectRole.getRole());
                     }
                 }));

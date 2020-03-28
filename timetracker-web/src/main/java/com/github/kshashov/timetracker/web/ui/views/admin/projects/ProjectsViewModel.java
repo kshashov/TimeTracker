@@ -2,12 +2,14 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
+import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
+import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
+import com.github.kshashov.timetracker.web.security.ProjectPermission;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
-import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -26,19 +28,25 @@ import java.util.function.Function;
 public class ProjectsViewModel implements HasUser, DataHandler {
     private final ProjectsService projectsService;
     private final ProjectRolesRepository projectRolesRepository;
+    private final RolePermissionsHelper rolePermissionsHelper;
 
     private final PublishSubject<ProjectDialog> createProjectDialogObservable = PublishSubject.create();
     private final PublishSubject<ProjectDialog> updateProjectDialogObservable = PublishSubject.create();
     private final BehaviorSubject<ProjectRole> selectedProjectObservable = BehaviorSubject.create();
     private final BehaviorSubject<List<ProjectRole>> projectsObservable = BehaviorSubject.create();
+    private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
 
     private final User user;
     private ProjectRole selectedProject;
 
     @Autowired
-    public ProjectsViewModel(ProjectsService projectsService, ProjectRolesRepository projectRolesRepository, EventBus eventBus, EventBus eventBus1) {
+    public ProjectsViewModel(
+            ProjectsService projectsService,
+            ProjectRolesRepository projectRolesRepository,
+            RolePermissionsHelper rolePermissionsHelper) {
         this.projectsService = projectsService;
         this.projectRolesRepository = projectRolesRepository;
+        this.rolePermissionsHelper = rolePermissionsHelper;
         this.user = getUser();
 
         select(null);
@@ -46,6 +54,8 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     }
 
     public void select(ProjectRole projectRole) {
+        if (projectRole != null) checkAccess(projectRole.getRole());
+
         selectedProject = projectRole;
         selectedProjectObservable.onNext(projectRole);
     }
@@ -103,6 +113,16 @@ public class ProjectsViewModel implements HasUser, DataHandler {
 
     public Observable<ProjectsViewModel.ProjectDialog> updateProjectDialogs() {
         return updateProjectDialogObservable;
+    }
+
+    public Observable<Boolean> hasProjectAccess() {
+        return hasAccessObservable;
+    }
+
+    private boolean checkAccess(Role role) {
+        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_INFO);
+        hasAccessObservable.onNext(hasAccess);
+        return hasAccess;
     }
 
     @Getter

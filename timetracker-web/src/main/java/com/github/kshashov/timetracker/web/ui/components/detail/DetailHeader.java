@@ -8,6 +8,7 @@ import com.github.kshashov.timetracker.web.ui.util.BoxShadowBorders;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
@@ -20,6 +21,7 @@ public class DetailHeader extends FlexBoxLayout {
 
     private Button close;
     private Label title;
+    private final FlexBoxLayout actions = new FlexBoxLayout();
 
     public DetailHeader(String title) {
         setClassName(CLASS_NAME);
@@ -38,7 +40,11 @@ public class DetailHeader extends FlexBoxLayout {
         wrapper.setAlignItems(Alignment.CENTER);
         wrapper.setPadding(Horizontal.RESPONSIVE_L, Vertical.M);
         wrapper.setSpacing(Right.L);
-        add(wrapper);
+
+        FlexBoxLayout wrapper2 = new FlexBoxLayout(wrapper, actions);
+        wrapper2.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        wrapper2.setAlignItems(Alignment.CENTER);
+        add(wrapper2);
     }
 
     public DetailHeader(String title, Tabs tabs) {
@@ -48,6 +54,15 @@ public class DetailHeader extends FlexBoxLayout {
 
     public void setTitle(String title) {
         this.title.setText(title);
+    }
+
+    public void addActions(Component... components) {
+        actions.add(components);
+        actions.setVisible(true);
+    }
+
+    public FlexBoxLayout getActions() {
+        return actions;
     }
 
     public void setCanReset(boolean isClosable) {

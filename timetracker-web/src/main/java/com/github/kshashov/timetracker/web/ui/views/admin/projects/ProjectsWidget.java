@@ -14,7 +14,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,18 +66,6 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
             return new RoleBadge(pr.getRole());
         })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getCode())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
-        projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var layout = new HorizontalLayout();
-
-            var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
-            edit.addClickListener(e -> viewModel.updateProject(pr.getProject()));
-            var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
-            delete.addClickListener(e -> viewModel.updateProject(pr.getProject()));
-
-            layout.add(edit);
-            layout.add(delete);
-            return layout;
-        })).setHeader("");
         projectsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        ((GridSingleSelectionModel<ProjectRoles>) projectsGrid.getSelectionModel()).setDeselectAllowed(false);
         projectsGrid.addSelectionListener(selectionEvent -> {

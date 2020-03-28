@@ -6,7 +6,6 @@ import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.ListItem;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
-import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -23,10 +22,7 @@ public class ProjectInfoView extends FlexBoxLayout {
     private final ProjectInfoViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    private final ProjectEditorDialog updateProjectDialog = new ProjectEditorDialog("Edit Project");
     private final ListItem projectListItem = new ListItem("");
-
-    private Project project;
 
     @Autowired
     public ProjectInfoView(ProjectInfoViewModel viewModel) {
@@ -61,7 +57,6 @@ public class ProjectInfoView extends FlexBoxLayout {
 
         subscriptions.add(viewModel.project()
                 .subscribe(project -> {
-                    this.project = project;
                     showProject(project);
                 }));
     }
