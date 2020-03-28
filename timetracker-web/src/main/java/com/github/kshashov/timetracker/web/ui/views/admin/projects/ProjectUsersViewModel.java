@@ -17,22 +17,22 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 import java.util.List;
 import java.util.function.Function;
 
-@Scope("prototype")
+@UIScope
 @SpringComponent
-public class ProjectRolesViewModel extends VerticalLayout implements DataHandler {
+public class ProjectUsersViewModel extends VerticalLayout implements DataHandler {
     private final ProjectUsersServiceImpl projectsAdminService;
     private final ProjectRolesRepository projectRolesRepository;
-    private final UsersRepository usersRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
     private final List<Role> roles;
 
@@ -40,13 +40,14 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
     private Project project;
 
     private final CallbackDataProvider<User, String> usersDataProvider;
+
+    private final PublishSubject<ProjectRoleDialog> createProjectRoleObservable = PublishSubject.create();
+    private final PublishSubject<ProjectRoleDialog> updateProjectRoleObservable = PublishSubject.create();
     private final BehaviorSubject<List<ProjectRole>> projectRolesObservable = BehaviorSubject.create();
-    private final BehaviorSubject<ProjectRoleDialog> createProjectRoleObservable = BehaviorSubject.create();
-    private final BehaviorSubject<ProjectRoleDialog> updateProjectRoleObservable = BehaviorSubject.create();
     private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
 
     @Autowired
-    public ProjectRolesViewModel(
+    public ProjectUsersViewModel(
             ProjectUsersServiceImpl projectsAdminService,
             ProjectRolesRepository projectRolesRepository,
             RolesRepository rolesRepository,
@@ -56,7 +57,7 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
         this.user = SecurityUtils.getCurrentUser().getUser();
         this.projectsAdminService = projectsAdminService;
         this.projectRolesRepository = projectRolesRepository;
-        this.usersRepository = usersRepository;
+
         // TODO except inactive?
         this.roles = rolesRepository.findAll();
         this.usersDataProvider = new CallbackDataProvider<>(
@@ -85,7 +86,7 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
         var projectRole = new ProjectRole();
         projectRole.setProject(project);
 
-        createProjectRoleObservable.onNext(new ProjectRolesViewModel.ProjectRoleDialog(
+        createProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
                         () -> projectsAdminService.createProjectRole(user, bean),
@@ -96,7 +97,7 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
     }
 
     public void updateProjectRole(ProjectRole projectRole) {
-        updateProjectRoleObservable.onNext(new ProjectRolesViewModel.ProjectRoleDialog(
+        updateProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
                         () -> projectsAdminService.updateProjectRole(user, bean),
@@ -104,6 +105,11 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
                 roles,
                 usersDataProvider
         ));
+    }
+
+    public void reloadUsers() {
+        List<ProjectRole> users = projectRolesRepository.findProjectUsersWithRoles(project.getId());
+        projectRolesObservable.onNext(users);
     }
 
     public Observable<List<ProjectRole>> projectRoles() {
@@ -122,10 +128,6 @@ public class ProjectRolesViewModel extends VerticalLayout implements DataHandler
         hasAccessObservable.onNext(rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_USERS));
     }
 
-    private void reloadUsers() {
-        List<ProjectRole> users = projectRolesRepository.findProjectUsersWithRoles(project.getId());
-        projectRolesObservable.onNext(users);
-    }
 
     @Getter
     @AllArgsConstructor

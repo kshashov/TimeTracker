@@ -8,9 +8,9 @@ import javax.validation.constraints.NotNull;
 public interface ProjectActionsService {
     Action createAction(@NotNull Action action);
 
-    Action updateAction(@NotNull Action action);
-
     Action createAction(@NotNull User user, @NotNull Action action);
+
+    Action updateAction(@NotNull Action action);
 
     Action updateAction(@NotNull User user, @NotNull Action action);
 }

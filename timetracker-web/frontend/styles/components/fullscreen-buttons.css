@@ -1,0 +1,13 @@
+.fullscreen-widget__footer {
+    flex-direction: column;
+    box-sizing: border-box;
+    align-items: start;
+    border-bottom-left-radius: var(--lumo-border-radius-l);
+    border-bottom-right-radius: var(--lumo-border-radius-l);
+    padding: var(--lumo-space-l);
+    background-color: var(--lumo-contrast-5pct);
+    padding-left: var(--lumo-space-r-l);
+    padding-right: var(--lumo-space-r-l);
+    padding-top: var(--lumo-space-s);
+    padding-bottom: var(--lumo-space-s);
+}

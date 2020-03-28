@@ -1,0 +1,25 @@
+.widget {
+    height: 100%;
+    flex-direction: column;
+    background-color: var(--lumo-base-color);
+}
+
+.widget__header {
+    padding-top: var(--lumo-space-xs);
+    padding-bottom: var(--lumo-space-xs);
+    padding-right: var(--lumo-space-r-m);
+    padding-left: var(--lumo-space-r-m);
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.widget__content {
+    height: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.widget__footer {
+}

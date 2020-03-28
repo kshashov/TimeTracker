@@ -1,15 +1,14 @@
 package com.github.kshashov.timetracker.web.ui.components;
 
-import com.github.kshashov.timetracker.web.ui.util.LumoStyles;
+import com.vaadin.flow.component.dependency.CssImport;
 
+@CssImport("./styles/components/fullscreen.css")
 public class FullScreenLayout extends FlexBoxLayout {
+    private final static String CLASS_NAME = "fullscreen-layout";
 
     public FullScreenLayout() {
         super();
 
-        setSizeFull();
-        setClassName(LumoStyles.Color.Contrast._5);
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        setClassName(CLASS_NAME);
     }
 }

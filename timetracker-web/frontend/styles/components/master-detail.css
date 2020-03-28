@@ -33,6 +33,15 @@
 }
 
 @media(min-width: 720px) {
+
+    .master-detail__content {
+      margin: var(--lumo-space-l)
+    }
+
+    .master-detail__details {
+      margin: var(--lumo-space-l) var(--lumo-space-l) var(--lumo-space-l) 0
+    }
+
     .master-detail__details[size="small"] {
       flex: 1;
     }

@@ -6,45 +6,44 @@ import com.github.kshashov.timetracker.web.ui.MainLayout;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.detail.Detail;
 import com.github.kshashov.timetracker.web.ui.components.detail.DetailHeader;
-import com.github.kshashov.timetracker.web.ui.layout.size.Horizontal;
-import com.github.kshashov.timetracker.web.ui.layout.size.Top;
+import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
+import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.views.MasterDetail;
-import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
+import rx.Subscription;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "projects", layout = MainLayout.class)
 @PageTitle("Projects")
 public class ProjectsView extends MasterDetail {
-    private final ProjectSelectorViewModel projectSelectorViewModel;
-    private final ProjectsViewModel projectsAdminViewModel;
+    private final ProjectsViewModel projectsViewModel;
+    private final List<Subscription> subscriptions = new ArrayList<>();
 
-    private final UserProjectsView userProjectsView;
-    private final ProjectActionsView projectActionsView;
+    private final ProjectsWidget userProjectsView;
+    private final ProjectActionsWidget projectActionsView;
     private final ProjectInfoView projectInfoView;
-    private final ProjectRolesView projectUsersView;
-    private final ProjectEditorDialog createProjectDialog = new ProjectEditorDialog("Create Project");
+    private final ProjectUsersWidget projectUsersView;
     private final Detail detailsDrawer = getDetailsDrawer();
     private final DetailHeader detailsDrawerHeader = new DetailHeader("");
 
     @Autowired
     public ProjectsView(
-            ProjectSelectorViewModel projectSelectorViewModel,
-            ProjectsViewModel projectsAdminViewModel,
-            UserProjectsView userProjectsView,
-            ProjectActionsView projectActionsView,
-            ProjectRolesView projectUsersView,
+            ProjectsViewModel projectsViewModel,
+            ProjectsWidget userProjectsView,
+            ProjectActionsWidget projectActionsView,
+            ProjectUsersWidget projectUsersView,
             ProjectInfoView projectInfoView) {
         super(Position.RIGHT);
-        this.projectSelectorViewModel = projectSelectorViewModel;
-        this.projectsAdminViewModel = projectsAdminViewModel;
+        this.projectsViewModel = projectsViewModel;
 
         this.userProjectsView = userProjectsView;
         this.projectInfoView = projectInfoView;
@@ -61,7 +60,6 @@ public class ProjectsView extends MasterDetail {
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setHeightFull();
-        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         return content;
     }
 
@@ -98,6 +96,8 @@ public class ProjectsView extends MasterDetail {
     private Component createDetailsContent() {
         FlexBoxLayout layout = new FlexBoxLayout(projectInfoView, projectActionsView, projectUsersView);
         layout.setFlexDirection(FlexDirection.COLUMN);
+        layout.setPadding(Uniform.M);
+        layout.setSpacing(Vertical.S);
         return layout;
     }
 
@@ -107,24 +107,21 @@ public class ProjectsView extends MasterDetail {
 
         MainLayout.get().getAppBar().setTitle("My Projects");
 
-        var button = MainLayout.get().getAppBar().addActionItem(VaadinIcon.FILE_ADD, "New Project");
-        button.addClickListener(event -> projectsAdminViewModel.createProject());
-
-        projectsAdminViewModel.createProjectDialogs().subscribe(projectDialog -> {
-            createProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
-        });
-
-        projectSelectorViewModel.project().subscribe(projectRole -> {
-            if (projectRole == null) {
-                resetDetails();
-            } else showProjectDetails(projectRole.getProject(), projectRole.getRole());
-        });
+        subscriptions.add(projectsViewModel.project()
+                .subscribe(projectRole -> {
+                    if (projectRole == null) {
+                        resetDetails();
+                    } else {
+                        showProjectDetails(projectRole.getProject(), projectRole.getRole());
+                    }
+                }));
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        // TODO cancel subscriptions
+        subscriptions.forEach(Subscription::unsubscribe);
+        subscriptions.clear();
     }
 }

@@ -3,17 +3,15 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
+import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectActionEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,31 +23,36 @@ import java.util.List;
 
 @Scope("prototype")
 @SpringComponent
-public class ProjectActionsView extends VerticalLayout {
+public class ProjectActionsWidget extends Widget {
     private final ProjectActionsViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
 
     private ProjectActionEditorDialog createActionDialog = new ProjectActionEditorDialog("Create Action");
     private ProjectActionEditorDialog editActionDialog = new ProjectActionEditorDialog("Edit Action");
-    private final Grid<Action> actionGrid = new Grid<>();
+    private final Grid<Action> actionsGrid = new Grid<>();
 
     @Autowired
-    public ProjectActionsView(ProjectActionsViewModel viewModel) {
+    public ProjectActionsWidget(ProjectActionsViewModel viewModel) {
         this.viewModel = viewModel;
-        add(new H4("Actions"));
-        add(initNewActionButton());
-        add(initGrid());
+
+        initActions();
+        initActionsGrid();
+        setTitle("Actions");
     }
 
-    private Button initNewActionButton() {
-        var button = UIUtils.createButton("New Action", VaadinIcon.FILE_ADD);
-        button.addClickListener(event -> viewModel.createAction());
-        return button;
+    private void initActions() {
+        var plus = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
+        plus.addClickListener(event -> viewModel.createAction());
+
+        var refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
+        refresh.addClickListener(event -> viewModel.reloadActions());
+
+        addActions(plus, refresh);
     }
 
-    private Grid<Action> initGrid() {
-        actionGrid.addColumn(Action::getTitle).setHeader("Action");
-        actionGrid.addColumn(new ComponentRenderer<>(action -> {
+    private void initActionsGrid() {
+        actionsGrid.addColumn(Action::getTitle).setHeader("Action");
+        actionsGrid.addColumn(new ComponentRenderer<>(action -> {
             var layout = new HorizontalLayout();
 
             var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
@@ -61,8 +64,9 @@ public class ProjectActionsView extends VerticalLayout {
             layout.add(delete);
             return layout;
         })).setHeader("");
-        actionGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        return actionGrid;
+        actionsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+        addContentItems(actionsGrid);
     }
 
     public void setProject(Project project, Role role) {
@@ -70,7 +74,7 @@ public class ProjectActionsView extends VerticalLayout {
     }
 
     private void reloadActions(List<Action> actions) {
-        actionGrid.setItems(actions);
+        actionsGrid.setItems(actions);
     }
 
     @Override

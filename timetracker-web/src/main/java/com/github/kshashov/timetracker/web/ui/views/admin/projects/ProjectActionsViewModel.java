@@ -12,17 +12,18 @@ import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 import java.util.List;
 import java.util.function.Function;
 
-@Scope("prototype")
+@UIScope
 @SpringComponent
 public class ProjectActionsViewModel implements DataHandler {
     private final ActionsRepository actionsRepository;
@@ -32,8 +33,8 @@ public class ProjectActionsViewModel implements DataHandler {
     private Project project;
     private final User user;
 
-    private final BehaviorSubject<ActionDialog> createActionDialogObservable = BehaviorSubject.create();
-    private final BehaviorSubject<ActionDialog> updateActionDialogObservable = BehaviorSubject.create();
+    private final PublishSubject<ActionDialog> createActionDialogObservable = PublishSubject.create();
+    private final PublishSubject<ActionDialog> updateActionDialogObservable = PublishSubject.create();
     private final BehaviorSubject<List<Action>> actionsObservable = BehaviorSubject.create();
     private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
 
@@ -97,7 +98,7 @@ public class ProjectActionsViewModel implements DataHandler {
         return hasAccess;
     }
 
-    private void reloadActions() {
+    public void reloadActions() {
         List<Action> actions = actionsRepository.findAllByProject(project.getId());
         actionsObservable.onNext(actions);
     }

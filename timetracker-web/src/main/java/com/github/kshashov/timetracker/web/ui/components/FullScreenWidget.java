@@ -1,20 +1,19 @@
 package com.github.kshashov.timetracker.web.ui.components;
 
-import com.github.kshashov.timetracker.web.ui.layout.size.Bottom;
-import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
-import com.github.kshashov.timetracker.web.ui.util.css.BorderRadius;
-import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
-import com.github.kshashov.timetracker.web.ui.util.css.Shadow;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Label;
 
 public class FullScreenWidget extends FullScreenLayout {
-    private FlexBoxLayout layout = new FlexBoxLayout();
-    private FlexBoxLayout header = new FlexBoxLayout();
-    private FlexBoxLayout content = new FlexBoxLayout();
-    private FlexBoxLayout footer = new FlexBoxLayout();
+    private final static String CLASS_NAME = "fullscreen-widget";
+
+    private final FlexBoxLayout layout = new FlexBoxLayout();
+    private final FlexBoxLayout header = new FlexBoxLayout();
+    private final Label title = UIUtils.createH3Label("");
+    private final FlexBoxLayout actions = new FlexBoxLayout();
+    private final FlexBoxLayout content = new FlexBoxLayout();
+    private final FlexBoxLayout footer = new FlexBoxLayout();
 
     public FullScreenWidget() {
         super();
@@ -25,18 +24,15 @@ public class FullScreenWidget extends FullScreenLayout {
     }
 
     private void initLayout() {
-        layout.setShadow(Shadow.XL);
+        layout.addClassName(CLASS_NAME);
         layout.setSpacing(Vertical.XS);
-        layout.setFlexDirection(FlexDirection.COLUMN);
-        layout.setBorderRadius(BorderRadius.L);
 
         initHeader(header);
         initContent(content);
         initFooter(footer);
 
         FlexBoxLayout internal = new FlexBoxLayout();
-        internal.setFlexDirection(FlexDirection.COLUMN);
-        internal.setPadding(Uniform.L);
+        internal.addClassName(CLASS_NAME + "__content-footer");
         internal.setSpacing(Vertical.XS);
         internal.add(header, content);
 
@@ -45,16 +41,22 @@ public class FullScreenWidget extends FullScreenLayout {
     }
 
     protected void initContent(FlexBoxLayout content) {
-        content.setAlignItems(Alignment.CENTER);
-        content.setJustifyContentMode(JustifyContentMode.CENTER);
+        content.addClassName(CLASS_NAME + "__content");
+
         content.setVisible(false);
     }
 
     protected void initHeader(FlexBoxLayout header) {
+        header.addClassName(CLASS_NAME + "__header");
+        header.add(title);
+        header.add(actions);
+
         header.setVisible(false);
     }
 
     protected void initFooter(FlexBoxLayout footer) {
+        footer.addClassName(CLASS_NAME + "__footer");
+
         footer.setVisible(false);
     }
 
@@ -71,10 +73,8 @@ public class FullScreenWidget extends FullScreenLayout {
     }
 
     protected void addHeaderItems(Component... components) {
-        header.setMargin(Bottom.M);
         header.add(components);
         header.setVisible(true);
-
     }
 
     protected void addContentItems(Component... components) {
@@ -88,7 +88,7 @@ public class FullScreenWidget extends FullScreenLayout {
     }
 
     protected void setTitle(String title) {
-        Label label = UIUtils.createH3Label(title);
-        addHeaderItems(label);
+        this.title.setText(title);
+        header.setVisible(true);
     }
 }

@@ -6,19 +6,17 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
+import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleCreatorDialog;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,30 +29,34 @@ import java.util.List;
 
 @Scope("prototype")
 @SpringComponent
-public class ProjectRolesView extends VerticalLayout {
-    private final ProjectRolesViewModel viewModel;
+public class ProjectUsersWidget extends Widget {
+    private final ProjectUsersViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
     private final User user;
 
     private final Grid<ProjectRole> usersGrid = new Grid<>();
 
-
     @Autowired
-    public ProjectRolesView(ProjectRolesViewModel viewModel) {
+    public ProjectUsersWidget(ProjectUsersViewModel viewModel) {
         this.user = SecurityUtils.getCurrentUser().getUser();
         this.viewModel = viewModel;
-        add(new H4("Users"));
-        add(initNewUserRoleButton());
-        add(initUsersGrid());
+
+        initAction();
+        initUsersGrid();
+        setTitle("Users");
     }
 
-    private Button initNewUserRoleButton() {
-        var button = UIUtils.createButton("Add User", VaadinIcon.FILE_ADD);
-        button.addClickListener(event -> viewModel.createProjectRole());
-        return button;
+    private void initAction() {
+        var plus = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
+        plus.addClickListener(event -> viewModel.createProjectRole());
+
+        var refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
+        refresh.addClickListener(event -> viewModel.reloadUsers());
+
+        addActions(plus, refresh);
     }
 
-    private Grid<ProjectRole> initUsersGrid() {
+    private void initUsersGrid() {
         usersGrid.setWidthFull();
         usersGrid.addColumn(new ComponentRenderer<>(pr -> {
             var span = new Span(pr.getUser().getName());
@@ -77,7 +79,8 @@ public class ProjectRolesView extends VerticalLayout {
 
         usersGrid.setSelectionMode(Grid.SelectionMode.NONE);
         usersGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        return usersGrid;
+
+        addContentItems(usersGrid);
     }
 
     public void setProject(Project project, Role role) {
