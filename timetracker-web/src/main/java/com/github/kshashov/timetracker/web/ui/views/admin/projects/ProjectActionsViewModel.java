@@ -7,8 +7,8 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectActionsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
+import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.security.ProjectPermission;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 @UIScope
 @SpringComponent
-public class ProjectActionsViewModel implements DataHandler {
+public class ProjectActionsViewModel implements HasUser, DataHandler {
     private final ActionsRepository actionsRepository;
     private final ProjectActionsService actionsService;
     private final RolePermissionsHelper rolePermissionsHelper;
@@ -41,7 +41,7 @@ public class ProjectActionsViewModel implements DataHandler {
     @Autowired
     public ProjectActionsViewModel(ActionsRepository actionsRepository, ProjectActionsService actionsService, RolePermissionsHelper rolePermissionsHelper) {
         this.rolePermissionsHelper = rolePermissionsHelper;
-        this.user = SecurityUtils.getCurrentUser().getUser();
+        this.user = getUser();
         this.actionsRepository = actionsRepository;
         this.actionsService = actionsService;
     }

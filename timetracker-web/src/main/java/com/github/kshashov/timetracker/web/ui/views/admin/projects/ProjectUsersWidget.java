@@ -4,7 +4,7 @@ import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
+import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
@@ -29,7 +29,7 @@ import java.util.List;
 
 @Scope("prototype")
 @SpringComponent
-public class ProjectUsersWidget extends Widget {
+public class ProjectUsersWidget extends Widget implements HasUser {
     private final ProjectUsersViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
     private final User user;
@@ -38,7 +38,7 @@ public class ProjectUsersWidget extends Widget {
 
     @Autowired
     public ProjectUsersWidget(ProjectUsersViewModel viewModel) {
-        this.user = SecurityUtils.getCurrentUser().getUser();
+        this.user = getUser();
         this.viewModel = viewModel;
 
         initAction();

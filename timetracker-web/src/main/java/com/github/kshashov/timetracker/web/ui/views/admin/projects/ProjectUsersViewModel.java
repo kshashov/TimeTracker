@@ -10,8 +10,8 @@ import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectUsersServiceImpl;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
+import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.security.ProjectPermission;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -30,7 +30,7 @@ import java.util.function.Function;
 
 @UIScope
 @SpringComponent
-public class ProjectUsersViewModel extends VerticalLayout implements DataHandler {
+public class ProjectUsersViewModel extends VerticalLayout implements HasUser, DataHandler {
     private final ProjectUsersServiceImpl projectsAdminService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
@@ -54,7 +54,7 @@ public class ProjectUsersViewModel extends VerticalLayout implements DataHandler
             UsersRepository usersRepository,
             RolePermissionsHelper rolePermissionsHelper) {
         this.rolePermissionsHelper = rolePermissionsHelper;
-        this.user = SecurityUtils.getCurrentUser().getUser();
+        this.user = getUser();
         this.projectsAdminService = projectsAdminService;
         this.projectRolesRepository = projectRolesRepository;
 

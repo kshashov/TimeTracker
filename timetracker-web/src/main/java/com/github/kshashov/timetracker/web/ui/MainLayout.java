@@ -1,7 +1,7 @@
 package com.github.kshashov.timetracker.web.ui;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
+import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviDrawer;
@@ -52,7 +52,7 @@ import static com.github.kshashov.timetracker.web.ui.util.UIUtils.IMG_PATH;
 //@PWA(name = "Time Tracker", shortName = "Time Tracker", iconPath = "images/logos/18.png", backgroundColor = "#233348", themeColor = "#233348")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 public class MainLayout extends FlexBoxLayout
-        implements RouterLayout, PageConfigurator, AfterNavigationObserver {
+        implements HasUser, RouterLayout, PageConfigurator, AfterNavigationObserver {
 
     private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
     private static final String CLASS_NAME = "root";
@@ -82,8 +82,7 @@ public class MainLayout extends FlexBoxLayout
                             "We are sorry, but an internal error occurred");
                 });
 
-        var user = SecurityUtils.getCurrentUser();
-        this.user = user.getUser();
+        this.user = getUser();
 
         addClassName(CLASS_NAME);
         setFlexDirection(FlexDirection.COLUMN);

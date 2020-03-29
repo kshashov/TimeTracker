@@ -4,12 +4,12 @@ import com.github.kshashov.timetracker.data.repo.TestsRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
 
-@SpringBootTest(classes = {TestApplication.class})
-public class TestJPA {
+@DataJpaTest
+public class TestJPA extends BaseTest {
     @Autowired
     TestsRepository testsRepository;
 

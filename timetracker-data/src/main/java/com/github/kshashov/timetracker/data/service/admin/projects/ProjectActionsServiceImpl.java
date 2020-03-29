@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
+import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.exception.ConstraintViolationException;
@@ -23,11 +24,13 @@ import java.util.Objects;
 public class ProjectActionsServiceImpl implements ProjectActionsService {
     private final RolePermissionsHelper rolePermissionsHelper;
     private final ActionsRepository actionsRepository;
+    private final EntriesRepository entiesRepository;
 
     @Autowired
-    public ProjectActionsServiceImpl(RolePermissionsHelper rolePermissionsHelper, ActionsRepository actionsRepository) {
+    public ProjectActionsServiceImpl(RolePermissionsHelper rolePermissionsHelper, ActionsRepository actionsRepository, EntriesRepository entiesRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.actionsRepository = actionsRepository;
+        this.entiesRepository = entiesRepository;
     }
 
     @Override
@@ -91,6 +94,20 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         }
     }
 
+    @Override
+    public void deleteOrDeactivateAction(@NotNull User user, @NotNull Action action) {
+        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        deleteOrDeactivateAction(action);
+    }
+
+    @Override
+    public void deleteOrDeactivateAction(@NotNull Action action) {
+        doDeleteOrDeactivateAction(action);
+    }
+
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Action doCreateAction(@NotNull Action action) {
         preValidate(action);
@@ -100,7 +117,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
             throw new IllegalArgumentException();
         }
 
-        if (actionsRepository.hasAction(action.getProject().getId(), action.getTitle())) {
+        if (actionsRepository.existsByProjectAndTitle(action.getProject(), action.getTitle())) {
             throw new IncorrectArgumentException("Project action already exists");
         }
 
@@ -117,7 +134,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         // Validate
         Objects.requireNonNull(action.getId());
 
-        if (actionsRepository.hasOtherAction(action.getProject().getId(), action.getTitle(), action.getId())) {
+        if (actionsRepository.existsOtherByProjectAndTitle(action.getProject().getId(), action.getTitle(), action.getId())) {
             throw new IncorrectArgumentException("Project action already exists");
         }
 
@@ -125,6 +142,32 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         action = actionsRepository.save(action);
 
         return action;
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    private boolean doDeleteOrDeactivateAction(@NotNull Action action) {
+
+        // ValidAte
+        Objects.requireNonNull(action.getId());
+
+        if (!action.getIsActive()) {
+            // Do nothing if actions is already inactive
+            return false;
+        }
+
+        // Delete uncommited entries with action
+        entiesRepository.deleteByActionAndIsClosed(action, false);
+
+        //  Check if has commited entries
+        if (!entiesRepository.existsByAction(action)) {
+            // Deactivate action
+            action.setIsActive(false);
+            actionsRepository.save(action);
+            return false;
+        }
+
+        actionsRepository.delete(action);
+        return true;
     }
 
     private void preValidate(@NotNull Action action) {

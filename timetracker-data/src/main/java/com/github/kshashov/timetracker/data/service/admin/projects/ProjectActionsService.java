@@ -13,4 +13,8 @@ public interface ProjectActionsService {
     Action updateAction(@NotNull Action action);
 
     Action updateAction(@NotNull User user, @NotNull Action action);
+
+    void deleteOrDeactivateAction(@NotNull Action action);
+
+    void deleteOrDeactivateAction(@NotNull User user, @NotNull Action action);
 }

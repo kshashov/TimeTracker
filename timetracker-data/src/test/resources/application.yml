@@ -23,12 +23,3 @@ spring:
       ddl-auto: create #none
       show-sql: true
       dialect: org.hibernate.dialect.H2Dialect
-
-#    properties:
-#      javax:
-#        persistence:
-#          schema-generation:
-#            create-source: metadata
-#            scripts:
-#              action: create
-#              create-target: create.sql

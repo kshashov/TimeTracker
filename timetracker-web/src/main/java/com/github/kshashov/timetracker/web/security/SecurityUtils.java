@@ -8,35 +8,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class SecurityUtils {
-
-    public static UserPrincipal getCurrentUser() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context != null) {
-            Authentication auth = context.getAuthentication();
-            if (auth != null) {
-                Object principal = auth.getPrincipal();
-                if (principal instanceof UserPrincipal) {
-                    return ((UserPrincipal) context.getAuthentication().getPrincipal());
-                }
-            }
-        }
-        // Anonymous or no authentication.
-        return null;
-    }
-
-    public static boolean hasValidatedUser() {
-        try {
-            UserPrincipal userPrinciple = getCurrentUser();
-            return userPrinciple != null
-                    && (userPrinciple.getUser() != null)
-                    && userPrinciple.getUser().getIsValidated();
-        } catch (Exception ex) {
-            return false;
-        }
-    }
 
     public static boolean isUserLoggedIn() {
         SecurityContext context = SecurityContextHolder.getContext();
@@ -44,6 +19,38 @@ public class SecurityUtils {
             return SecurityUtils.isUserLoggedIn(context.getAuthentication());
         }
         return false;
+    }
+
+    private static boolean isUserLoggedIn(Authentication authentication) {
+        return authentication != null
+                && !(authentication instanceof AnonymousAuthenticationToken)
+                && authentication.getPrincipal() != null
+                && authentication.getPrincipal() instanceof UserPrincipal;
+    }
+
+    public static Optional<UserPrincipal> getCurrentUser() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context != null) {
+            Authentication auth = context.getAuthentication();
+            if (auth != null) {
+                Object principal = auth.getPrincipal();
+                if (principal instanceof UserPrincipal) {
+                    return Optional.of((UserPrincipal) context.getAuthentication().getPrincipal());
+                }
+            }
+        }
+        // Anonymous or no authentication.
+        return Optional.empty();
+    }
+
+    public static boolean hasValidatedUser() {
+        try {
+            return getCurrentUser()
+                    .map(p -> (p.getUser() != null) && p.getUser().getIsValidated())
+                    .orElse(false);
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     /**
@@ -59,12 +66,5 @@ public class SecurityUtils {
         return parameterValue != null
                 && Stream.of(ServletHelper.RequestType.values())
                 .anyMatch(r -> r.getIdentifier().equals(parameterValue));
-    }
-
-    private static boolean isUserLoggedIn(Authentication authentication) {
-        return authentication != null
-                && !(authentication instanceof AnonymousAuthenticationToken)
-                && authentication.getPrincipal() != null
-                && authentication.getPrincipal() instanceof UserPrincipal;
     }
 }

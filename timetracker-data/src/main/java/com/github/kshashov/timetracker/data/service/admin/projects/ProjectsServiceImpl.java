@@ -97,7 +97,11 @@ public class ProjectsServiceImpl implements ProjectsService {
             throw new IllegalArgumentException();
         }
 
-        if (projectsRepository.hasProject(project.getTitle())) {
+        if ((project.getActions() != null) && !project.getActions().isEmpty()) {
+            project.getActions().clear();
+        }
+
+        if (projectsRepository.existsByTitle(project.getTitle())) {
             throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
         }
 
@@ -121,7 +125,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         // Validate
         Objects.requireNonNull(project.getId());
 
-        if (projectsRepository.hasOtherProject(project.getTitle(), project.getId())) {
+        if (projectsRepository.existsOtherByTitle(project.getTitle(), project.getId())) {
             throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
         }
 

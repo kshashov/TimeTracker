@@ -35,6 +35,10 @@ public class Entry implements BaseEntity {
     private String description;
 
     @NotNull
+    @Column(name = "closed")
+    private Boolean isClosed;
+
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "action_id", nullable = false)
     private Action action;

@@ -2,15 +2,13 @@ package com.github.kshashov.timetracker.web.ui.views;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
-import com.github.kshashov.timetracker.web.security.SecurityUtils;
-import com.github.kshashov.timetracker.web.security.UserPrincipal;
+import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
+import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
-import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -20,27 +18,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "user", layout = MainLayout.class)
 @PageTitle("User")
-public class UserPage extends ViewFrame implements HasUrlParameter<Long> {
+public class UserPage extends ViewFrame implements HasUser, HasUrlParameter<Long> {
     private final UsersRepository usersRepository;
-    private final UserPrincipal currentUser;
+    private final User currentUser;
     private User user;
     private Binder<User> binder = new Binder<>();
 
     @Autowired
     public UserPage(UsersRepository usersRepository) {
-        this.user = SecurityUtils.getCurrentUser().getUser();
         this.usersRepository = usersRepository;
-        this.currentUser = SecurityUtils.getCurrentUser();
+        this.currentUser = getUser();
         this.setViewContent(createContent());
 
     }
 
     private Component createContent() {
-        FlexLayout layout = new FlexLayout(UIUtils.createH2Label("Hello " + user.getName()));
-        if (currentUser.getUser().getId().equals(user.getId())) {
-            layout.add(UIUtils.createH3Label("IT IS YOU"));
-        }
-        return layout;
+//        FlexLayout layout = new FlexLayout(UIUtils.createH2Label("Hello " + user.getName()));
+//        if (currentUser.getUser().getId().equals(user.getId())) {
+//            layout.add(UIUtils.createH3Label("IT IS YOU"));
+//        }
+        return new FlexBoxLayout();
     }
 
     @Override
@@ -55,7 +52,7 @@ public class UserPage extends ViewFrame implements HasUrlParameter<Long> {
             }
         } else {
             // Show current user
-            user = currentUser.getUser();
+            user = currentUser;
         }
     }
 

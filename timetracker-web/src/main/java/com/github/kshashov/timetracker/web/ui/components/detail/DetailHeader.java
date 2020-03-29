@@ -38,11 +38,11 @@ public class DetailHeader extends FlexBoxLayout {
 
         FlexBoxLayout wrapper = new FlexBoxLayout(this.close, this.title);
         wrapper.setAlignItems(Alignment.CENTER);
-        wrapper.setPadding(Horizontal.RESPONSIVE_L, Vertical.M);
         wrapper.setSpacing(Right.L);
 
         FlexBoxLayout wrapper2 = new FlexBoxLayout(wrapper, actions);
         wrapper2.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        wrapper2.setPadding(Horizontal.RESPONSIVE_L, Vertical.XS);
         wrapper2.setAlignItems(Alignment.CENTER);
         add(wrapper2);
     }
