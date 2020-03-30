@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Entity
 @Table(name = "project_roles", schema = "public")
+@NamedEntityGraph(name = "ProjectRole.role", attributeNodes = @NamedAttributeNode("role"))
 public class ProjectRole implements BaseEntity {
 
     @EmbeddedId

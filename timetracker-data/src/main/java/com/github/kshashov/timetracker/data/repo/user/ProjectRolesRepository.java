@@ -5,6 +5,7 @@ import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRoleIdentity;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.repo.BaseRepo;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,8 @@ import java.util.Optional;
 @Repository
 public interface ProjectRolesRepository extends JpaRepository<ProjectRole, ProjectRoleIdentity>, BaseRepo {
 
-    Optional<ProjectRole> findFirstByUserAndProject(User user, Project project);
+    @EntityGraph(value = "ProjectRole.role")
+    Optional<ProjectRole> findFirstByUserIdAndProjectId(@Param("userId") Long userId, @Param("projectId") Long projectId);
 
     @Query("SELECT pr FROM ProjectRole pr LEFT JOIN FETCH pr.project WHERE pr.permissionIdentity.userId = :userId")
     List<ProjectRole> findUserProjectsWithRoles(@Param("userId") Long userId);

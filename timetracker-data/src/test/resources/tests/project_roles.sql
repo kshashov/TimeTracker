@@ -4,6 +4,12 @@ INSERT INTO roles (id, code, description) VALUES (5, 'edit_project_info', '');
 INSERT INTO roles (id, code, description) VALUES (6, 'edit_project_actions', '');
 INSERT INTO roles (id, code, description) VALUES (7, 'edit_project_users', '');
 
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (3, 1);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (4, 2);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (5, 3);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (6, 4);
+INSERT INTO roles_permissions (role_id, permission_id) VALUES (7, 5);
+
 INSERT INTO users (id, name, email, validated) VALUES (3, 'edit_my_logs', 'edit_my_logs', false);
 INSERT INTO users (id, name, email, validated) VALUES (4, 'edit_project_logs', 'edit_project_logs', false);
 INSERT INTO users (id, name, email, validated) VALUES (5, 'edit_project_info', 'edit_project_info', false);

@@ -19,12 +19,19 @@ import java.util.stream.Collectors;
 @Service
 @CacheConfig(cacheNames = "rolePermission")
 public class RolePermissionsHelper {
+    private final RolesRepository rolesRepository;
     private final ProjectRolesRepository projectRolesRepository;
-    private final Map<Long, Set<String>> roles;
+    private Map<Long, Set<String>> roles;
 
     @Autowired
     public RolePermissionsHelper(RolesRepository rolesRepository, ProjectRolesRepository projectRolesRepository) {
         this.projectRolesRepository = projectRolesRepository;
+        this.rolesRepository = rolesRepository;
+        reload();
+    }
+
+    // TODO Find a more safe solution for tests only
+    public void reload() {
         this.roles = rolesRepository.findAllWithPermissions().stream()
                 .collect(Collectors.toMap(
                         Role::getId,
@@ -36,11 +43,11 @@ public class RolePermissionsHelper {
 
     @Cacheable(key = "#role.id + #permission.pemissionCode")
     public boolean hasPermission(Role role, HasPermissionCode permission) {
-        return roles.get(role.getId()).contains(permission.getPemissionCode());
+        return roles.containsKey(role.getId()) && roles.get(role.getId()).contains(permission.getPemissionCode());
     }
 
     public Boolean hasProjectPermission(User user, Project project, ProjectPermissionType projectPermission) {
-        return projectRolesRepository.findFirstByUserAndProject(user, project)
+        return projectRolesRepository.findFirstByUserIdAndProjectId(user.getId(), project.getId())
                 .map(pr -> hasPermission(pr.getRole(), projectPermission))
                 .orElse(false);
     }

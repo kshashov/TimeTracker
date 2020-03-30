@@ -13,6 +13,7 @@ import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.TestsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
+import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Autowired
     private UsersRepository usersRepository;
 
+    @Autowired
+    RolePermissionsHelper rolePermissionsHelper;
+
 /*    @Test
     void createProject_UserHasNoPermission_ExceptionThrown() {
         assertThatThrownBy(() -> projectsService.createProject(getUser(), correctProject("createProject_UserHasNoPermission_ExceptionThrown_0")))
@@ -66,7 +70,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(result.getActions()).isNull();
 
         // Check user role
-        Optional<ProjectRole> projectRole = projectRolesRepository.findFirstByUserAndProject(getUser(), result);
+        Optional<ProjectRole> projectRole = projectRolesRepository.findFirstByUserIdAndProjectId(getUser().getId(), result.getId());
         assertThat(projectRole.isPresent()).isEqualTo(true);
         assertThat(projectRole.get().getRole().getCode()).isEqualTo(ProjectRoleType.ADMIN.getCode());
     }
@@ -122,7 +126,6 @@ public class ProjectsServiceTest extends BaseUserTest {
 
     @Test
     void updateProject_ProjectTitleAlreadyExist_ExceptionThrown() {
-
         // Create first
         projectsService.createProject(getUser(), correctProject("updateProject_ProjectTitleAlreadyExist_ExceptionThrown_0"));
         // Create second
@@ -179,6 +182,8 @@ public class ProjectsServiceTest extends BaseUserTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Sql("classpath:tests/project_roles.sql")
     void updateProject_CorrectUser_Ok() {
+        rolePermissionsHelper.reload();
+
         Project project = projectsRepository.findById(1L).get();
         project.setTitle("updateProject_CorrectUser_Ok");
 
