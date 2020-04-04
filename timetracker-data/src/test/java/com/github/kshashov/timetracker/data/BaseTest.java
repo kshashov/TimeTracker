@@ -6,6 +6,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 @ActiveProfiles("test")
 @DirtiesContext
-@ContextConfiguration(classes = TestConfiguration.class)
+@ContextConfiguration(classes = MainTestConfiguration.class)
 public class BaseTest {
 }

@@ -11,11 +11,15 @@ import java.util.List;
 
 @Repository
 public interface ActionsRepository extends JpaRepository<Action, Long>, BaseRepo {
-    @Query("SELECT a FROM Action a JOIN FETCH a.project WHERE a.project.id = :projectId")
-    List<Action> findAllByProject(@Param("projectId") Long project);
+    //    @EntityGraph(value = "Action.project")
+    List<Action> findAllByProject(Project project);
+
+    boolean existsByProject(@Param("project") Project project);
 
     boolean existsByProjectAndTitle(@Param("project") Project project, @Param("title") String title);
 
-    @Query("SELECT COUNT(a) > 0 FROM Action a WHERE a.project.id = :projectId AND a.title = :title AND a.id <> :actionId")
-    boolean existsOtherByProjectAndTitle(@Param("projectId") Long projectId, @Param("title") String title, @Param("actionId") Long actionId);
+    List<Action> findByProjectAndIsActive(@Param("project") Project project, @Param("isActive") Boolean isActive);
+
+    @Query("SELECT COUNT(a) > 0 FROM Action a WHERE a.project.id = :#{#project.id} AND a.title = :title AND a.id <> :#{#action.id}")
+    boolean existsOtherByProjectAndTitle(@Param("project") Project project, @Param("title") String title, @Param("action") Action action);
 }

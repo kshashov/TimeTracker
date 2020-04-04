@@ -2,12 +2,15 @@ package com.github.kshashov.timetracker.data.service.admin.projects;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.core.errors.NoPermissionException;
+import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
+import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
+import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.apache.logging.log4j.util.Strings;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -28,13 +32,27 @@ public class ProjectsServiceImpl implements ProjectsService {
     private final ProjectsRepository projectsRepository;
     private final RolesRepository rolesRepository;
     private final ProjectUsersService projectUsersService;
+    private final ProjectActionsService projectActionsService;
+    private final ActionsRepository actionsRepository;
+    private final ProjectRolesRepository projectRolesRepository;
+
 
     @Autowired
-    public ProjectsServiceImpl(RolePermissionsHelper rolePermissionsHelper, ProjectsRepository projectsRepository, RolesRepository rolesRepository, ProjectUsersService projectUsersService) {
+    public ProjectsServiceImpl(
+            RolePermissionsHelper rolePermissionsHelper,
+            ProjectsRepository projectsRepository,
+            RolesRepository rolesRepository,
+            ProjectUsersService projectUsersService,
+            ProjectActionsService projectActionsService,
+            ActionsRepository actionsRepository,
+            ProjectRolesRepository projectRolesRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.projectsRepository = projectsRepository;
         this.rolesRepository = rolesRepository;
         this.projectUsersService = projectUsersService;
+        this.projectActionsService = projectActionsService;
+        this.actionsRepository = actionsRepository;
+        this.projectRolesRepository = projectRolesRepository;
     }
 
     @Override
@@ -67,6 +85,15 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
+    public boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Project project) {
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return deleteOrDeactivateProject(project);
+    }
+
+    @Override
     public Project updateProject(@NotNull Project project) {
         try {
             return doUpdateProject(project);
@@ -85,6 +112,10 @@ public class ProjectsServiceImpl implements ProjectsService {
         }
     }
 
+    @Override
+    public boolean deleteOrDeactivateProject(@NotNull Project project) {
+        return doDeleteOrDeactivateProject(project);
+    }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Project doCreateProject(@NotNull User user, @NotNull Project project) {
@@ -125,7 +156,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         // Validate
         Objects.requireNonNull(project.getId());
 
-        if (projectsRepository.existsOtherByTitle(project.getTitle(), project.getId())) {
+        if (projectsRepository.existsOtherByTitle(project.getTitle(), project)) {
             throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
         }
 
@@ -133,6 +164,36 @@ public class ProjectsServiceImpl implements ProjectsService {
         project = projectsRepository.save(project);
 
         return project;
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    private boolean doDeleteOrDeactivateProject(@NotNull Project project) {
+
+        // Validate
+        Objects.requireNonNull(project.getId());
+
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Project is already inactive");
+        }
+
+        // Deactivate project's actions
+        List<Action> actions = actionsRepository.findByProjectAndIsActive(project, true);
+        for (Action action : actions) {
+            projectActionsService.deleteOrDeactivateAction(action);
+        }
+
+        //  Check if any actions are left
+        if (actionsRepository.existsByProject(project)) {
+            // Deactivate project
+            project.setIsActive(false);
+            projectsRepository.save(project);
+            return false;
+        }
+
+        // Delete project with roles
+        projectRolesRepository.deleteByProject(project);
+        projectsRepository.deleteById(project.getId());
+        return true;
     }
 
     private void preValidate(@NotNull Project project) {

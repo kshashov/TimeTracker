@@ -11,4 +11,8 @@ public interface ProjectsService {
     Project updateProject(@NotNull User user, @NotNull Project project);
 
     Project updateProject(@NotNull Project project);
+
+    boolean deleteOrDeactivateProject(@NotNull Project project);
+
+    boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Project project);
 }

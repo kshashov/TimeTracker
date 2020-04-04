@@ -19,8 +19,8 @@ public class Entry implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "date", nullable = false)
-    private Date date;
+    @Column(name = "obs", nullable = false)
+    private Date obs;
 
     @NotNull
     @Column(name = "hours", scale = 1, nullable = false)
@@ -30,7 +30,6 @@ public class Entry implements BaseEntity {
     @Column(name = "title")
     private String title;
 
-    @NotNull
     @Column(name = "description")
     private String description;
 

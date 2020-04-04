@@ -63,11 +63,11 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         this.usersDataProvider = new CallbackDataProvider<>(
                 query -> {
                     var pageable = new OffsetLimitRequest(query.getOffset(), query.getLimit());
-                    return usersRepository.findMissingProjectUsers(project.getId(), query.getFilter().orElse(""), pageable).getContent().stream();
+                    return usersRepository.findMissingProjectUsers(project, query.getFilter().orElse(""), pageable).getContent().stream();
                 },
                 query -> {
                     var pageable = new OffsetLimitRequest(query.getOffset(), query.getLimit());
-                    return usersRepository.findMissingProjectUsers(project.getId(), query.getFilter().orElse(""), pageable).getNumberOfElements();
+                    return usersRepository.findMissingProjectUsers(project, query.getFilter().orElse(""), pageable).getNumberOfElements();
                 });
     }
 
@@ -108,7 +108,7 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
     }
 
     public void reloadUsers() {
-        List<ProjectRole> users = projectRolesRepository.findProjectUsersWithRoles(project.getId());
+        List<ProjectRole> users = projectRolesRepository.findProjectUsersWithRoles(project);
         projectRolesObservable.onNext(users);
     }
 

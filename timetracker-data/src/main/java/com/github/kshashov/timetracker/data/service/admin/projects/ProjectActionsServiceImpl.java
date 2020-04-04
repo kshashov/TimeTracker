@@ -27,7 +27,10 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     private final EntriesRepository entiesRepository;
 
     @Autowired
-    public ProjectActionsServiceImpl(RolePermissionsHelper rolePermissionsHelper, ActionsRepository actionsRepository, EntriesRepository entiesRepository) {
+    public ProjectActionsServiceImpl(
+            RolePermissionsHelper rolePermissionsHelper,
+            ActionsRepository actionsRepository,
+            EntriesRepository entiesRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.actionsRepository = actionsRepository;
         this.entiesRepository = entiesRepository;
@@ -95,17 +98,17 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
-    public void deleteOrDeactivateAction(@NotNull User user, @NotNull Action action) {
+    public boolean deleteOrDeactivateAction(@NotNull User user, @NotNull Action action) {
         if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
-        deleteOrDeactivateAction(action);
+        return deleteOrDeactivateAction(action);
     }
 
     @Override
-    public void deleteOrDeactivateAction(@NotNull Action action) {
-        doDeleteOrDeactivateAction(action);
+    public boolean deleteOrDeactivateAction(@NotNull Action action) {
+        return doDeleteOrDeactivateAction(action);
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
@@ -134,7 +137,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         // Validate
         Objects.requireNonNull(action.getId());
 
-        if (actionsRepository.existsOtherByProjectAndTitle(action.getProject().getId(), action.getTitle(), action.getId())) {
+        if (actionsRepository.existsOtherByProjectAndTitle(action.getProject(), action.getTitle(), action)) {
             throw new IncorrectArgumentException("Project action already exists");
         }
 
@@ -147,26 +150,25 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private boolean doDeleteOrDeactivateAction(@NotNull Action action) {
 
-        // ValidAte
+        // Validate
         Objects.requireNonNull(action.getId());
 
         if (!action.getIsActive()) {
-            // Do nothing if actions is already inactive
-            return false;
+            throw new IncorrectArgumentException("Action is already inactive");
         }
 
-        // Delete uncommited entries with action
+        // Delete open entries with action
         entiesRepository.deleteByActionAndIsClosed(action, false);
 
-        //  Check if has commited entries
-        if (!entiesRepository.existsByAction(action)) {
+        //  Check if any entries are left
+        if (entiesRepository.existsByAction(action)) {
             // Deactivate action
             action.setIsActive(false);
             actionsRepository.save(action);
             return false;
         }
 
-        actionsRepository.delete(action);
+        actionsRepository.deleteById(action.getId());
         return true;
     }
 

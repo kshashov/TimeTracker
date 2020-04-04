@@ -11,6 +11,6 @@ public interface ProjectsRepository extends JpaRepository<Project, Long>, BaseRe
 
     boolean existsByTitle(String title);
 
-    @Query("SELECT COUNT(p) > 0 FROM Project p WHERE p.title = :title AND p.id <> :projectId")
-    boolean existsOtherByTitle(@Param("title") String title, @Param("projectId") Long projectId);
+    @Query("SELECT COUNT(p) > 0 FROM Project p WHERE p.title = :title AND p.id <> :#{#project.id}")
+    boolean existsOtherByTitle(@Param("title") String title, @Param("project") Project project);
 }
