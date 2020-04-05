@@ -1,0 +1,1 @@
+INSERT INTO users (name, email, validated) VALUES ('user', 'createRole_CorrectUser', false);

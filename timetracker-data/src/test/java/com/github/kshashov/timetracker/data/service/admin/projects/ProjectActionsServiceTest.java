@@ -46,21 +46,24 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
     @Test
     void createAction_Ok() {
-        Action action = correctAction("createAction_Ok");
+        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "createAction")).isFalse();
 
-        // Create project
-        actionsService.createAction(action);
-        Action result = actionsRepository.getOne(action.getId());
+        Action action = correctAction("createAction");
+
+        // Create action
+        Action result = actionsService.createAction(action);
+
+        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "createAction")).isTrue();
+        result = actionsRepository.getOne(result.getId());
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
-        assertThat(result.getTitle()).isEqualTo("createAction_Ok");
+        assertThat(result.getTitle()).isEqualTo("createAction");
         assertThat(result.getIsActive()).isTrue();
-        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "createAction_Ok")).isTrue();
     }
 
     @Test
     void createAction_ActionIdIsNotNull_IllegalArgumentException() {
-        Action action = correctAction("createAction_ActionIdIsNotNull_IllegalArgumentException");
+        Action action = correctAction("createAction_ActionIdIsNotNull");
         action.setId(0L);
 
         assertThatThrownBy(() -> actionsService.createAction(action))
@@ -70,35 +73,34 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     @Test
     void createAction_ActionTitleAlreadyExist_IncorrectArgumentException() {
         // Create
-        actionsService.createAction(correctAction("createAction_ActionTitleAlreadyExist_IncorrectArgumentException"));
+        actionsService.createAction(correctAction("createAction_ActionTitleAlreadyExist"));
         // Create again
-        assertThatThrownBy(() -> actionsService.createAction(correctAction("createAction_ActionTitleAlreadyExist_IncorrectArgumentException")))
+        assertThatThrownBy(() -> actionsService.createAction(correctAction("createAction_ActionTitleAlreadyExist")))
                 .isInstanceOf(IncorrectArgumentException.class);
     }
 
     @Test
     void createAction_IncorrectAction_IncorrectArgumentException() {
         // Empty title
-        Action action = correctAction("");
+        Action action0 = correctAction("");
 
-        assertThatThrownBy(() -> actionsService.createAction(action))
+        assertThatThrownBy(() -> actionsService.createAction(action0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive project
-        action.setTitle("createAction_IncorrectAction_IncorrectArgumentException");
+        Action action1 = correctAction("");
+        Boolean projectActive = action1.getProject().getIsActive();
+        action1.getProject().setIsActive(false);
 
-        Boolean projectActive = action.getProject().getIsActive();
-        action.getProject().setIsActive(false);
-
-        assertThatThrownBy(() -> actionsService.createAction(action))
+        assertThatThrownBy(() -> actionsService.createAction(action1))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        action.getProject().setIsActive(projectActive);
+        action1.getProject().setIsActive(projectActive);
     }
 
     @Test
     void createAction_ActiveFalse_OkWithActiveTrue() {
-        Action action = correctAction("createAction_ActiveFalse_OkWithActiveTrue");
+        Action action = correctAction("createAction_ActiveFalse");
         action.setIsActive(false);
 
         Action result = actionsService.createAction(action);
@@ -118,13 +120,15 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
                 .thenReturn(true);
 
+        assertThat(actionsRepository.existsByProjectAndTitle(project, "createAction_CorrectUser")).isFalse();
+
         // Create
-        Action action = actionsService.createAction(user, correctAction("createAction_CorrectUser_Ok"));
+        Action action = actionsService.createAction(user, correctAction("createAction_CorrectUser"));
         assertThat(action).isNotNull();
         assertThat(action.getId()).isNotNull();
-        assertThat(action.getTitle()).isEqualTo("createAction_CorrectUser_Ok");
+        assertThat(action.getTitle()).isEqualTo("createAction_CorrectUser");
         assertThat(action.getIsActive()).isTrue();
-        assertThat(actionsRepository.existsByProjectAndTitle(project, "createAction_CorrectUser_Ok")).isTrue();
+        assertThat(actionsRepository.existsByProjectAndTitle(project, "createAction_CorrectUser")).isTrue();
     }
 
     @Test
@@ -135,7 +139,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
                 .thenReturn(false);
 
-        assertThatThrownBy(() -> actionsService.createAction(getUser(), correctAction("createAction_UserHasNoPermission_NoPermissionException")))
+        assertThatThrownBy(() -> actionsService.createAction(getUser(), correctAction("createAction_UserHasNoPermission")))
                 .isInstanceOf(NoPermissionException.class);
     }
 
@@ -146,11 +150,11 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     @Test
     void updateAction_ActionTitleAlreadyExist_IncorrectArgumentException() {
         // Create first
-        actionsService.createAction(correctAction("updateAction_ActionTitleAlreadyExist_IncorrectArgumentException_0"));
+        actionsService.createAction(correctAction("updateAction_ActionTitleAlreadyExist_0"));
         // Create second
-        Action result = actionsService.createAction(correctAction("updateAction_ActionTitleAlreadyExist_IncorrectArgumentException_1"));
+        Action result = actionsService.createAction(correctAction("updateAction_ActionTitleAlreadyExist_1"));
         // Try to save with the same title
-        result.setTitle("updateAction_ActionTitleAlreadyExist_IncorrectArgumentException_0");
+        result.setTitle("updateAction_ActionTitleAlreadyExist_0");
 
         assertThatThrownBy(() -> actionsService.updateAction(result))
                 .isInstanceOf(IncorrectArgumentException.class);
@@ -159,31 +163,33 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     @Test
     void updateAction_IncorrectAction_IncorrectArgumentException() {
         // Empty title
-        Action action = actionsService.createAction(correctAction("updateAction_IncorrectAction_IncorrectArgumentException"));
-        action.setTitle("");
+        Action action0 = actionsService.createAction(correctAction("updateAction_IncorrectAction_0"));
+        action0.setTitle("");
 
-        assertThatThrownBy(() -> actionsService.updateAction(action))
+        assertThatThrownBy(() -> actionsService.updateAction(action0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive action
-        action.setIsActive(false);
+        Action action1 = actionsService.createAction(correctAction("updateAction_IncorrectAction_1"));
+        action1.setIsActive(false);
 
-        assertThatThrownBy(() -> actionsService.updateAction(action))
+        assertThatThrownBy(() -> actionsService.updateAction(action1))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive project
-        Boolean projectActive = action.getProject().getIsActive();
-        action.getProject().setIsActive(false);
+        Action action2 = actionsService.createAction(correctAction("updateAction_IncorrectAction_2"));
+        Boolean projectActive = action2.getProject().getIsActive();
+        action2.getProject().setIsActive(false);
 
-        assertThatThrownBy(() -> actionsService.updateAction(action))
+        assertThatThrownBy(() -> actionsService.updateAction(action2))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        action.getProject().setIsActive(projectActive);
+        action2.getProject().setIsActive(projectActive);
     }
 
     @Test
     void updateAction_ActionIdIsNull_NullPointerException() {
-        Action action = correctAction("updateAction_ActionIdIsNull_NullPointerException");
+        Action action = actionsService.createAction(correctAction("updateAction_ActionIdIsNull"));
         action.setId(null);
 
         assertThatThrownBy(() -> actionsService.updateAction(action))
@@ -192,14 +198,14 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
     @Test
     void updateAction_Ok() {
-        Action action = actionsService.createAction(correctAction("updateAction_Ok_0"));
-        action.setTitle("updateAction_Ok_1");
+        Action action = actionsService.createAction(correctAction("updateAction_0"));
+        action.setTitle("updateAction_1");
 
         actionsService.updateAction(action);
         Action result = actionsRepository.getOne(action.getId());
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(action.getId());
-        assertThat(result.getTitle()).isEqualTo("updateAction_Ok_1");
+        assertThat(result.getTitle()).isEqualTo("updateAction_1");
     }
 
     //
@@ -239,17 +245,8 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     }
 
     //
-    // DELETE BY USER
+    // DELETE
     //
-
-    @Test
-    void deleteOrDeactivateAction_ActionIdIsNull_NullPointerException() {
-        Action action = correctAction("deleteOrDeactivateAction_ActionIdIsNull_NullPointerException");
-        action.setId(null);
-
-        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action))
-                .isInstanceOf(NullPointerException.class);
-    }
 
     @Test
     void deleteOrDeactivateAction_IncorrectAction_ExceptionThrown() {
@@ -257,14 +254,14 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         Action action = actionsService.createAction(correctAction("deleteOrDeactivateAction_IncorrectAction_ExceptionThrown"));
         action.setIsActive(false);
 
-        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action))
+        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive project
         Boolean projectActive = action.getProject().getIsActive();
         action.getProject().setIsActive(false);
 
-        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action))
+        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         action.getProject().setIsActive(projectActive);
@@ -278,46 +275,45 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         assertThat(action).isNotNull();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
 
-        boolean isDeleted = actionsService.deleteOrDeactivateAction(action);
+        boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deleted
         assertThat(isDeleted).isTrue();
-        assertThat(actionsRepository.existsById(1L)).isFalse();
+        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_NoEntries_ReturnsTrue")).isFalse();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
     }
 
     @Test
-//    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Sql("classpath:tests/ActionsServiceTest.deleteOrDeactivateAction_NoClosedEntries.sql")
     void deleteOrDeactivateAction_NoClosedEntries_ReturnsTrue() {
-        Action action = actionsRepository.getOne(1L);
+        Action action = actionsRepository.findOneByProjectAndTitle(getProject(), "deleteOrDeactivateAction_NoClosedEntries");
 
         // Action exists and has open entries and actions
         assertThat(action).isNotNull();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(2);
 
-        boolean isDeleted = actionsService.deleteOrDeactivateAction(action);
+        boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deleted
         assertThat(isDeleted).isTrue();
-        assertThat(actionsRepository.existsById(1L)).isFalse();
+        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_NoClosedEntries")).isFalse();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
     }
 
     @Test
     @Sql("classpath:tests/ActionsServiceTest.deleteOrDeactivateAction_HasClosedEntries.sql")
     void deleteOrDeactivateAction_HasClosedEntries_ReturnsFalse() {
-        Action action = actionsRepository.getOne(1L);
+        Action action = actionsRepository.findOneByProjectAndTitle(getProject(), "deleteOrDeactivateAction_HasClosedEntries");
 
         // Action exists and has entries and actions
         assertThat(action).isNotNull();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(3);
 
-        boolean isDeleted = actionsService.deleteOrDeactivateAction(action);
+        boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deactivated
         assertThat(isDeleted).isFalse();
-        assertThat(actionsRepository.existsById(1L)).isTrue();
+        assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_HasClosedEntries")).isTrue();
         assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(2);
         assertThat(entriesRepository.findAllByAction(action).stream()
                 .allMatch(Entry::getIsClosed)
@@ -341,7 +337,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
                 .thenReturn(true);
 
-        boolean isDeleted = actionsService.deleteOrDeactivateAction(action);
+        boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deleted
         assertThat(isDeleted).isTrue();
@@ -358,7 +354,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
                 .thenReturn(false);
 
-        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(getUser(), action))
+        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(getUser(), action.getId()))
                 .isInstanceOf(NoPermissionException.class);
     }
 

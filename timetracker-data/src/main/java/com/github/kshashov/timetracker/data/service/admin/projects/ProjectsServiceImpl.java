@@ -85,12 +85,12 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
-    public boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Project project) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
+        if (!rolePermissionsHelper.hasProjectPermission(user, projectId, ProjectPermissionType.EDIT_PROJECT_INFO)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
-        return deleteOrDeactivateProject(project);
+        return deleteOrDeactivateProject(projectId);
     }
 
     @Override
@@ -113,8 +113,8 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
-    public boolean deleteOrDeactivateProject(@NotNull Project project) {
-        return doDeleteOrDeactivateProject(project);
+    public boolean deleteOrDeactivateProject(@NotNull Long projectId) {
+        return doDeleteOrDeactivateProject(projectId);
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
@@ -167,11 +167,11 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    private boolean doDeleteOrDeactivateProject(@NotNull Project project) {
+    private boolean doDeleteOrDeactivateProject(@NotNull Long projectId) {
+
+        Project project = projectsRepository.getOne(projectId);
 
         // Validate
-        Objects.requireNonNull(project.getId());
-
         if (!project.getIsActive()) {
             throw new IncorrectArgumentException("Project is already inactive");
         }
@@ -179,7 +179,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         // Deactivate project's actions
         List<Action> actions = actionsRepository.findByProjectAndIsActive(project, true);
         for (Action action : actions) {
-            projectActionsService.deleteOrDeactivateAction(action);
+            projectActionsService.deleteOrDeactivateAction(action.getId());
         }
 
         //  Check if any actions are left

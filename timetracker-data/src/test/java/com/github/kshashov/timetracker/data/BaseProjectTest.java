@@ -25,6 +25,6 @@ public class BaseProjectTest extends BaseUserTest {
 
     @BeforeAll
     void prepareProject() {
-        this.project = projectsRepository.findById(1L).get();
+        this.project = projectsRepository.findOneByTitle("project");
     }
 }

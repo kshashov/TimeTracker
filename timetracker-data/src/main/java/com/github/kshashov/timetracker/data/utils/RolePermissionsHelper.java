@@ -2,6 +2,7 @@ package com.github.kshashov.timetracker.data.utils;
 
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Permission;
+import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
@@ -30,8 +31,7 @@ public class RolePermissionsHelper {
         reload();
     }
 
-    // TODO Find a more safe solution for tests only
-    public void reload() {
+    private void reload() {
         this.roles = rolesRepository.findAllWithPermissions().stream()
                 .collect(Collectors.toMap(
                         Role::getId,
@@ -47,8 +47,15 @@ public class RolePermissionsHelper {
     }
 
     public Boolean hasProjectPermission(User user, Project project, ProjectPermissionType projectPermission) {
-        return projectRolesRepository.findFirstByUserIdAndProjectId(user.getId(), project.getId())
-                .map(pr -> hasPermission(pr.getRole(), projectPermission))
-                .orElse(false);
+        return hasProjectPermission(user, project.getId(), projectPermission);
+    }
+
+    public Boolean hasProjectPermission(User user, Long projectId, ProjectPermissionType projectPermission) {
+        ProjectRole projectRole = projectRolesRepository.findOneByUserIdAndProjectId(user.getId(), projectId);
+
+        if (projectRole == null) {
+            return false;
+        }
+        return hasPermission(projectRole.getRole(), projectPermission);
     }
 }

@@ -98,16 +98,19 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
-    public boolean deleteOrDeactivateAction(@NotNull User user, @NotNull Action action) {
+    public boolean deleteOrDeactivateAction(@NotNull User user, Long actionId) {
+        Action action = actionsRepository.findOneById(actionId);
         if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
-        return deleteOrDeactivateAction(action);
+        return doDeleteOrDeactivateAction(action);
     }
 
     @Override
-    public boolean deleteOrDeactivateAction(@NotNull Action action) {
+    public boolean deleteOrDeactivateAction(@NotNull Long actionId) {
+        Action action = actionsRepository.findOneById(actionId);
+
         return doDeleteOrDeactivateAction(action);
     }
 
@@ -149,9 +152,6 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private boolean doDeleteOrDeactivateAction(@NotNull Action action) {
-
-        // Validate
-        Objects.requireNonNull(action.getId());
 
         if (!action.getIsActive()) {
             throw new IncorrectArgumentException("Action is already inactive");

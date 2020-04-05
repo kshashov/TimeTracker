@@ -7,7 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ProjectRoleType {
-    ADMIN("project_admin");
+    ADMIN("project_admin"),
+    INACTIVE("project_inactive");
 
     private final String code;
 

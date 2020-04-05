@@ -23,7 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.HashSet;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,25 +48,30 @@ public class ProjectsServiceTest extends BaseUserTest {
 
     @Test
     void createProject_Ok() {
-        Project project = correctProject("createProject_Ok");
+        assertThat(projectsRepository.existsByTitle("createProject")).isFalse();
+
+        Project project = correctProject("createProject");
 
         // Create project
         Project result = projectsService.createProject(getUser(), project);
+
+        assertThat(projectsRepository.existsByTitle("createProject")).isTrue();
+        result = projectsRepository.getOne(result.getId());
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
-        assertThat(result.getTitle()).isEqualTo("createProject_Ok");
+        assertThat(result.getTitle()).isEqualTo("createProject");
         assertThat(result.getIsActive()).isTrue();
         assertThat(result.getActions()).isNull();
 
         // Check user role
-        Optional<ProjectRole> projectRole = projectRolesRepository.findFirstByUserIdAndProjectId(getUser().getId(), result.getId());
-        assertThat(projectRole.isPresent()).isTrue();
-        assertThat(projectRole.get().getRole().getCode()).isEqualTo(ProjectRoleType.ADMIN.getCode());
+        ProjectRole projectRole = projectRolesRepository.findOneByUserIdAndProjectId(getUser().getId(), result.getId());
+        assertThat(projectRole).isNotNull();
+        assertThat(projectRole.getRole().getCode()).isEqualTo(ProjectRoleType.ADMIN.getCode());
     }
 
     @Test
     void createProject_ProjectIdIsNotNull_IllegalArgumentException() {
-        Project project = correctProject("createProject_ProjectIdIsNotNull_IllegalArgumentException");
+        Project project = correctProject("createProject_ProjectIdIsNotNull");
         project.setId(0L);
 
         assertThatThrownBy(() -> projectsService.createProject(getUser(), project))
@@ -77,9 +81,9 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void createProject_ProjectTitleAlreadyExist_IncorrectArgumentException() {
         // Create
-        projectsService.createProject(getUser(), correctProject("createProject_ProjectTitleAlreadyExist_IncorrectArgumentException"));
+        projectsService.createProject(getUser(), correctProject("createProject_ProjectTitleAlreadyExist"));
         // Create again
-        assertThatThrownBy(() -> projectsService.createProject(getUser(), correctProject("createProject_ProjectTitleAlreadyExist_IncorrectArgumentException")))
+        assertThatThrownBy(() -> projectsService.createProject(getUser(), correctProject("createProject_ProjectTitleAlreadyExist")))
                 .isInstanceOf(IncorrectArgumentException.class);
     }
 
@@ -93,7 +97,7 @@ public class ProjectsServiceTest extends BaseUserTest {
 
     @Test
     void createProject_ActiveFalse_OkWithActiveTrue() {
-        Project project = correctProject("createProject_ActiveFalse_OkWithActiveTrue");
+        Project project = correctProject("createProject_ActiveFalse");
         project.setIsActive(false);
 
         Project result = projectsService.createProject(getUser(), project);
@@ -102,7 +106,7 @@ public class ProjectsServiceTest extends BaseUserTest {
 
     @Test
     void createProject_ActionsNotEmpty_OkWithEmptyActions() {
-        Project project = correctProject("createProject_ActionsNotEmpty_OkWithEmptyActions");
+        Project project = correctProject("createProject_ActionsNotEmpty");
         project.setActions(new HashSet<>());
         project.getActions().add(new Action());
 
@@ -117,11 +121,11 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void updateProject_ProjectTitleAlreadyExist_IncorrectArgumentException() {
         // Create first
-        projectsService.createProject(getUser(), correctProject("updateProject_ProjectTitleAlreadyExist_IncorrectArgumentException_0"));
+        projectsService.createProject(getUser(), correctProject("updateProject_ProjectTitleAlreadyExist_0"));
         // Create second
-        Project result = projectsService.createProject(getUser(), correctProject("updateProject_ProjectTitleAlreadyExist_IncorrectArgumentException_1"));
+        Project result = projectsService.createProject(getUser(), correctProject("updateProject_ProjectTitleAlreadyExist_1"));
         // Try to save with the same title
-        result.setTitle("updateProject_ProjectTitleAlreadyExist_IncorrectArgumentException_0");
+        result.setTitle("updateProject_ProjectTitleAlreadyExist_0");
 
         assertThatThrownBy(() -> projectsService.updateProject(result))
                 .isInstanceOf(IncorrectArgumentException.class);
@@ -130,23 +134,23 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void updateProject_IncorrectProject_IncorrectArgumentException() {
         // Empty title
-        Project project = projectsService.createProject(getUser(), correctProject("updateProject_IncorrectProject_IncorrectArgumentException"));
-        project.setTitle("");
+        Project project0 = projectsService.createProject(getUser(), correctProject("updateProject_IncorrectProject"));
+        project0.setTitle("");
 
-        assertThatThrownBy(() -> projectsService.updateProject(project))
+        assertThatThrownBy(() -> projectsService.updateProject(project0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive project
-        project.setTitle("updateProject_IncorrectProject_IncorrectArgumentException");
-        project.setIsActive(false);
+        Project project1 = projectsService.createProject(getUser(), correctProject("updateProject_IncorrectProject"));
+        project1.setIsActive(false);
 
-        assertThatThrownBy(() -> projectsService.updateProject(project))
+        assertThatThrownBy(() -> projectsService.updateProject(project1))
                 .isInstanceOf(IncorrectArgumentException.class);
     }
 
     @Test
     void updateProject_ProjectIdIsNull_NullPointerException() {
-        Project project = correctProject("updateProject_ProjectIdIsNull_NullPointerException");
+        Project project = projectsService.createProject(getUser(), correctProject("updateProject_ProjectIdIsNull"));
         project.setId(null);
 
         assertThatThrownBy(() -> projectsService.updateProject(project))
@@ -155,14 +159,14 @@ public class ProjectsServiceTest extends BaseUserTest {
 
     @Test
     void updateProject_Ok() {
-        Project project = projectsService.createProject(getUser(), correctProject("updateProject_Ok_0"));
-        project.setTitle("updateProject_Ok_1");
+        Project project = projectsService.createProject(getUser(), correctProject("updateProject_0"));
+        project.setTitle("updateProject_1");
 
         projectsService.updateProject(project);
         Project result = projectsRepository.getOne(project.getId());
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(project.getId());
-        assertThat(result.getTitle()).isEqualTo("updateProject_Ok_1");
+        assertThat(result.getTitle()).isEqualTo("updateProject_1");
         assertThat(result.getActions()).isEqualTo(project.getActions());
     }
 
@@ -173,8 +177,8 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void updateProject_CorrectUser_Ok() {
         User user = getUser();
-        Project project = projectsService.createProject(getUser(), correctProject("updateProject_CorrectUser_Ok_0"));
-        project.setTitle("updateProject_CorrectUser_Ok_1");
+        Project project = projectsService.createProject(getUser(), correctProject("updateProject_CorrectUser_0"));
+        project.setTitle("updateProject_CorrectUser_1");
 
         // Make user to has EDIT_PROJECT_INFO project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
@@ -185,7 +189,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         Project result = projectsRepository.getOne(project.getId());
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(project.getId());
-        assertThat(result.getTitle()).isEqualTo("updateProject_CorrectUser_Ok_1");
+        assertThat(result.getTitle()).isEqualTo("updateProject_CorrectUser_1");
         assertThat(result.getActions()).isEqualTo(project.getActions());
 
     }
@@ -193,7 +197,7 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void updateProject_UserHasNoPermission_NoPermissionException() {
         User user = getUser();
-        Project project = projectsService.createProject(getUser(), correctProject("updateProject_UserHasNoPermission_NoPermissionException"));
+        Project project = projectsService.createProject(getUser(), correctProject("updateProject_UserHasNoPermission"));
 
         // Make user to has no EDIT_PROJECT_INFO project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
@@ -208,28 +212,19 @@ public class ProjectsServiceTest extends BaseUserTest {
     //
 
     @Test
-    void deleteOrDeactivateProject_ProjectIdIsNull_NullPointerException() {
-        Project project = correctProject("updateProject_ProjectIdIsNull_NullPointerException");
-        project.setId(null);
-
-        assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(project))
-                .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
     void deleteOrDeactivateProject_IncorrectProject_IncorrectArgumentException() {
         // Inactive project
-        Project project = projectsService.createProject(getUser(), correctProject("updateProject_IncorrectProject_IncorrectArgumentException"));
+        Project project = projectsService.createProject(getUser(), correctProject("updateProject_IncorrectProject"));
         project.setIsActive(false);
 
-        assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(project))
+        assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(project.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
     }
 
     @Test
     void deleteOrDeactivateProject_NoActions_ReturnsTrue() {
         User user = getUser();
-        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_NoActions_ReturnsTrue"));
+        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_NoActions"));
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
@@ -237,11 +232,11 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(0);
 
-        boolean isDeleted = projectsService.deleteOrDeactivateProject(project);
+        boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
-        assertThat(projectsRepository.existsById(1L)).isFalse();
+        assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_NoActions")).isFalse();
         assertThat(projectRolesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(0);
@@ -250,7 +245,7 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     @Sql("classpath:tests/ProjectsServiceTest.deleteOrDeactivateProject_NoClosedEntries.sql")
     void deleteOrDeactivateProject_NoClosedEntries_ReturnsTrue() {
-        Project project = projectsRepository.getOne(1L);
+        Project project = projectsRepository.findOneByTitle("deleteOrDeactivateProject_NoClosedEntries");
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
@@ -258,11 +253,11 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(2);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(2);
 
-        boolean isDeleted = projectsService.deleteOrDeactivateProject(project);
+        boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
-        assertThat(projectsRepository.existsById(1L)).isFalse();
+        assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_NoClosedEntries")).isFalse();
         assertThat(projectRolesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(0);
@@ -271,7 +266,7 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     @Sql("classpath:tests/ProjectsServiceTest.deleteOrDeactivateProject_HasClosedEntries.sql")
     void deleteOrDeactivateProject_HasClosedEntries_ReturnsFalse() {
-        Project project = projectsRepository.getOne(1L);
+        Project project = projectsRepository.findOneByTitle("deleteOrDeactivateProject_HasClosedEntries");
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
@@ -279,11 +274,11 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(2);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(2);
 
-        boolean isDeleted = projectsService.deleteOrDeactivateProject(project);
+        boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deactivated
         assertThat(isDeleted).isFalse();
-        assertThat(projectsRepository.existsById(1L)).isTrue();
+        assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_HasClosedEntries")).isTrue();
         assertThat(projectRolesRepository.findAllByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findAllByProject(project).stream()
@@ -302,7 +297,7 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void deleteOrDeactivateProject_CorrectUser_Ok() {
         User user = getUser();
-        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_CorrectUser_Ok"));
+        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_CorrectUser"));
 
         // Make user to has EDIT_PROJECT_INFO project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
@@ -314,11 +309,11 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(0);
 
-        boolean isDeleted = projectsService.deleteOrDeactivateProject(project);
+        boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
-        assertThat(projectsRepository.existsById(1L)).isFalse();
+        assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_CorrectUser")).isFalse();
         assertThat(projectRolesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findAllByProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findAllByProject(project).size()).isEqualTo(0);
@@ -327,13 +322,13 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void deleteOrDeactivateProject_UserHasNoPermission_NoPermissionException() {
         User user = getUser();
-        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_UserHasNoPermission_NoPermissionException"));
+        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_UserHasNoPermission"));
 
         // Make user to has no EDIT_PROJECT_INFO project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
                 .thenReturn(false);
 
-        assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(getUser(), project))
+        assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(getUser(), project.getId()))
                 .isInstanceOf(NoPermissionException.class);
     }
 

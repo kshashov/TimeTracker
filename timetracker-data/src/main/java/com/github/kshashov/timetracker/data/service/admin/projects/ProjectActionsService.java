@@ -14,7 +14,7 @@ public interface ProjectActionsService {
 
     Action updateAction(@NotNull User user, @NotNull Action action);
 
-    boolean deleteOrDeactivateAction(@NotNull Action action);
+    boolean deleteOrDeactivateAction(@NotNull Long actionId);
 
-    boolean deleteOrDeactivateAction(@NotNull User user, @NotNull Action action);
+    boolean deleteOrDeactivateAction(@NotNull User user, Long actionId);
 }

@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 public class ProjectRole implements BaseEntity {
 
     @EmbeddedId
-    private ProjectRoleIdentity permissionIdentity;
+    private ProjectRoleIdentity identity;
 
     @MapsId("project_id")
     @ManyToOne(fetch = FetchType.LAZY)

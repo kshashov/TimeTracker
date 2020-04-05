@@ -17,6 +17,6 @@ public class BaseUserTest extends BaseTest {
 
     @BeforeAll
     void prepareUser() {
-        user = usersRepository.findById(1L).get();
+        user = usersRepository.findOneByEmail("user@mail.com");
     }
 }

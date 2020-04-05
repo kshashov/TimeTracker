@@ -12,7 +12,7 @@ public interface ProjectsService {
 
     Project updateProject(@NotNull Project project);
 
-    boolean deleteOrDeactivateProject(@NotNull Project project);
+    boolean deleteOrDeactivateProject(@NotNull Long projectId);
 
-    boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Project project);
+    boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Long projectId);
 }
