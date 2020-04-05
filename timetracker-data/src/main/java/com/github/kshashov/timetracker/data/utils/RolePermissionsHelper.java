@@ -32,7 +32,7 @@ public class RolePermissionsHelper {
     }
 
     private void reload() {
-        this.roles = rolesRepository.findAllWithPermissions().stream()
+        this.roles = rolesRepository.findAll().stream()
                 .collect(Collectors.toMap(
                         Role::getId,
                         r -> r.getPermissions().stream()
@@ -46,16 +46,16 @@ public class RolePermissionsHelper {
         return roles.containsKey(role.getId()) && roles.get(role.getId()).contains(permission.getPemissionCode());
     }
 
-    public Boolean hasProjectPermission(User user, Project project, ProjectPermissionType projectPermission) {
+    public boolean hasProjectPermission(User user, Project project, ProjectPermissionType projectPermission) {
         return hasProjectPermission(user, project.getId(), projectPermission);
     }
 
-    public Boolean hasProjectPermission(User user, Long projectId, ProjectPermissionType projectPermission) {
+    public boolean hasProjectPermission(User user, Long projectId, ProjectPermissionType projectPermission) {
         ProjectRole projectRole = projectRolesRepository.findOneByUserIdAndProjectId(user.getId(), projectId);
-
         if (projectRole == null) {
             return false;
         }
+
         return hasPermission(projectRole.getRole(), projectPermission);
     }
 }

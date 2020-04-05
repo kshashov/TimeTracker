@@ -273,14 +273,14 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         // Action exists and has no entries
         assertThat(action).isNotNull();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(0);
 
         boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deleted
         assertThat(isDeleted).isTrue();
         assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_NoEntries_ReturnsTrue")).isFalse();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(0);
     }
 
     @Test
@@ -290,14 +290,14 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         // Action exists and has open entries and actions
         assertThat(action).isNotNull();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(2);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(2);
 
         boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deleted
         assertThat(isDeleted).isTrue();
         assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_NoClosedEntries")).isFalse();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(0);
     }
 
     @Test
@@ -307,15 +307,15 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         // Action exists and has entries and actions
         assertThat(action).isNotNull();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(3);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(3);
 
         boolean isDeleted = actionsService.deleteOrDeactivateAction(action.getId());
 
         // Action is deactivated
         assertThat(isDeleted).isFalse();
         assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "deleteOrDeactivateAction_HasClosedEntries")).isTrue();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(2);
-        assertThat(entriesRepository.findAllByAction(action).stream()
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(2);
+        assertThat(entriesRepository.findByAction(action).stream()
                 .allMatch(Entry::getIsClosed)
         ).isTrue();
     }
@@ -331,7 +331,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         // Action exists and has no entries
         assertThat(action).isNotNull();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(0);
 
         // Make user to has EDIT_PROJECT_ACTIONS project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
@@ -342,7 +342,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         // Action is deleted
         assertThat(isDeleted).isTrue();
         assertThat(actionsRepository.existsById(action.getId())).isFalse();
-        assertThat(entriesRepository.findAllByAction(action).size()).isEqualTo(0);
+        assertThat(entriesRepository.findByAction(action).size()).isEqualTo(0);
     }
 
     @Test

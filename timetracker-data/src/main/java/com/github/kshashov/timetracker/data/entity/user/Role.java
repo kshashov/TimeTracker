@@ -14,6 +14,9 @@ import java.util.Set;
 @Table(name = "roles", schema = "public", uniqueConstraints = {
         @UniqueConstraint(name = "roles_unique_code", columnNames = "code")
 })
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Role.permissions", attributeNodes = @NamedAttributeNode("permissions"))
+})
 public class Role implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

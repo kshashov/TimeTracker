@@ -140,7 +140,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         // Validate
         Objects.requireNonNull(action.getId());
 
-        if (actionsRepository.existsOtherByProjectAndTitle(action.getProject(), action.getTitle(), action)) {
+        if (actionsRepository.existsByProjectAndTitleAndIdNot(action.getProject(), action.getTitle(), action.getId())) {
             throw new IncorrectArgumentException("Project action already exists");
         }
 

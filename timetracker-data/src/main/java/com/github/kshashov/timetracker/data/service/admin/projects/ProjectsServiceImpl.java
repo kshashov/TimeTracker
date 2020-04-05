@@ -156,7 +156,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         // Validate
         Objects.requireNonNull(project.getId());
 
-        if (projectsRepository.existsOtherByTitle(project.getTitle(), project)) {
+        if (projectsRepository.existsByTitleAndIdNot(project.getTitle(), project.getId())) {
             throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
         }
 

@@ -99,7 +99,7 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
     }
 
     public void reloadActions() {
-        List<Action> actions = actionsRepository.findAllByProject(project);
+        List<Action> actions = actionsRepository.findByProject(project);
         actionsObservable.onNext(actions);
     }
 

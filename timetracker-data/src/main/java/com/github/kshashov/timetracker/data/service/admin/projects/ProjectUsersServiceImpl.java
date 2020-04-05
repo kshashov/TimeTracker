@@ -100,7 +100,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
             throw new IllegalArgumentException();
         }
 
-        if (projectRolesRepository.hasProjectRole(projectRole.getUser(), projectRole.getProject())) {
+        if (projectRolesRepository.existsByUserAndProject(projectRole.getUser(), projectRole.getProject())) {
             throw new IncorrectArgumentException("Project user already exists");
         }
 
