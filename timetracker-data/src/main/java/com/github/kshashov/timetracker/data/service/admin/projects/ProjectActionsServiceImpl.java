@@ -37,6 +37,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Action createAction(@NotNull User user, @NotNull Action action) {
         Objects.requireNonNull(action.getProject());
 
@@ -48,6 +49,30 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public Action updateAction(@NotNull User user, @NotNull Action action) {
+        Objects.requireNonNull(action.getProject());
+
+        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return updateAction(action);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public boolean deleteOrDeactivateAction(@NotNull User user, Long actionId) {
+        Action action = actionsRepository.findOneById(actionId);
+        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return doDeleteOrDeactivateAction(action);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Action createAction(@NotNull Action action) {
         try {
             action.setIsActive(true);
@@ -68,17 +93,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
-    public Action updateAction(@NotNull User user, @NotNull Action action) {
-        Objects.requireNonNull(action.getProject());
-
-        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return updateAction(action);
-    }
-
-    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Action updateAction(@NotNull Action action) {
         try {
             return doUpdateAction(action);
@@ -98,23 +113,13 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     @Override
-    public boolean deleteOrDeactivateAction(@NotNull User user, Long actionId) {
-        Action action = actionsRepository.findOneById(actionId);
-        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return doDeleteOrDeactivateAction(action);
-    }
-
-    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateAction(@NotNull Long actionId) {
         Action action = actionsRepository.findOneById(actionId);
 
         return doDeleteOrDeactivateAction(action);
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Action doCreateAction(@NotNull Action action) {
         preValidate(action);
 
@@ -133,7 +138,6 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         return action;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Action doUpdateAction(@NotNull Action action) {
         preValidate(action);
 
@@ -150,7 +154,6 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         return action;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private boolean doDeleteOrDeactivateAction(@NotNull Action action) {
 
         if (!action.getIsActive()) {

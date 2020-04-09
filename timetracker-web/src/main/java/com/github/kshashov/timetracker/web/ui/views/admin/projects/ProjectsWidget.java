@@ -4,6 +4,7 @@ import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
@@ -31,6 +32,7 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
     private final List<Subscription> subscriptions = new ArrayList<>();
 
     private final Grid<ProjectRole> projectsGrid = new Grid<>();
+    private final Button createProject = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
     private final ProjectEditorDialog createProjectDialog = new ProjectEditorDialog("Create Project");
     private final ProjectEditorDialog editProjectDialog = new ProjectEditorDialog("Edit Project");
 
@@ -46,13 +48,12 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
     }
 
     private void initActions() {
-        Button plus = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
-        plus.addClickListener(event -> viewModel.createProject());
+        createProject.addClickListener(event -> viewModel.createProject());
 
         Button refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
         refresh.addClickListener(event -> viewModel.reloadProjects());
 
-        addActions(plus, refresh);
+        addActions(createProject, refresh);
     }
 
     private void initProjectsGrid() {
@@ -88,7 +89,16 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
         super.onAttach(attachEvent);
 
         subscriptions.add(viewModel.projects()
-                .subscribe(this::reloadProjects));
+                .subscribe(projects -> {
+                    CrudEntity.CrudAccess access = projects.getAccess();
+                    if (access.canView()) {
+                        setVisible(true);
+                        createProject.setVisible(access.canCreate());
+                        reloadProjects(projects.getEntity());
+                    } else {
+                        setVisible(false);
+                    }
+                }));
 
         subscriptions.add(viewModel.createProjectDialogs()
                 .subscribe(projectDialog -> {

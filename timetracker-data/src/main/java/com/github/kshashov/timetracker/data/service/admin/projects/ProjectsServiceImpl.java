@@ -56,6 +56,27 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public Project updateProject(@NotNull User user, @NotNull Project project) {
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return updateProject(project);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
+        if (!rolePermissionsHelper.hasProjectPermission(user, projectId, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return deleteOrDeactivateProject(projectId);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Project createProject(@NotNull User user, @NotNull Project project) {
         try {
             project.setIsActive(true);
@@ -76,24 +97,7 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
-    public Project updateProject(@NotNull User user, @NotNull Project project) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return updateProject(project);
-    }
-
-    @Override
-    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, projectId, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return deleteOrDeactivateProject(projectId);
-    }
-
-    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Project updateProject(@NotNull Project project) {
         try {
             return doUpdateProject(project);
@@ -113,11 +117,11 @@ public class ProjectsServiceImpl implements ProjectsService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProject(@NotNull Long projectId) {
         return doDeleteOrDeactivateProject(projectId);
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Project doCreateProject(@NotNull User user, @NotNull Project project) {
         preValidate(project);
 
@@ -149,7 +153,6 @@ public class ProjectsServiceImpl implements ProjectsService {
         return project;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private Project doUpdateProject(@NotNull Project project) {
         preValidate(project);
 
@@ -166,10 +169,9 @@ public class ProjectsServiceImpl implements ProjectsService {
         return project;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    private boolean doDeleteOrDeactivateProject(@NotNull Long projectId) {
+    public boolean doDeleteOrDeactivateProject(@NotNull Long projectId) {
 
-        Project project = projectsRepository.getOne(projectId);
+        Project project = projectsRepository.findById(projectId).get();
 
         // Validate
         if (!project.getIsActive()) {

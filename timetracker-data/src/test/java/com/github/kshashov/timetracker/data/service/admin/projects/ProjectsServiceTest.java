@@ -56,7 +56,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         Project result = projectsService.createProject(getUser(), project);
 
         assertThat(projectsRepository.existsByTitle("createProject")).isTrue();
-        result = projectsRepository.getOne(result.getId());
+        result = projectsRepository.findById(result.getId()).get();
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
         assertThat(result.getTitle()).isEqualTo("createProject");
@@ -163,7 +163,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         project.setTitle("updateProject_1");
 
         projectsService.updateProject(project);
-        Project result = projectsRepository.getOne(project.getId());
+        Project result = projectsRepository.findById(project.getId()).orElse(null);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(project.getId());
         assertThat(result.getTitle()).isEqualTo("updateProject_1");
@@ -186,7 +186,7 @@ public class ProjectsServiceTest extends BaseUserTest {
 
         // Update project
         projectsService.updateProject(user, project);
-        Project result = projectsRepository.getOne(project.getId());
+        Project result = projectsRepository.findById(project.getId()).orElse(null);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(project.getId());
         assertThat(result.getTitle()).isEqualTo("updateProject_CorrectUser_1");

@@ -3,11 +3,14 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
+import com.github.kshashov.timetracker.web.ui.components.ConfirmDialog;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectActionEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -27,9 +30,13 @@ public class ProjectActionsWidget extends Widget {
     private final ProjectActionsViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
 
+    private CrudEntity.CrudAccess access;
+
     private ProjectActionEditorDialog createActionDialog = new ProjectActionEditorDialog("Create Action");
     private ProjectActionEditorDialog editActionDialog = new ProjectActionEditorDialog("Edit Action");
     private final Grid<Action> actionsGrid = new Grid<>();
+    private Button createAction = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
+    private final ConfirmDialog confirmDialog = new ConfirmDialog("Delete", "Are you sure you wan to delete this user role?");
 
     @Autowired
     public ProjectActionsWidget(ProjectActionsViewModel viewModel) {
@@ -41,13 +48,12 @@ public class ProjectActionsWidget extends Widget {
     }
 
     private void initActions() {
-        var plus = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
-        plus.addClickListener(event -> viewModel.createAction());
+        createAction.addClickListener(event -> viewModel.createAction());
 
         var refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
         refresh.addClickListener(event -> viewModel.reloadActions());
 
-        addActions(plus, refresh);
+        addActions(createAction, refresh);
     }
 
     private void initActionsGrid() {
@@ -55,13 +61,20 @@ public class ProjectActionsWidget extends Widget {
         actionsGrid.addColumn(new ComponentRenderer<>(action -> {
             var layout = new HorizontalLayout();
 
-            var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
-            edit.addClickListener(e -> viewModel.updateAction(action));
-            var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
-            delete.addClickListener(e -> viewModel.updateAction(action));
+            if (access.canEdit()) {
+                var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
+                edit.addClickListener(e -> viewModel.updateAction(action));
+                layout.add(edit);
+            }
 
-            layout.add(edit);
-            layout.add(delete);
+            if (access.canDelete()) {
+                var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+                delete.addClickListener(e -> confirmDialog.open(b -> {
+                    if (b) viewModel.deleteAction(action);
+                }));
+                layout.add(delete);
+            }
+
             return layout;
         })).setHeader("");
         actionsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
@@ -82,7 +95,16 @@ public class ProjectActionsWidget extends Widget {
         super.onAttach(attachEvent);
 
         subscriptions.add(viewModel.actions().
-                subscribe(this::reloadActions));
+                subscribe(actions -> {
+                    access = actions.getAccess();
+                    if (access.canView()) {
+                        setVisible(true);
+                        createAction.setVisible(access.canCreate());
+                        reloadActions(actions.getEntity());
+                    } else {
+                        setVisible(false);
+                    }
+                }));
 
         subscriptions.add(viewModel.createActionDialogs()
                 .subscribe(actionDialog -> {
@@ -93,9 +115,6 @@ public class ProjectActionsWidget extends Widget {
                 .subscribe(actionDialog -> {
                     editActionDialog.open(actionDialog.getAction(), actionDialog.getValidator());
                 }));
-
-        subscriptions.add(viewModel.hasAccess()
-                .subscribe(this::setVisible));
     }
 
     @Override

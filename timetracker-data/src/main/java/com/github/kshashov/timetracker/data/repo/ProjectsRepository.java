@@ -9,7 +9,7 @@ public interface ProjectsRepository extends JpaRepository<Project, Long>, BaseRe
 
     boolean existsByTitle(String title);
 
-    Project findOneByTitle(String title);
-
     boolean existsByTitleAndIdNot(String title, Long projectId);
+
+    Project findOneByTitle(String title);
 }

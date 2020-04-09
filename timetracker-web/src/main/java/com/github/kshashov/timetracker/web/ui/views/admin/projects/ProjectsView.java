@@ -3,11 +3,13 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
+import com.github.kshashov.timetracker.web.ui.components.ConfirmDialog;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.detail.Detail;
 import com.github.kshashov.timetracker.web.ui.components.detail.DetailHeader;
 import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
@@ -15,6 +17,7 @@ import com.github.kshashov.timetracker.web.ui.views.MasterDetail;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -38,6 +41,9 @@ public class ProjectsView extends MasterDetail {
     private final ProjectUsersWidget projectUsersView;
     private final Detail detailsDrawer = getDetailsDrawer();
     private final DetailHeader detailsDrawerHeader = new DetailHeader("");
+    private final ConfirmDialog confirmDialog;
+    private final Button edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
+    private final Button delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
 
     @Autowired
     public ProjectsView(
@@ -54,6 +60,11 @@ public class ProjectsView extends MasterDetail {
         this.projectActionsView = projectActionsView;
         this.projectUsersView = projectUsersView;
 
+        confirmDialog = new ConfirmDialog("Delete", "Are you sure you wan to delete this project?",
+                b -> {
+                    if (b) projectsViewModel.deleteProject(selectedProject);
+                });
+
         setDetailSize(Size.LARGE);
         setViewContent(createContent());
         initDetailsDrawer();
@@ -69,7 +80,6 @@ public class ProjectsView extends MasterDetail {
 
     private void resetDetails() {
         detailsDrawerHeader.setTitle("Empty");
-        detailsDrawerHeader.getActions().setVisible(false);
         detailsDrawer.collapse();
 
         projectInfoView.setVisible(false);
@@ -89,10 +99,8 @@ public class ProjectsView extends MasterDetail {
 
     private void initDetailsDrawer() {
         // Header
-        var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
         edit.addClickListener(e -> projectsViewModel.updateProject(selectedProject));
-        var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
-        delete.addClickListener(e -> projectsViewModel.updateProject(selectedProject));
+        delete.addClickListener(e -> confirmDialog.open());
 
         detailsDrawerHeader.setCanReset(false);
         detailsDrawerHeader.addActions(edit, delete);
@@ -119,17 +127,19 @@ public class ProjectsView extends MasterDetail {
 
         MainLayout.get().getAppBar().setTitle("My Projects");
 
-        subscriptions.add(projectsViewModel.hasProjectAccess()
-                .subscribe(b -> detailsDrawerHeader.getActions().setVisible(b)));
 
         subscriptions.add(projectsViewModel.project()
                 .subscribe(projectRole -> {
-                    if (projectRole == null) {
+                    CrudEntity.CrudAccess access = projectRole.getAccess();
+                    edit.setVisible(access.canEdit());
+                    delete.setVisible(access.canDelete());
+
+                    if (projectRole.getEntity() == null) {
                         selectedProject = null;
                         resetDetails();
                     } else {
-                        selectedProject = projectRole.getProject();
-                        showProjectDetails(projectRole.getProject(), projectRole.getRole());
+                        selectedProject = projectRole.getEntity().getProject();
+                        showProjectDetails(projectRole.getEntity().getProject(), projectRole.getEntity().getRole());
                     }
                 }));
     }

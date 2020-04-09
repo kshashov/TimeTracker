@@ -4,11 +4,12 @@ import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectActionsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
-import com.github.kshashov.timetracker.web.security.ProjectPermission;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -32,11 +33,11 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
 
     private Project project;
     private final User user;
+    private CrudEntity.CrudAccess access;
 
     private final PublishSubject<ActionDialog> createActionDialogObservable = PublishSubject.create();
     private final PublishSubject<ActionDialog> updateActionDialogObservable = PublishSubject.create();
-    private final BehaviorSubject<List<Action>> actionsObservable = BehaviorSubject.create();
-    private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
+    private final BehaviorSubject<CrudEntity<List<Action>>> actionsObservable = BehaviorSubject.create();
 
     @Autowired
     public ProjectActionsViewModel(ActionsRepository actionsRepository, ProjectActionsService actionsService, RolePermissionsHelper rolePermissionsHelper) {
@@ -48,10 +49,9 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
 
     public void setProject(Project project, Role role) {
         this.project = project;
+        this.access = checkAccess(project, role);
 
-        if (checkAccess(role)) {
-            reloadActions();
-        }
+        reloadActions();
     }
 
     public void createAction() {
@@ -76,11 +76,13 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
         ));
     }
 
-    public Observable<Boolean> hasAccess() {
-        return hasAccessObservable;
+    public void deleteAction(Action action) {
+        handleDataManipulation(
+                () -> actionsService.deleteOrDeactivateAction(action.getId()),
+                result -> reloadActions());
     }
 
-    public Observable<List<Action>> actions() {
+    public Observable<CrudEntity<List<Action>>> actions() {
         return actionsObservable;
     }
 
@@ -92,15 +94,26 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
         return updateActionDialogObservable;
     }
 
-    private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_ACTIONS);
-        hasAccessObservable.onNext(hasAccess);
-        return hasAccess;
+    private CrudEntity.CrudAccess checkAccess(Project project, Role role) {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+            if (!project.getIsActive()) {
+                return CrudEntity.CrudAccess.READ_ONLY;
+            }
+            return CrudEntity.CrudAccess.FULL_ACCESS;
+        } else if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.VIEW_PROJECT_INFO)) {
+            return CrudEntity.CrudAccess.READ_ONLY;
+        }
+        return CrudEntity.CrudAccess.DENIED;
     }
 
     public void reloadActions() {
+        if (access.equals(CrudEntity.CrudAccess.DENIED)) {
+            actionsObservable.onNext(new CrudEntity<List<Action>>(null, access));
+            return;
+        }
+
         List<Action> actions = actionsRepository.findByProject(project);
-        actionsObservable.onNext(actions);
+        actionsObservable.onNext(new CrudEntity<>(actions, access));
     }
 
     @Getter

@@ -4,6 +4,7 @@ import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
@@ -11,7 +12,7 @@ import com.github.kshashov.timetracker.data.service.admin.projects.ProjectUsersS
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
-import com.github.kshashov.timetracker.web.security.ProjectPermission;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 @UIScope
 @SpringComponent
 public class ProjectUsersViewModel extends VerticalLayout implements HasUser, DataHandler {
-    private final ProjectUsersServiceImpl projectsAdminService;
+    private final ProjectUsersServiceImpl projectRolesService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
     private final List<Role> roles;
@@ -40,22 +41,22 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
     private Project project;
 
     private final CallbackDataProvider<User, String> usersDataProvider;
+    private CrudEntity.CrudAccess access;
 
     private final PublishSubject<ProjectRoleDialog> createProjectRoleObservable = PublishSubject.create();
     private final PublishSubject<ProjectRoleDialog> updateProjectRoleObservable = PublishSubject.create();
-    private final BehaviorSubject<List<ProjectRole>> projectRolesObservable = BehaviorSubject.create();
-    private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
+    private final BehaviorSubject<CrudEntity<List<ProjectRole>>> projectRolesObservable = BehaviorSubject.create();
 
     @Autowired
     public ProjectUsersViewModel(
-            ProjectUsersServiceImpl projectsAdminService,
+            ProjectUsersServiceImpl projectRolesService,
             ProjectRolesRepository projectRolesRepository,
             RolesRepository rolesRepository,
             UsersRepository usersRepository,
             RolePermissionsHelper rolePermissionsHelper) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.user = getUser();
-        this.projectsAdminService = projectsAdminService;
+        this.projectRolesService = projectRolesService;
         this.projectRolesRepository = projectRolesRepository;
 
         // TODO except inactive?
@@ -71,14 +72,10 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
                 });
     }
 
-    public Observable<Boolean> hasAccess() {
-        return hasAccessObservable;
-    }
-
     public void setProject(Project project, Role role) {
         this.project = project;
+        this.access = checkAccess(project, role);
 
-        checkAccess(role);
         reloadUsers();
     }
 
@@ -89,7 +86,7 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         createProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
-                        () -> projectsAdminService.createProjectRole(user, bean),
+                        () -> projectRolesService.createProjectRole(user, bean),
                         result -> reloadUsers()),
                 roles,
                 usersDataProvider
@@ -100,19 +97,30 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         updateProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
-                        () -> projectsAdminService.updateProjectRole(user, bean),
+                        () -> projectRolesService.updateProjectRole(user, bean),
                         result -> reloadUsers()),
                 roles,
                 usersDataProvider
         ));
     }
 
-    public void reloadUsers() {
-        List<ProjectRole> users = projectRolesRepository.findByProject(project);
-        projectRolesObservable.onNext(users);
+    public void deleteProjectRole(ProjectRole projectRole) {
+        handleDataManipulation(
+                () -> projectRolesService.deleteOrDeactivateProjectRole(projectRole.getIdentity()),
+                result -> reloadUsers());
     }
 
-    public Observable<List<ProjectRole>> projectRoles() {
+    public void reloadUsers() {
+        if (access.equals(CrudEntity.CrudAccess.DENIED)) {
+            projectRolesObservable.onNext(new CrudEntity<>(null, access));
+            return;
+        }
+
+        List<ProjectRole> users = projectRolesRepository.findByProject(project);
+        projectRolesObservable.onNext(new CrudEntity<>(users, access));
+    }
+
+    public Observable<CrudEntity<List<ProjectRole>>> projectRoles() {
         return projectRolesObservable;
     }
 
@@ -124,8 +132,17 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         return updateProjectRoleObservable;
     }
 
-    private void checkAccess(Role role) {
-        hasAccessObservable.onNext(rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_USERS));
+    private CrudEntity.CrudAccess checkAccess(Project project, Role role) {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_USERS)) {
+            if (!project.getIsActive()) {
+                return CrudEntity.CrudAccess.READ_ONLY;
+            }
+            return CrudEntity.CrudAccess.FULL_ACCESS;
+        } else if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.VIEW_PROJECT_INFO)) {
+            return CrudEntity.CrudAccess.READ_ONLY;
+        }
+
+        return CrudEntity.CrudAccess.DENIED;
     }
 
 

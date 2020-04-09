@@ -31,9 +31,11 @@ public interface DataHandler {
                 UIUtils.showErrorNotification(ex.getMessage());
                 return ValidationResult.error(ex.getMessage());
             } else {
+                UIUtils.showErrorNotification(ex.getMessage());
                 UIUtils.showErrorNotification("Unexpected server error. Please try again later");
             }
         } catch (Exception ex) {
+            UIUtils.showErrorNotification(ex.getMessage());
             UIUtils.showErrorNotification("Unexpected server error. Please try again later");
         }
 

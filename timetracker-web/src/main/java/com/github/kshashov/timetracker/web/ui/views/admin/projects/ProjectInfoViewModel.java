@@ -2,9 +2,10 @@ package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Role;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
-import com.github.kshashov.timetracker.web.security.ProjectPermission;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -17,8 +18,7 @@ import rx.subjects.BehaviorSubject;
 public class ProjectInfoViewModel implements HasUser, DataHandler {
     private final RolePermissionsHelper rolePermissionsHelper;
 
-    private final BehaviorSubject<Project> projectObservable = BehaviorSubject.create();
-    private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
+    private final BehaviorSubject<CrudEntity<Project>> projectObservable = BehaviorSubject.create();
 
     @Autowired
     public ProjectInfoViewModel(RolePermissionsHelper rolePermissionsHelper) {
@@ -26,21 +26,25 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
     }
 
     public void setProject(Project project, Role role) {
-        checkAccess(role);
-        projectObservable.onNext(project);
+        CrudEntity.CrudAccess access = checkAccess(role);
+
+        if (access.equals(CrudEntity.CrudAccess.DENIED)) {
+            projectObservable.onNext(new CrudEntity<>(null, access));
+            return;
+        }
+
+        projectObservable.onNext(new CrudEntity<>(project, access));
     }
 
-    public Observable<Project> project() {
+    public Observable<CrudEntity<Project>> project() {
         return projectObservable;
     }
 
-    public Observable<Boolean> hasAccess() {
-        return hasAccessObservable;
-    }
+    private CrudEntity.CrudAccess checkAccess(Role role) {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.VIEW_PROJECT_INFO)) {
+            return CrudEntity.CrudAccess.READ_ONLY;
+        }
 
-    private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_MY_LOGS);
-        hasAccessObservable.onNext(hasAccess);
-        return hasAccess;
+        return CrudEntity.CrudAccess.DENIED;
     }
 }

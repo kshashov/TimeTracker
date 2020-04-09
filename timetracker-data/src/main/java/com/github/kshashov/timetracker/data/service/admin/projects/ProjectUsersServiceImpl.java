@@ -37,6 +37,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole createProjectRole(@NotNull User user, @NotNull ProjectRole projectRole) {
         Objects.requireNonNull(projectRole.getProject());
         Objects.requireNonNull(projectRole.getUser());
@@ -53,6 +54,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole updateProjectRole(@NotNull User user, @NotNull ProjectRole projectRole) {
         Objects.requireNonNull(projectRole.getProject());
 
@@ -68,6 +70,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull User user, @NotNull ProjectRoleIdentity projectRoleIdentity) {
         if (!rolePermissionsHelper.hasProjectPermission(user, projectRoleIdentity.getProjectId(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
             throw new NoPermissionException("You have no permissions to update this project");
@@ -77,21 +80,23 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole createProjectRole(@NotNull ProjectRole projectRole) {
         return doCreateProjectRole(projectRole);
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole updateProjectRole(@NotNull ProjectRole projectRole) {
         return doUpdateProjectRole(projectRole);
     }
 
     @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull ProjectRoleIdentity projectRoleIdentity) {
         return doDeleteOrDeactivateProjectRole(projectRoleIdentity);
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private ProjectRole doCreateProjectRole(@NotNull ProjectRole projectRole) {
         preValidate(projectRole);
 
@@ -114,7 +119,6 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         return projectRole;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole doUpdateProjectRole(@NotNull ProjectRole projectRole) {
         preValidate(projectRole);
 
@@ -127,10 +131,9 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         return projectRole;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     private boolean doDeleteOrDeactivateProjectRole(@NotNull ProjectRoleIdentity projectRoleIdentity) {
 
-        ProjectRole projectRole = projectRolesRepository.getOne(projectRoleIdentity);
+        ProjectRole projectRole = projectRolesRepository.findById(projectRoleIdentity).get();
         if (projectRole.getRole().getCode().equals(ProjectRoleType.INACTIVE.getCode())) {
             throw new IncorrectArgumentException("Project role is already inactive");
         }

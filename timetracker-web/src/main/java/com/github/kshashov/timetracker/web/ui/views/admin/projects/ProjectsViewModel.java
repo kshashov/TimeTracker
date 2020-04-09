@@ -4,11 +4,12 @@ import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
-import com.github.kshashov.timetracker.web.security.ProjectPermission;
+import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -32,9 +33,8 @@ public class ProjectsViewModel implements HasUser, DataHandler {
 
     private final PublishSubject<ProjectDialog> createProjectDialogObservable = PublishSubject.create();
     private final PublishSubject<ProjectDialog> updateProjectDialogObservable = PublishSubject.create();
-    private final BehaviorSubject<ProjectRole> selectedProjectObservable = BehaviorSubject.create();
-    private final BehaviorSubject<List<ProjectRole>> projectsObservable = BehaviorSubject.create();
-    private final BehaviorSubject<Boolean> hasAccessObservable = BehaviorSubject.create();
+    private final BehaviorSubject<CrudEntity<ProjectRole>> selectedProjectObservable = BehaviorSubject.create();
+    private final BehaviorSubject<CrudEntity<List<ProjectRole>>> projectsObservable = BehaviorSubject.create();
 
     private final User user;
     private ProjectRole selectedProject;
@@ -54,10 +54,12 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     }
 
     public void select(ProjectRole projectRole) {
-        if (projectRole != null) checkAccess(projectRole.getRole());
+        CrudEntity.CrudAccess projectAccess = projectRole == null
+                ? CrudEntity.CrudAccess.READ_ONLY
+                : checkAccess(projectRole.getProject(), projectRole.getRole());
 
         selectedProject = projectRole;
-        selectedProjectObservable.onNext(projectRole);
+        selectedProjectObservable.onNext(new CrudEntity<>(projectRole, projectAccess));
     }
 
     public void createProject() {
@@ -81,6 +83,12 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         ));
     }
 
+    public void deleteProject(Project project) {
+        handleDataManipulation(
+                () -> projectsService.deleteOrDeactivateProject(project.getId()),
+                result -> reloadProjects());
+    }
+
     public void reloadProjects() {
         var projectRoles = projectRolesRepository.findByUser(user);
 
@@ -94,16 +102,18 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         if ((selectedProject == null) && (projectRoles.size() > 0)) {
             // Select first item
             select(projectRoles.iterator().next());
+        } else if (selectedProject == null) {
+            select(null);
         }
 
-        projectsObservable.onNext(projectRoles);
+        projectsObservable.onNext(new CrudEntity<>(projectRoles, CrudEntity.CrudAccess.FULL_ACCESS));
     }
 
-    public Observable<ProjectRole> project() {
+    public Observable<CrudEntity<ProjectRole>> project() {
         return selectedProjectObservable;
     }
 
-    public Observable<List<ProjectRole>> projects() {
+    public Observable<CrudEntity<List<ProjectRole>>> projects() {
         return projectsObservable;
     }
 
@@ -115,14 +125,17 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         return updateProjectDialogObservable;
     }
 
-    public Observable<Boolean> hasProjectAccess() {
-        return hasAccessObservable;
-    }
+    private CrudEntity.CrudAccess checkAccess(Project project, Role role) {
+        if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+            if (!project.getIsActive()) {
+                return CrudEntity.CrudAccess.READ_ONLY;
+            }
+            return CrudEntity.CrudAccess.FULL_ACCESS;
+        } else if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.VIEW_PROJECT_INFO)) {
+            return CrudEntity.CrudAccess.READ_ONLY;
+        }
 
-    private boolean checkAccess(Role role) {
-        boolean hasAccess = rolePermissionsHelper.hasPermission(role, ProjectPermission.EDIT_PROJECT_INFO);
-        hasAccessObservable.onNext(hasAccess);
-        return hasAccess;
+        return CrudEntity.CrudAccess.DENIED;
     }
 
     @Getter

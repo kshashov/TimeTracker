@@ -54,7 +54,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         Action result = actionsService.createAction(action);
 
         assertThat(actionsRepository.existsByProjectAndTitle(getProject(), "createAction")).isTrue();
-        result = actionsRepository.getOne(result.getId());
+        result = actionsRepository.findById(result.getId()).orElse(null);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
         assertThat(result.getTitle()).isEqualTo("createAction");
@@ -202,7 +202,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         action.setTitle("updateAction_1");
 
         actionsService.updateAction(action);
-        Action result = actionsRepository.getOne(action.getId());
+        Action result = actionsRepository.findById(action.getId()).orElse(null);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(action.getId());
         assertThat(result.getTitle()).isEqualTo("updateAction_1");
@@ -226,7 +226,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         // Update project
         actionsService.updateAction(user, action);
-        Action result = actionsRepository.getOne(action.getId());
+        Action result = actionsRepository.findById(action.getId()).orElse(null);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(action.getId());
         assertThat(result.getTitle()).isEqualTo("updateAction_CorrectUser_Ok_1");

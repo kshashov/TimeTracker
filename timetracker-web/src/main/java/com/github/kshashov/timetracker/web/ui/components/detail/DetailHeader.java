@@ -1,12 +1,9 @@
 package com.github.kshashov.timetracker.web.ui.components.detail;
 
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
-import com.github.kshashov.timetracker.web.ui.layout.size.Horizontal;
 import com.github.kshashov.timetracker.web.ui.layout.size.Right;
-import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.BoxShadowBorders;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
-import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -26,8 +23,6 @@ public class DetailHeader extends FlexBoxLayout {
     public DetailHeader(String title) {
         setClassName(CLASS_NAME);
         addClassName(BoxShadowBorders.BOTTOM);
-        setFlexDirection(FlexDirection.COLUMN);
-        setWidthFull();
 
         this.close = UIUtils.createTertiaryInlineButton(VaadinIcon.CLOSE);
         this.close.setClassName(CLASS_NAME + "__close");
@@ -40,11 +35,7 @@ public class DetailHeader extends FlexBoxLayout {
         wrapper.setAlignItems(Alignment.CENTER);
         wrapper.setSpacing(Right.L);
 
-        FlexBoxLayout wrapper2 = new FlexBoxLayout(wrapper, actions);
-        wrapper2.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        wrapper2.setPadding(Horizontal.RESPONSIVE_L, Vertical.XS);
-        wrapper2.setAlignItems(Alignment.CENTER);
-        add(wrapper2);
+        add(wrapper, actions);
     }
 
     public DetailHeader(String title, Tabs tabs) {

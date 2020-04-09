@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ProjectPermissionType implements HasPermissionCode {
+    VIEW_PROJECT_INFO("view_project_info"),
     EDIT_MY_LOGS("edit_my_logs"),
     EDIT_LOGS("edit_project_logs"),
     EDIT_PROJECT_INFO("edit_project_info"),

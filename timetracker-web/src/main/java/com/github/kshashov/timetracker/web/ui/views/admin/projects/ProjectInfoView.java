@@ -50,14 +50,14 @@ public class ProjectInfoView extends FlexBoxLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        subscriptions.add(viewModel.hasAccess()
-                .subscribe(b -> {
-                    setVisible(true);   // Readonly mode is always available
-                }));
-
         subscriptions.add(viewModel.project()
                 .subscribe(project -> {
-                    showProject(project);
+                    if (project.getAccess().canView()) {
+                        setVisible(true);
+                        showProject(project.getEntity());
+                    } else {
+                        setVisible(false);
+                    }
                 }));
     }
 

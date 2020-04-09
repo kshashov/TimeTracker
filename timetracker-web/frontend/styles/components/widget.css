@@ -5,6 +5,7 @@
 }
 
 .widget__header {
+    min-height: var(--lumo-size-m);
     padding-top: var(--lumo-space-xs);
     padding-bottom: var(--lumo-space-xs);
     padding-right: var(--lumo-space-r-m);

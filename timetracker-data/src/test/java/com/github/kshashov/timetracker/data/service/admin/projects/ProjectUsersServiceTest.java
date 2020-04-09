@@ -174,14 +174,14 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
                 .isInstanceOf(NullPointerException.class);
 
         // Empty user
-        ProjectRole projectRole1 = projectRolesRepository.getOne(projectRole0.getIdentity());
+        ProjectRole projectRole1 = projectRolesRepository.findById(projectRole0.getIdentity()).get();
         projectRole1.setUser(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole1))
                 .isInstanceOf(NullPointerException.class);
 
         // Empty role
-        ProjectRole projectRole2 = projectRolesRepository.getOne(projectRole0.getIdentity());
+        ProjectRole projectRole2 = projectRolesRepository.findById(projectRole0.getIdentity()).get();
         projectRole2.setRole(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole2))

@@ -12,22 +12,17 @@
   /*box-shadow: var(--lumo-box-shadow-m);*/
 }
 
-.details-drawer__header {
-  flex-shrink: 0;
-}
+.detail-header {
+  display: flex;
+  min-height: var(--lumo-size-m);
+  width: 100%;
+  padding-top: var(--lumo-space-xs);
+  padding-left: var(--lumo-space-r-l);
+  padding-bottom: var(--lumo-space-xs);
+  padding-right: var(--lumo-space-r-l);
+  align-items: center;
+  justify-content: space-between;
 
-.details-drawer__header vaadin-tabs {
-  box-shadow: none;
-}
-
-.details-drawer__content {
-  flex: 1;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.details-drawer__footer {
-  flex-shrink: 0;
 }
 
 .detail-header__close {
