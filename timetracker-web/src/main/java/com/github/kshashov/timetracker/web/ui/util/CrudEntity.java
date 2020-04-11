@@ -13,22 +13,23 @@ public class CrudEntity<T> {
         this.access = access;
     }
 
-    @Getter
     public enum CrudAccess {
-        DENIED(false, false, false, false),
-        READ_ONLY(true, false, false, false),
-        FULL_ACCESS(true, true, true, true);
+        DENIED(false, false, false, false, false),
+        READ_ONLY(true, false, false, false, false),
+        FULL_ACCESS(true, true, true, true, true);
 
         private boolean canView;
         private boolean canCreate;
         private boolean canEdit;
         private boolean canDelete;
+        private boolean canEnable;
 
-        CrudAccess(boolean canView, boolean canCreate, boolean canEdit, boolean canDelete) {
+        CrudAccess(boolean canView, boolean canCreate, boolean canEdit, boolean canDelete, boolean canEnable) {
             this.canView = canView;
             this.canCreate = canCreate;
             this.canEdit = canEdit;
             this.canDelete = canDelete;
+            this.canEnable = canEnable;
         }
 
         public boolean canView() {
@@ -45,6 +46,10 @@ public class CrudEntity<T> {
 
         public boolean canDelete() {
             return canDelete;
+        }
+
+        public boolean canEnable() {
+            return canEnable;
         }
     }
 }

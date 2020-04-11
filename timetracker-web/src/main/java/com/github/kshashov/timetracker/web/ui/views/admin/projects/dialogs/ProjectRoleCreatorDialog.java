@@ -23,20 +23,6 @@ public class ProjectRoleCreatorDialog extends AbstractEditorDialog<ProjectRole> 
         getFormLayout().add(createRoleField(roles));
     }
 
-    protected Select<Role> createRoleField(List<Role> roles) {
-        role.setLabel("Role");
-        role.setItemLabelGenerator(r -> r == null ? "" : r.getCode());
-        role.setEmptySelectionAllowed(true);
-        role.setRequiredIndicatorVisible(true);
-        role.setItems(roles);
-
-        getBinder().forField(role)
-                .withValidator(Objects::nonNull, "Role is empty")
-                .bind(ProjectRole::getRole, ProjectRole::setRole);
-
-        return role;
-    }
-
     protected ComboBox<User> createUserField(CallbackDataProvider<User, String> usersDataProvider) {
         user.setLabel("User");
         user.setItemLabelGenerator(u -> u == null ? "" : u.getName());
@@ -50,6 +36,20 @@ public class ProjectRoleCreatorDialog extends AbstractEditorDialog<ProjectRole> 
                 .bind(ProjectRole::getUser, ProjectRole::setUser);
 
         return user;
+    }
+
+    protected Select<Role> createRoleField(List<Role> roles) {
+        role.setLabel("Role");
+        role.setItemLabelGenerator(r -> r == null ? "" : r.getCode());
+        role.setEmptySelectionAllowed(true);
+        role.setRequiredIndicatorVisible(true);
+        role.setItems(roles);
+
+        getBinder().forField(role)
+                .withValidator(Objects::nonNull, "Role is empty")
+                .bind(ProjectRole::getRole, ProjectRole::setRole);
+
+        return role;
     }
 
     @Override

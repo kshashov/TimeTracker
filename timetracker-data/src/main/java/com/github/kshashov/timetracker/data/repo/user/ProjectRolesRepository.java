@@ -20,6 +20,9 @@ public interface ProjectRolesRepository extends JpaRepository<ProjectRole, Proje
 
     ProjectRole findOneByUserIdAndProjectId(Long userId, Long projectId);
 
+    @EntityGraph(value = "ProjectRole.project.user")
+    ProjectRole findOneByIdentity(ProjectRoleIdentity id);
+
     @EntityGraph(value = "ProjectRole.project")
     List<ProjectRole> findByUser(User user);
 

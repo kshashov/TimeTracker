@@ -72,11 +72,12 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull User user, @NotNull ProjectRoleIdentity projectRoleIdentity) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, projectRoleIdentity.getProjectId(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
+        ProjectRole projectRole = projectRolesRepository.findOneByIdentity(projectRoleIdentity);
+        if (!rolePermissionsHelper.hasProjectPermission(user, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
-        return deleteOrDeactivateProjectRole(projectRoleIdentity);
+        return doDeleteOrDeactivateProjectRole(projectRole);
     }
 
     @Override
@@ -94,7 +95,8 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull ProjectRoleIdentity projectRoleIdentity) {
-        return doDeleteOrDeactivateProjectRole(projectRoleIdentity);
+        ProjectRole projectRole = projectRolesRepository.findOneByIdentity(projectRoleIdentity);
+        return doDeleteOrDeactivateProjectRole(projectRole);
     }
 
     private ProjectRole doCreateProjectRole(@NotNull ProjectRole projectRole) {
@@ -131,18 +133,17 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         return projectRole;
     }
 
-    private boolean doDeleteOrDeactivateProjectRole(@NotNull ProjectRoleIdentity projectRoleIdentity) {
+    private boolean doDeleteOrDeactivateProjectRole(@NotNull ProjectRole projectRole) {
 
-        ProjectRole projectRole = projectRolesRepository.findById(projectRoleIdentity).get();
         if (projectRole.getRole().getCode().equals(ProjectRoleType.INACTIVE.getCode())) {
             throw new IncorrectArgumentException("Project role is already inactive");
         }
 
         // Delete open entries with user
-        entiesRepository.deleteByUserIdAndActionProjectIdAndIsClosed(projectRoleIdentity.getUserId(), projectRoleIdentity.getProjectId(), false);
+        entiesRepository.deleteByUserAndActionProjectAndIsClosed(projectRole.getUser(), projectRole.getProject(), false);
 
         //  Check if any entries are left
-        if (entiesRepository.existsByUserIdAndActionProjectId(projectRoleIdentity.getUserId(), projectRoleIdentity.getProjectId())) {
+        if (entiesRepository.existsByUserAndActionProject(projectRole.getUser(), projectRole.getProject())) {
             // Deactivate project role
             Role role = rolesRepository.findOneByCode(ProjectRoleType.INACTIVE.getCode());
             projectRole.setRole(role);

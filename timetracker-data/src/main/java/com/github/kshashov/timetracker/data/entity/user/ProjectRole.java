@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "project_roles", schema = "public")
 @NamedEntityGraphs({
+        @NamedEntityGraph(name = "ProjectRole.project.user", attributeNodes = {@NamedAttributeNode("project"), @NamedAttributeNode("user")}),
         @NamedEntityGraph(name = "ProjectRole.project", attributeNodes = @NamedAttributeNode("project")),
         @NamedEntityGraph(name = "ProjectRole.user", attributeNodes = @NamedAttributeNode("user")),
 

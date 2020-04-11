@@ -50,7 +50,7 @@ public class RolePermissionsHelper {
         return hasProjectPermission(user, project.getId(), projectPermission);
     }
 
-    public boolean hasProjectPermission(User user, Long projectId, ProjectPermissionType projectPermission) {
+    private boolean hasProjectPermission(User user, Long projectId, ProjectPermissionType projectPermission) {
         ProjectRole projectRole = projectRolesRepository.findOneByUserIdAndProjectId(user.getId(), projectId);
         if (projectRole == null) {
             return false;

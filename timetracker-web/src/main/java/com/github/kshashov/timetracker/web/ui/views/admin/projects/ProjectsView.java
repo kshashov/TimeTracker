@@ -41,9 +41,11 @@ public class ProjectsView extends MasterDetail {
     private final ProjectUsersWidget projectUsersView;
     private final Detail detailsDrawer = getDetailsDrawer();
     private final DetailHeader detailsDrawerHeader = new DetailHeader("");
-    private final ConfirmDialog confirmDialog;
+    private final ConfirmDialog activateDialog;
+    private final ConfirmDialog deleteDialog;
     private final Button edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
     private final Button delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+    private final Button activate = UIUtils.createActionButton(VaadinIcon.PLUS);
 
     @Autowired
     public ProjectsView(
@@ -60,9 +62,14 @@ public class ProjectsView extends MasterDetail {
         this.projectActionsView = projectActionsView;
         this.projectUsersView = projectUsersView;
 
-        confirmDialog = new ConfirmDialog("Delete", "Are you sure you wan to delete this project?",
+        deleteDialog = new ConfirmDialog("Delete", "Are you sure you want to delete this project?",
                 b -> {
                     if (b) projectsViewModel.deleteProject(selectedProject);
+                });
+
+        activateDialog = new ConfirmDialog("Enable", "Are you sure you want to enable this project?",
+                b -> {
+                    if (b) projectsViewModel.activateProject(selectedProject);
                 });
 
         setDetailSize(Size.LARGE);
@@ -100,10 +107,11 @@ public class ProjectsView extends MasterDetail {
     private void initDetailsDrawer() {
         // Header
         edit.addClickListener(e -> projectsViewModel.updateProject(selectedProject));
-        delete.addClickListener(e -> confirmDialog.open());
+        delete.addClickListener(e -> deleteDialog.open());
+        activate.addClickListener(e -> activateDialog.open());
 
         detailsDrawerHeader.setCanReset(false);
-        detailsDrawerHeader.addActions(edit, delete);
+        detailsDrawerHeader.addActions(edit, delete, activate);
         detailsDrawerHeader.addCloseListener(buttonClickEvent -> {
             userProjectsView.deselectAll();
             detailsDrawer.collapse();
@@ -127,18 +135,21 @@ public class ProjectsView extends MasterDetail {
 
         MainLayout.get().getAppBar().setTitle("My Projects");
 
-
         subscriptions.add(projectsViewModel.project()
                 .subscribe(projectRole -> {
-                    CrudEntity.CrudAccess access = projectRole.getAccess();
-                    edit.setVisible(access.canEdit());
-                    delete.setVisible(access.canDelete());
 
                     if (projectRole.getEntity() == null) {
                         selectedProject = null;
+                        edit.setVisible(false);
+                        delete.setVisible(false);
+                        activate.setVisible(false);
                         resetDetails();
                     } else {
                         selectedProject = projectRole.getEntity().getProject();
+                        CrudEntity.CrudAccess access = projectRole.getAccess();
+                        edit.setVisible(access.canEdit() && selectedProject.getIsActive());
+                        delete.setVisible(access.canDelete() && selectedProject.getIsActive());
+                        activate.setVisible(access.canEnable() && !selectedProject.getIsActive());
                         showProjectDetails(projectRole.getEntity().getProject(), projectRole.getEntity().getRole());
                     }
                 }));

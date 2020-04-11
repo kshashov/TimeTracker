@@ -56,7 +56,7 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     public void select(ProjectRole projectRole) {
         CrudEntity.CrudAccess projectAccess = projectRole == null
                 ? CrudEntity.CrudAccess.READ_ONLY
-                : checkAccess(projectRole.getProject(), projectRole.getRole());
+                : checkAccess(projectRole.getRole());
 
         selectedProject = projectRole;
         selectedProjectObservable.onNext(new CrudEntity<>(projectRole, projectAccess));
@@ -81,6 +81,15 @@ public class ProjectsViewModel implements HasUser, DataHandler {
                         () -> projectsService.updateProject(user, bean),
                         result -> reloadProjects())
         ));
+    }
+
+    public void activateProject(Project project) {
+        handleDataManipulation(
+                () -> {
+                    projectsService.activateProject(project.getId());
+                    return true;
+                },
+                result -> reloadProjects());
     }
 
     public void deleteProject(Project project) {
@@ -125,11 +134,8 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         return updateProjectDialogObservable;
     }
 
-    private CrudEntity.CrudAccess checkAccess(Project project, Role role) {
+    private CrudEntity.CrudAccess checkAccess(Role role) {
         if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            if (!project.getIsActive()) {
-                return CrudEntity.CrudAccess.READ_ONLY;
-            }
             return CrudEntity.CrudAccess.FULL_ACCESS;
         } else if (rolePermissionsHelper.hasPermission(role, ProjectPermissionType.VIEW_PROJECT_INFO)) {
             return CrudEntity.CrudAccess.READ_ONLY;

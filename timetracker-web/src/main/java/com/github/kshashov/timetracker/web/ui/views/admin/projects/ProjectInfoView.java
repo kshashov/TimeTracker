@@ -53,7 +53,7 @@ public class ProjectInfoView extends FlexBoxLayout {
         subscriptions.add(viewModel.project()
                 .subscribe(project -> {
                     if (project.getAccess().canView()) {
-                        setVisible(true);
+                        setVisible(project.getEntity().getIsActive());
                         showProject(project.getEntity());
                     } else {
                         setVisible(false);

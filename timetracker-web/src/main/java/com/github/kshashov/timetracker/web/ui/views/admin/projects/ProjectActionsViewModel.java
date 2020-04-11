@@ -76,9 +76,18 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
         ));
     }
 
+    public void activateAction(Action action) {
+        handleDataManipulation(
+                () -> {
+                    actionsService.activateAction(action.getId());
+                    return true;
+                },
+                result -> reloadActions());
+    }
+
     public void deleteAction(Action action) {
         handleDataManipulation(
-                () -> actionsService.deleteOrDeactivateAction(action.getId()),
+                () -> actionsService.deleteOrDeactivateAction(user, action.getId()),
                 result -> reloadActions());
     }
 
@@ -108,7 +117,7 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
 
     public void reloadActions() {
         if (access.equals(CrudEntity.CrudAccess.DENIED)) {
-            actionsObservable.onNext(new CrudEntity<List<Action>>(null, access));
+            actionsObservable.onNext(new CrudEntity<>(null, access));
             return;
         }
 

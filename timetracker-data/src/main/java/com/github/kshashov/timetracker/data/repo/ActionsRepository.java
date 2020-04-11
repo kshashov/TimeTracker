@@ -21,6 +21,7 @@ public interface ActionsRepository extends JpaRepository<Action, Long>, BaseRepo
 
     Action findOneByProjectAndTitle(Project project, String title);
 
+    @EntityGraph(value = "Action.project")
     List<Action> findByProject(Project project);
 
     List<Action> findByProjectAndIsActive(Project project, Boolean isActive);

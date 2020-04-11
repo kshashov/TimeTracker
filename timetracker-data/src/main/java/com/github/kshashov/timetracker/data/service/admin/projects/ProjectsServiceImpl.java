@@ -67,12 +67,24 @@ public class ProjectsServiceImpl implements ProjectsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, projectId, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+    public void activateProject(@NotNull User user, Long projectId) {
+        Project project = projectsRepository.findById(projectId).get();
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
-        return deleteOrDeactivateProject(projectId);
+        doActivateProject(project);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
+        Project project = projectsRepository.findById(projectId).get();
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        return doDeleteOrDeactivateProject(project);
     }
 
     @Override
@@ -118,8 +130,16 @@ public class ProjectsServiceImpl implements ProjectsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void activateProject(@NotNull Long projectId) {
+        Project project = projectsRepository.findById(projectId).get();
+        doActivateProject(project);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProject(@NotNull Long projectId) {
-        return doDeleteOrDeactivateProject(projectId);
+        Project project = projectsRepository.findById(projectId).get();
+        return doDeleteOrDeactivateProject(project);
     }
 
     private Project doCreateProject(@NotNull User user, @NotNull Project project) {
@@ -169,10 +189,17 @@ public class ProjectsServiceImpl implements ProjectsService {
         return project;
     }
 
-    public boolean doDeleteOrDeactivateProject(@NotNull Long projectId) {
+    private void doActivateProject(@NotNull Project project) {
+        // Validate
+        if (project.getIsActive()) {
+            throw new IncorrectArgumentException("Project is already active");
+        }
 
-        Project project = projectsRepository.findById(projectId).get();
+        project.setIsActive(true);
+        projectsRepository.save(project);
+    }
 
+    public boolean doDeleteOrDeactivateProject(@NotNull Project project) {
         // Validate
         if (!project.getIsActive()) {
             throw new IncorrectArgumentException("Project is already inactive");

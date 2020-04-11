@@ -42,7 +42,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         Objects.requireNonNull(action.getProject());
 
         if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
-            throw new NoPermissionException("You have no permissions to update this project");
+            throw new NoPermissionException("You have no permissions to create this project");
         }
 
         return createAction(action);
@@ -58,6 +58,17 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         }
 
         return updateAction(action);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void activateAction(@NotNull User user, Long actionId) {
+        Action action = actionsRepository.findOneById(actionId);
+        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+            throw new NoPermissionException("You have no permissions to update this project");
+        }
+
+        doActivateAction(action);
     }
 
     @Override
@@ -114,6 +125,14 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void activateAction(@NotNull Long actionId) {
+        Action action = actionsRepository.findOneById(actionId);
+
+        doActivateAction(action);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateAction(@NotNull Long actionId) {
         Action action = actionsRepository.findOneById(actionId);
 
@@ -152,6 +171,17 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         action = actionsRepository.save(action);
 
         return action;
+    }
+
+    private void doActivateAction(@NotNull Action action) {
+
+        // Validate
+        if (action.getIsActive()) {
+            throw new IncorrectArgumentException("Action is already active");
+        }
+
+        action.setIsActive(true);
+        actionsRepository.save(action);
     }
 
     private boolean doDeleteOrDeactivateAction(@NotNull Action action) {

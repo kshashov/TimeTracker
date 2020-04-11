@@ -208,6 +208,96 @@ public class ProjectsServiceTest extends BaseUserTest {
     }
 
     //
+    // ACTIVATE
+    //
+
+    @Test
+    void activateProject_Ok() {
+        // Prepare inactive project
+        Project project = projectsService.createProject(getUser(), correctProject("activateProject_IncorrectProject"));
+        project.setIsActive(false);
+        projectsRepository.save(project);
+
+        project = projectsRepository.findById(project.getId()).get();
+
+        assertThat(project).isNotNull();
+        assertThat(project.getIsActive()).isFalse();
+
+        // Activate
+        projectsService.activateProject(project.getId());
+
+        project = projectsRepository.findById(project.getId()).get();
+
+        assertThat(project).isNotNull();
+        assertThat(project.getIsActive()).isTrue();
+    }
+
+    @Test
+    void activateProject_IncorrectProject_IncorrectArgumentException() {
+        // Active project
+        Project project = projectsService.createProject(getUser(), correctProject("activateProject_IncorrectProject"));
+        assertThat(project).isNotNull();
+        project.setIsActive(true);
+
+        assertThatThrownBy(() -> projectsService.activateProject(project.getId()))
+                .isInstanceOf(IncorrectArgumentException.class);
+    }
+
+
+    //
+    // ACTIVATE BY USER
+    //
+
+    @Test
+    void activateProject_CorrectUser_Ok() {
+        User user = getUser();
+
+        // Prepare inactive project
+        Project project = projectsService.createProject(getUser(), correctProject("activateProject_CorrectUser_Ok"));
+        assertThat(project).isNotNull();
+        project.setIsActive(false);
+        projectsRepository.save(project);
+
+        project = projectsRepository.findById(project.getId()).get();
+
+        assertThat(project).isNotNull();
+        assertThat(project.getIsActive()).isFalse();
+
+        // Make user to has EDIT_PROJECT_INFO project permission
+        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
+                .thenReturn(true);
+
+        // Activate
+        projectsService.activateProject(project.getId());
+
+        project = projectsRepository.findById(project.getId()).get();
+
+        assertThat(project).isNotNull();
+        assertThat(project.getIsActive()).isTrue();
+    }
+
+
+    @Test
+    void activateProject_UserHasNoPermission_NoPermissionException() {
+        User user = getUser();
+
+        // Prepare inactive projects
+        Project project = projectsService.createProject(user, correctProject("deleteOrDeactivateProject_UserHasNoPermission"));
+        assertThat(project).isNotNull();
+        project.setIsActive(false);
+        projectsRepository.save(project);
+
+        project = projectsRepository.findById(project.getId()).get();
+
+        assertThat(project).isNotNull();
+        assertThat(project.getIsActive()).isFalse();
+
+        // Make user to has no EDIT_PROJECT_INFO project permission
+        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
+                .thenReturn(false);
+    }
+
+    //
     // DELETE BY USER
     //
 

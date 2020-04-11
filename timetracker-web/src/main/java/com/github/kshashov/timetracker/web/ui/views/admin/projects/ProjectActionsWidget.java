@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Scope("prototype")
@@ -36,7 +37,8 @@ public class ProjectActionsWidget extends Widget {
     private ProjectActionEditorDialog editActionDialog = new ProjectActionEditorDialog("Edit Action");
     private final Grid<Action> actionsGrid = new Grid<>();
     private Button createAction = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
-    private final ConfirmDialog confirmDialog = new ConfirmDialog("Delete", "Are you sure you wan to delete this user role?");
+    private final ConfirmDialog deleteDialog = new ConfirmDialog("Delete", "Are you sure you want to delete this action?");
+    private final ConfirmDialog activateDialog = new ConfirmDialog("Enable", "Are you sure you want to enable this action?");
 
     @Autowired
     public ProjectActionsWidget(ProjectActionsViewModel viewModel) {
@@ -57,22 +59,32 @@ public class ProjectActionsWidget extends Widget {
     }
 
     private void initActionsGrid() {
-        actionsGrid.addColumn(Action::getTitle).setHeader("Action");
+        actionsGrid.addColumn(new ComponentRenderer<>(action -> {
+            return UIUtils.createActiveLabel(action.getTitle(), action.getIsActive());
+        })).setHeader("Action").setSortable(true).setComparator(Comparator.comparing(Action::getTitle));
         actionsGrid.addColumn(new ComponentRenderer<>(action -> {
             var layout = new HorizontalLayout();
 
-            if (access.canEdit()) {
+            if (access.canEdit() && action.getIsActive()) {
                 var edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
                 edit.addClickListener(e -> viewModel.updateAction(action));
                 layout.add(edit);
             }
 
-            if (access.canDelete()) {
+            if (access.canDelete() && action.getIsActive()) {
                 var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
-                delete.addClickListener(e -> confirmDialog.open(b -> {
+                delete.addClickListener(e -> deleteDialog.open(b -> {
                     if (b) viewModel.deleteAction(action);
                 }));
                 layout.add(delete);
+            }
+
+            if (access.canEnable() && !action.getIsActive()) {
+                var activate = UIUtils.createActionButton(VaadinIcon.PLUS);
+                activate.addClickListener(e -> activateDialog.open(b -> {
+                    if (b) viewModel.activateAction(action);
+                }));
+                layout.add(activate);
             }
 
             return layout;

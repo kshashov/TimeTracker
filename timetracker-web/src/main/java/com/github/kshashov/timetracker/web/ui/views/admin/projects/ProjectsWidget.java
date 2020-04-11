@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.web.ui.views.admin.projects;
 
+import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
@@ -13,7 +14,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -61,8 +61,8 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
         projectsGrid.setSizeFull();
 
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
-            var span = new Span(pr.getProject().getTitle());
-            return span;
+            Project project = pr.getProject();
+            return UIUtils.createLinkTitle("/projects/" + project.getId(), project.getTitle(), project.getIsActive());
         })).setHeader("Project").setSortable(true).setComparator(Comparator.comparing(o -> o.getProject().getTitle())).setAutoWidth(true);
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
             return new RoleBadge(pr.getRole());

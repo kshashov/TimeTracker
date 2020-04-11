@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.web.ui.util.css.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -37,6 +38,20 @@ public class UIUtils {
     /* ==== BUTTONS ==== */
 
     // Styles
+
+    public static Anchor createLinkTitle(String url, String title, boolean active) {
+        return active ? createLink(url, title) : createInactiveLink(url, title);
+    }
+
+    public static Anchor createLink(String url, String title) {
+        return new Anchor(url, title);
+    }
+
+    public static Anchor createInactiveLink(String url, String title) {
+        Anchor anchor = createLink(url, title);
+        anchor.getStyle().set("text-decoration", "line-through");
+        return anchor;
+    }
 
     public static Button createActionButton(String text) {
         return createButton(text, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
@@ -235,6 +250,14 @@ public class UIUtils {
     }
 
     /* ==== LABELS ==== */
+
+    public static Label createActiveLabel(String title, boolean active) {
+        Label label = createLabel(FontSize.M, active ? TextColor.PRIMARY : TextColor.PRIMARY, title);
+        if (!active) {
+            label.getStyle().set("text-decoration", "line-through");
+        }
+        return label;
+    }
 
     public static Label createErrorLabel(String text) {
         return createErrorLabel(FontSize.S, text);

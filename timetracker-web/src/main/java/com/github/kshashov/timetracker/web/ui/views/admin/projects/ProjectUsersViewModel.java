@@ -5,6 +5,7 @@ import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
+import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
@@ -28,6 +29,7 @@ import rx.subjects.PublishSubject;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @UIScope
 @SpringComponent
@@ -59,8 +61,11 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         this.projectRolesService = projectRolesService;
         this.projectRolesRepository = projectRolesRepository;
 
-        // TODO except inactive?
-        this.roles = rolesRepository.findAll();
+        // Except inactive
+        this.roles = rolesRepository.findAll().stream()
+                .filter(r -> !r.getCode().equals(ProjectRoleType.INACTIVE.getCode()))
+                .collect(Collectors.toList());
+
         this.usersDataProvider = new CallbackDataProvider<>(
                 query -> {
                     var pageable = new OffsetLimitRequest(query.getOffset(), query.getLimit());

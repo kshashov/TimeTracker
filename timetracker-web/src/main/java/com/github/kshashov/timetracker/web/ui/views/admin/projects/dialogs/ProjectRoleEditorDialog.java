@@ -21,6 +21,19 @@ public class ProjectRoleEditorDialog extends AbstractEditorDialog<ProjectRole> {
         getFormLayout().add(createRoleField(roles));
     }
 
+    protected TextField createUserField() {
+        user.setReadOnly(true);
+        getBinder().forField(user)
+                .withNullRepresentation("")
+                .bind(
+                        pr -> pr.getUser().getName(),
+                        (pr, s) -> {
+                        }
+                );
+
+        return user;
+    }
+
     protected Select<Role> createRoleField(List<Role> roles) {
         role.setLabel("Role");
         role.setItemLabelGenerator(r -> r == null ? "" : r.getCode());
@@ -36,19 +49,6 @@ public class ProjectRoleEditorDialog extends AbstractEditorDialog<ProjectRole> {
                 );
 
         return role;
-    }
-
-    protected TextField createUserField() {
-        user.setReadOnly(true);
-        getBinder().forField(user)
-                .withNullRepresentation("")
-                .bind(
-                        pr -> pr.getUser().getName(),
-                        (pr, s) -> {
-                        }
-                );
-
-        return user;
     }
 
     @Override

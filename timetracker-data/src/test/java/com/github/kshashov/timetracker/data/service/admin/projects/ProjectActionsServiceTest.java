@@ -234,7 +234,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
     @Test
     void updateAction_UserHasNoPermission_NoPermissionException() {
-        Action action = actionsService.createAction(correctAction("updateAction_UserHasNoPermission_NoPermissionException"));
+        Action action = actionsService.createAction(correctAction("updateAction_UserHasNoPermission"));
 
         // Make user to has no EDIT_PROJECT_ACTIONS project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(getUser()), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
@@ -244,6 +244,81 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
                 .isInstanceOf(NoPermissionException.class);
     }
 
+    //
+    // ACTIVATE
+    //
+
+    @Test
+    void activateAction_IncorrectAction_IncorrectArgumentException() {
+        // Active action
+        Action action = actionsService.createAction(correctAction("activateAction_IncorrectAction"));
+        action.setIsActive(true);
+        actionsRepository.save(action);
+
+        assertThatThrownBy(() -> actionsService.activateAction(action.getId()))
+                .isInstanceOf(IncorrectArgumentException.class);
+    }
+
+    @Test
+    void activateAction_Ok() {
+        // Prepare inactive action
+        Action action = actionsService.createAction(correctAction("activateAction_Ok"));
+        action.setIsActive(false);
+        actionsRepository.save(action);
+
+        action = actionsRepository.findOneById(action.getId());
+        assertThat(action).isNotNull();
+        assertThat(action.getIsActive()).isFalse();
+
+        // Activate
+        actionsService.activateAction(action.getId());
+
+        action = actionsRepository.findOneById(action.getId());
+        assertThat(action).isNotNull();
+        assertThat(action.getIsActive()).isTrue();
+    }
+
+    //
+    // ACTIVATE BY USER
+    //
+
+    @Test
+    void activateAction_CorrectUser_Ok() {
+        // Prepare inactive action
+        Action action = actionsService.createAction(correctAction("activateAction_CorrectUser_Ok"));
+        action.setIsActive(false);
+        actionsRepository.save(action);
+
+        action = actionsRepository.findOneById(action.getId());
+        assertThat(action).isNotNull();
+        assertThat(action.getIsActive()).isFalse();
+
+        // Make user to has EDIT_PROJECT_ACTIONS project permission
+        when(rolePermissionsHelper.hasProjectPermission(eq(getUser()), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
+                .thenReturn(true);
+
+        // Activate
+        actionsService.activateAction(getUser(), action.getId());
+
+        action = actionsRepository.findOneById(action.getId());
+        assertThat(action).isNotNull();
+        assertThat(action.getIsActive()).isTrue();
+    }
+
+    @Test
+    void activateAction_UserHasNoPermission_NoPermissionException() {
+        // Prepare inactive action
+        Action action = actionsService.createAction(correctAction("activateAction_UserHasNoPermission"));
+        action.setIsActive(false);
+        actionsRepository.save(action);
+
+        // Make user to has no EDIT_PROJECT_ACTIONS project permission
+        when(rolePermissionsHelper.hasProjectPermission(eq(getUser()), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> actionsService.activateAction(getUser(), action.getId()))
+                .isInstanceOf(NoPermissionException.class);
+    }
     //
     // DELETE
     //
