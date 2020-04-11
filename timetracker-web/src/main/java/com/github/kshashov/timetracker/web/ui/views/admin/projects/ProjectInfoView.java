@@ -22,7 +22,8 @@ public class ProjectInfoView extends FlexBoxLayout {
     private final ProjectInfoViewModel viewModel;
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    private final ListItem projectListItem = new ListItem("");
+    private final ListItem title = new ListItem("Title");
+    private final ListItem status = new ListItem("Status");
 
     @Autowired
     public ProjectInfoView(ProjectInfoViewModel viewModel) {
@@ -39,11 +40,14 @@ public class ProjectInfoView extends FlexBoxLayout {
     }
 
     private void initProjectLayout() {
-        add(projectListItem);
+        title.setDividerVisible(true);
+        status.setDividerVisible(false);
+        add(title, status);
     }
 
     private void showProject(Project project) {
-        projectListItem.setPrimaryText(project.getTitle());
+        title.setSecondaryText(project.getTitle());
+        status.setSecondaryText(project.getIsActive() ? "Active" : "Inactive");
     }
 
     @Override
@@ -53,7 +57,7 @@ public class ProjectInfoView extends FlexBoxLayout {
         subscriptions.add(viewModel.project()
                 .subscribe(project -> {
                     if (project.getAccess().canView()) {
-                        setVisible(project.getEntity().getIsActive());
+                        setVisible(true);
                         showProject(project.getEntity());
                     } else {
                         setVisible(false);

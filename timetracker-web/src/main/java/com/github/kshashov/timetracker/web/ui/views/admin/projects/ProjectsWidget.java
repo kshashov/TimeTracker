@@ -66,7 +66,7 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
         })).setHeader("Project").setSortable(true).setComparator(Comparator.comparing(o -> o.getProject().getTitle())).setAutoWidth(true);
         projectsGrid.addColumn(new ComponentRenderer<>(pr -> {
             return new RoleBadge(pr.getRole());
-        })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getCode())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
+        })).setHeader("Role").setComparator(Comparator.comparing(o -> o.getRole().getTitle())).setSortable(false).setAutoWidth(true).setFlexGrow(0);
         projectsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        ((GridSingleSelectionModel<ProjectRoles>) projectsGrid.getSelectionModel()).setDeselectAllowed(false);
         projectsGrid.addSelectionListener(selectionEvent -> {

@@ -172,7 +172,7 @@ public class MainLayout extends FlexBoxLayout
         ContextMenu contextMenu = new ContextMenu(avatar);
         contextMenu.setOpenOnClick(true);
         contextMenu.addItem("Profile", e -> {
-            UI.getCurrent().navigate(UserPage.class, user.getId());
+            UI.getCurrent().navigate(UserPage.class);
         });
         contextMenu.addItem("My projects", e -> {
             UI.getCurrent().navigate(ProjectsView.class);

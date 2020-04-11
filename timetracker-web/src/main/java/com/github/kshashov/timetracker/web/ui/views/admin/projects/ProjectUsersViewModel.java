@@ -63,7 +63,7 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
 
         // Except inactive
         this.roles = rolesRepository.findAll().stream()
-                .filter(r -> !r.getCode().equals(ProjectRoleType.INACTIVE.getCode()))
+                .filter(r -> !ProjectRoleType.isInactive(r))
                 .collect(Collectors.toList());
 
         this.usersDataProvider = new CallbackDataProvider<>(

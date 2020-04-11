@@ -10,9 +10,9 @@ INSERT INTO permissions (id, code) VALUES (3, 'edit_project_info');
 INSERT INTO permissions (id, code) VALUES (4, 'edit_project_actions');
 INSERT INTO permissions (id, code) VALUES (5, 'edit_project_users');
 
-INSERT INTO roles (id, code, description) VALUES (1, 'project_user', 'Just a user');
-INSERT INTO roles (id, code, description) VALUES (2, 'project_admin', 'Admin');
-INSERT INTO roles (id, code, description) VALUES (3, 'project_inactive', 'Admin');
+INSERT INTO roles (id, code, title, description) VALUES (1, 'project_user','User', 'Just a user');
+INSERT INTO roles (id, code, title, description) VALUES (2, 'project_admin', 'Admin', 'Admin user');
+INSERT INTO roles (id, code, title, description) VALUES (3, 'project_inactive', 'Inactive', 'Inactive user');
 --INSERT INTO roles (id, title) VALUES (3, 'project_creator');
 
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (1, 1);

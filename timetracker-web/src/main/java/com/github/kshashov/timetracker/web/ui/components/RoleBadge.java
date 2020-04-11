@@ -7,12 +7,14 @@ import com.github.kshashov.timetracker.web.ui.util.css.lumo.BadgeColor;
 public class RoleBadge extends Badge {
 
     public RoleBadge(Role role) {
-        super(role.getCode(), getBadgeColor(role));
+        super(role.getTitle(), getBadgeColor(role));
     }
 
     private static BadgeColor getBadgeColor(Role role) {
-        if (role.getCode().equals(ProjectRoleType.ADMIN.getCode())) {
+        if (ProjectRoleType.isAdmin(role)) {
             return BadgeColor.SUCCESS;
+        } else if (ProjectRoleType.isInactive(role)) {
+            return BadgeColor.ERROR;
         }
 
         return BadgeColor.NORMAL;

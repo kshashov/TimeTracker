@@ -135,7 +135,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
 
     private boolean doDeleteOrDeactivateProjectRole(@NotNull ProjectRole projectRole) {
 
-        if (projectRole.getRole().getCode().equals(ProjectRoleType.INACTIVE.getCode())) {
+        if (ProjectRoleType.isInactive(projectRole.getRole())) {
             throw new IncorrectArgumentException("Project role is already inactive");
         }
 

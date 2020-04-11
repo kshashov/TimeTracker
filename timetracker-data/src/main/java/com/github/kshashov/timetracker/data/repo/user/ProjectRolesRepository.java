@@ -26,6 +26,9 @@ public interface ProjectRolesRepository extends JpaRepository<ProjectRole, Proje
     @EntityGraph(value = "ProjectRole.project")
     List<ProjectRole> findByUser(User user);
 
+    @EntityGraph(value = "ProjectRole.project")
+    List<ProjectRole> findByUserAndRoleCodeNot(User user, String roleCode);
+
     @EntityGraph(value = "ProjectRole.user")
     List<ProjectRole> findByProject(Project project);
 

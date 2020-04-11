@@ -66,8 +66,7 @@ public class ProjectUsersWidget extends Widget implements HasUser {
         usersGrid.setWidthFull();
         usersGrid.addColumn(new ComponentRenderer<>(pr -> {
             User user = pr.getUser();
-            return UIUtils.createLinkTitle("/users/" + user.getId(), user.getName(),
-                    !pr.getRole().getCode().equals(ProjectRoleType.INACTIVE.getCode()));
+            return UIUtils.createLinkTitle("/users/" + user.getId(), user.getName(), !ProjectRoleType.isInactive(pr.getRole()));
         })).setHeader("User").setSortable(true).setComparator(Comparator.comparing(o -> o.getUser().getName())).setResizable(true);
         usersGrid.addColumn(new ComponentRenderer<>(pr -> {
             return new RoleBadge(pr.getRole());
@@ -85,7 +84,7 @@ public class ProjectUsersWidget extends Widget implements HasUser {
                 layout.add(edit);
             }
 
-            if (access.canDelete() && !pr.getRole().getCode().equals(ProjectRoleType.INACTIVE.getCode())) {
+            if (access.canDelete() && !ProjectRoleType.isInactive(pr.getRole())) {
                 var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
                 delete.addClickListener(e -> confirmDialog.open(b -> {
                     if (b) viewModel.deleteProjectRole(pr);
