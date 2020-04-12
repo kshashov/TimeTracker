@@ -8,8 +8,12 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -22,7 +26,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    @Transactional(value = Transactional.TxType.REQUIRED)
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public User getOrCreateUser(String email, String name) {
         User user = usersRepository.findOneByEmail(email);
 
@@ -48,17 +52,49 @@ public class UsersServiceImpl implements UsersService {
     }
 
     private User createUser(String email, String name) {
+        // Check email only
+        if (StringUtils.isBlank(email)) {
+            throw new IncorrectArgumentException("Email is empty");
+        }
+
         User user = new User();
         user.setName(name);
         user.setEmail(email);
         user.setIsValidated(false);
+
         return usersRepository.save(user);
     }
 
     @Override
-    @Transactional(value = Transactional.TxType.REQUIRED)
-    public boolean validate(User user) {
-        if (!StringUtils.isBlank(user.getName())) {
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public User updateUser(@NotNull User user, @NotNull User updatedUser) {
+        // TODO check premissions
+
+        return updateUser(user);
+    }
+
+    @Override
+    public User updateUser(@NotNull User updatedUser) {
+        // Validate
+        Objects.requireNonNull(updatedUser.getId());
+        preValidate(updatedUser);
+
+        return usersRepository.save(updatedUser);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public boolean validate(@NotNull User user) {
+        Objects.requireNonNull(user.getId());
+
+        boolean validated = true;
+
+        // Check name only
+        if (StringUtils.isBlank(user.getName())) {
+            validated = false;
+        }
+
+        if (validated) {
             user.setIsValidated(true);
             return usersRepository.save(user).getIsValidated();
         }
@@ -66,4 +102,13 @@ public class UsersServiceImpl implements UsersService {
         return false;
     }
 
+    private void preValidate(User user) {
+        if (StringUtils.isBlank(user.getEmail())) {
+            throw new IncorrectArgumentException("Email is empty");
+        }
+
+        if (StringUtils.isBlank(user.getName())) {
+            throw new IncorrectArgumentException("Name is empty");
+        }
+    }
 }
