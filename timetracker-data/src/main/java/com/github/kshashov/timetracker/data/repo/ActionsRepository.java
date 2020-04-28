@@ -17,12 +17,12 @@ public interface ActionsRepository extends JpaRepository<Action, Long>, BaseRepo
     boolean existsByProjectAndTitleAndIdNot(Project project, String title, Long actionId);
 
     @EntityGraph(value = "Action.project")
-    Action findOneById(Long actionId);
+    Action findWithProjectById(Long actionId);
 
     Action findOneByProjectAndTitle(Project project, String title);
 
     @EntityGraph(value = "Action.project")
-    List<Action> findByProject(Project project);
+    List<Action> findWithProjectByProject(Project project);
 
     List<Action> findByProjectAndIsActive(Project project, Boolean isActive);
 }

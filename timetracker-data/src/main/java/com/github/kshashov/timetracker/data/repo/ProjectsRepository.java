@@ -12,4 +12,5 @@ public interface ProjectsRepository extends JpaRepository<Project, Long>, BaseRe
     boolean existsByTitleAndIdNot(String title, Long projectId);
 
     Project findOneByTitle(String title);
+
 }

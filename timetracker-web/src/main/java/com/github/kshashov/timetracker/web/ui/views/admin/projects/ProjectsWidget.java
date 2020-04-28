@@ -7,6 +7,7 @@ import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
+import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
@@ -25,9 +27,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Scope("prototype")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
-public class ProjectsWidget extends Widget implements HasUser, DataHandler {
+public class ProjectsWidget extends Widget implements HasUser, DataHandler, HasSubscriptions {
     private final ProjectsViewModel viewModel;
     private final List<Subscription> subscriptions = new ArrayList<>();
 
@@ -88,7 +90,7 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        subscriptions.add(viewModel.projects()
+        subscribe(viewModel.projects()
                 .subscribe(projects -> {
                     CrudEntity.CrudAccess access = projects.getAccess();
                     if (access.canView()) {
@@ -100,12 +102,12 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
                     }
                 }));
 
-        subscriptions.add(viewModel.createProjectDialogs()
+        subscribe(viewModel.createProjectDialogs()
                 .subscribe(projectDialog -> {
                     createProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
                 }));
 
-        subscriptions.add(viewModel.updateProjectDialogs()
+        subscribe(viewModel.updateProjectDialogs()
                 .subscribe(projectDialog -> {
                     editProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
                 }));
@@ -115,7 +117,11 @@ public class ProjectsWidget extends Widget implements HasUser, DataHandler {
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        subscriptions.forEach(Subscription::unsubscribe);
-        subscriptions.clear();
+        unsubscribeAll();
+    }
+
+    @Override
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
     }
 }

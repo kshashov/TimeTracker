@@ -30,21 +30,19 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Route(value = "users", layout = MainLayout.class)
-@PageTitle("User Info")
 public class UsersPage extends ViewFrame implements HasUser, HasUrlParameter<Long> {
     private final UsersRepository usersRepository;
+    private final ProjectRolesRepository projectRolesRepository;
     private final User currentUser;
     private User user;
 
     FlexBoxLayout content = new FlexBoxLayout();
-    private final ProjectRolesRepository projectRolesRepository;
 
     @Autowired
     public UsersPage(UsersRepository usersRepository, ProjectRolesRepository projectRolesRepository) {
@@ -59,7 +57,7 @@ public class UsersPage extends ViewFrame implements HasUser, HasUrlParameter<Lon
     private void prepareContent() {
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
-        content.setMaxWidth("calc(var(--lumo-size-m)*16)");
+        content.setMaxWidth("840px");
     }
 
     private void initDetails() {
@@ -101,7 +99,7 @@ public class UsersPage extends ViewFrame implements HasUser, HasUrlParameter<Lon
     }
 
     private void initUserProjects() {
-        List<ProjectRole> projects = projectRolesRepository.findByUser(user);
+        List<ProjectRole> projects = projectRolesRepository.findWithProjectByUserAndRoleCodeNot(user, ProjectRoleType.INACTIVE.getCode());
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Projects (" + projects.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);

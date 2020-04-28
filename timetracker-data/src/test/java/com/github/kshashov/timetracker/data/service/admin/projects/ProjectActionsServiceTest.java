@@ -87,15 +87,11 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         assertThatThrownBy(() -> actionsService.createAction(action0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        // Inactive project
-        Action action1 = correctAction("");
-        Boolean projectActive = action1.getProject().getIsActive();
-        action1.getProject().setIsActive(false);
-
+        // Empty project
+        Action action1 = correctAction("createAction_IncorrectAction");
+        action1.setProject(null);
         assertThatThrownBy(() -> actionsService.createAction(action1))
                 .isInstanceOf(IncorrectArgumentException.class);
-
-        action1.getProject().setIsActive(projectActive);
     }
 
     @Test
@@ -176,24 +172,21 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         assertThatThrownBy(() -> actionsService.updateAction(action1))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        // Inactive project
+        // Empty project
         Action action2 = actionsService.createAction(correctAction("updateAction_IncorrectAction_2"));
-        Boolean projectActive = action2.getProject().getIsActive();
-        action2.getProject().setIsActive(false);
+        action1.setProject(null);
 
-        assertThatThrownBy(() -> actionsService.updateAction(action2))
+        assertThatThrownBy(() -> actionsService.updateAction(action1))
                 .isInstanceOf(IncorrectArgumentException.class);
-
-        action2.getProject().setIsActive(projectActive);
     }
 
     @Test
-    void updateAction_ActionIdIsNull_NullPointerException() {
+    void updateAction_ActionIdIsNull_IllegalArgumentException() {
         Action action = actionsService.createAction(correctAction("updateAction_ActionIdIsNull"));
         action.setId(null);
 
         assertThatThrownBy(() -> actionsService.updateAction(action))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -251,12 +244,20 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     @Test
     void activateAction_IncorrectAction_IncorrectArgumentException() {
         // Active action
-        Action action = actionsService.createAction(correctAction("activateAction_IncorrectAction"));
-        action.setIsActive(true);
-        actionsRepository.save(action);
+        Action action0 = actionsService.createAction(correctAction("activateAction_IncorrectAction_0"));
+        action0.setIsActive(true);
 
-        assertThatThrownBy(() -> actionsService.activateAction(action.getId()))
+        assertThatThrownBy(() -> actionsService.activateAction(action0.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Inactive project
+        Action action_1 = actionsService.createAction(correctAction("activateAction_IncorrectAction_1"));
+        action_1.getProject().setIsActive(false);
+
+        assertThatThrownBy(() -> actionsService.activateAction(action_1.getId()))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        action_1.getProject().setIsActive(true);
     }
 
     @Test
@@ -266,14 +267,14 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         action.setIsActive(false);
         actionsRepository.save(action);
 
-        action = actionsRepository.findOneById(action.getId());
+        action = actionsRepository.findWithProjectById(action.getId());
         assertThat(action).isNotNull();
         assertThat(action.getIsActive()).isFalse();
 
         // Activate
         actionsService.activateAction(action.getId());
 
-        action = actionsRepository.findOneById(action.getId());
+        action = actionsRepository.findWithProjectById(action.getId());
         assertThat(action).isNotNull();
         assertThat(action.getIsActive()).isTrue();
     }
@@ -289,7 +290,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         action.setIsActive(false);
         actionsRepository.save(action);
 
-        action = actionsRepository.findOneById(action.getId());
+        action = actionsRepository.findWithProjectById(action.getId());
         assertThat(action).isNotNull();
         assertThat(action.getIsActive()).isFalse();
 
@@ -300,7 +301,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         // Activate
         actionsService.activateAction(getUser(), action.getId());
 
-        action = actionsRepository.findOneById(action.getId());
+        action = actionsRepository.findWithProjectById(action.getId());
         assertThat(action).isNotNull();
         assertThat(action.getIsActive()).isTrue();
     }
@@ -310,7 +311,6 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         // Prepare inactive action
         Action action = actionsService.createAction(correctAction("activateAction_UserHasNoPermission"));
         action.setIsActive(false);
-        actionsRepository.save(action);
 
         // Make user to has no EDIT_PROJECT_ACTIONS project permission
         when(rolePermissionsHelper.hasProjectPermission(eq(getUser()), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_ACTIONS)))
@@ -318,6 +318,8 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
         assertThatThrownBy(() -> actionsService.activateAction(getUser(), action.getId()))
                 .isInstanceOf(NoPermissionException.class);
+
+        action.setIsActive(true);
     }
     //
     // DELETE
@@ -332,14 +334,7 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
         assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        // Inactive project
-        Boolean projectActive = action.getProject().getIsActive();
-        action.getProject().setIsActive(false);
-
-        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action.getId()))
-                .isInstanceOf(IncorrectArgumentException.class);
-
-        action.getProject().setIsActive(projectActive);
+        action.setIsActive(true);
     }
 
     @Test

@@ -33,23 +33,22 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Route(value = "projects", layout = MainLayout.class)
-@PageTitle("Project Info")
 public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<Long> {
     private final UsersRepository usersRepository;
+    private final ProjectRolesRepository projectRolesRepository;
+    private final ActionsRepository actionsRepository;
+    private final ProjectsRepository projectsRepository;
+
     private final User user;
     private Project project;
 
     FlexBoxLayout content = new FlexBoxLayout();
-    private final ProjectRolesRepository projectRolesRepository;
-    private final ActionsRepository actionsRepository;
-    private final ProjectsRepository projectsRepository;
 
     @Autowired
     public ProjectsPage(UsersRepository usersRepository, ProjectRolesRepository projectRolesRepository, ActionsRepository actionsRepository, ProjectsRepository projectsRepository) {
@@ -66,7 +65,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
     private void prepareContent() {
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
-        content.setMaxWidth("calc(var(--lumo-size-m)*16)");
+        content.setMaxWidth("840px");
     }
 
     private void initDetails() {
@@ -100,7 +99,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
     }
 
     private void initProjectActions() {
-        List<Action> actions = actionsRepository.findByProject(project);
+        List<Action> actions = actionsRepository.findWithProjectByProject(project);
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Actions (" + actions.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -121,7 +120,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
     }
 
     private void initProjectUsers() {
-        List<ProjectRole> users = projectRolesRepository.findByProject(project);
+        List<ProjectRole> users = projectRolesRepository.findWithUserByProjectAndRoleCodeNot(project, ProjectRoleType.INACTIVE.getCode());
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Users (" + users.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -133,11 +132,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
         items.addClassNames(LumoStyles.Padding.Bottom.L);
 
         for (ProjectRole projectRole : users) {
-            BadgeColor color = (ProjectRoleType.isInactive(projectRole.getRole()))
-                    ? BadgeColor.ERROR
-                    : BadgeColor.NORMAL;
-
-            Badge badge = new Badge(projectRole.getUser().getName(), color, BadgeSize.M, BadgeShape.NORMAL);
+            Badge badge = new Badge(projectRole.getUser().getName(), BadgeColor.NORMAL, BadgeSize.M, BadgeShape.NORMAL);
             Anchor anchor = new Anchor("/users/" + projectRole.getUser().getId(), badge);
             anchor.addClassName(LumoStyles.Margin.Horizontal.S);
             items.add(anchor);

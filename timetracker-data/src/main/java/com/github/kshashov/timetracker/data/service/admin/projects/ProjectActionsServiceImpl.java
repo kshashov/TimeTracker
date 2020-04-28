@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
-import java.util.Objects;
 
 @Service
 public class ProjectActionsServiceImpl implements ProjectActionsService {
@@ -39,9 +38,8 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Action createAction(@NotNull User user, @NotNull Action action) {
-        Objects.requireNonNull(action.getProject());
-
-        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+        if ((action.getProject() == null)
+                || !rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to create this project");
         }
 
@@ -51,9 +49,8 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public Action updateAction(@NotNull User user, @NotNull Action action) {
-        Objects.requireNonNull(action.getProject());
-
-        if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
+        if ((action.getProject() == null)
+                || !rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
@@ -63,7 +60,8 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void activateAction(@NotNull User user, Long actionId) {
-        Action action = actionsRepository.findOneById(actionId);
+        Action action = actionsRepository.findWithProjectById(actionId);
+
         if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
@@ -74,7 +72,8 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateAction(@NotNull User user, Long actionId) {
-        Action action = actionsRepository.findOneById(actionId);
+        Action action = actionsRepository.findWithProjectById(actionId);
+
         if (!rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_ACTIONS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
@@ -126,7 +125,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void activateAction(@NotNull Long actionId) {
-        Action action = actionsRepository.findOneById(actionId);
+        Action action = actionsRepository.findWithProjectById(actionId);
 
         doActivateAction(action);
     }
@@ -134,7 +133,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateAction(@NotNull Long actionId) {
-        Action action = actionsRepository.findOneById(actionId);
+        Action action = actionsRepository.findWithProjectById(actionId);
 
         return doDeleteOrDeactivateAction(action);
     }
@@ -161,7 +160,9 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         preValidate(action);
 
         // Validate
-        Objects.requireNonNull(action.getId());
+        if (action.getId() == null) {
+            throw new IllegalArgumentException();
+        }
 
         if (actionsRepository.existsByProjectAndTitleAndIdNot(action.getProject(), action.getTitle(), action.getId())) {
             throw new IncorrectArgumentException("Project action already exists");
@@ -178,6 +179,10 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         // Validate
         if (action.getIsActive()) {
             throw new IncorrectArgumentException("Action is already active");
+        }
+
+        if (!action.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Project is inactive");
         }
 
         action.setIsActive(true);
@@ -206,14 +211,12 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
     }
 
     private void preValidate(@NotNull Action action) {
-        Objects.requireNonNull(action.getProject());
+        if (action.getProject() == null) {
+            throw new IncorrectArgumentException("Action project is empty");
+        }
 
         if (Strings.isBlank(action.getTitle())) {
             throw new IncorrectArgumentException("Action title is empty");
-        }
-
-        if (!action.getProject().getIsActive()) {
-            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         if (!action.getIsActive()) {

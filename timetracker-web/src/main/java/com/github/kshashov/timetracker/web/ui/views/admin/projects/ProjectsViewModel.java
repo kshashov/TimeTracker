@@ -85,11 +85,8 @@ public class ProjectsViewModel implements HasUser, DataHandler {
 
     public void activateProject(Project project) {
         handleDataManipulation(
-                () -> {
-                    projectsService.activateProject(project.getId());
-                    return true;
-                },
-                result -> reloadProjects());
+                () -> projectsService.activateProject(project.getId()),
+                () -> reloadProjects());
     }
 
     public void deleteProject(Project project) {
@@ -99,7 +96,7 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     }
 
     public void reloadProjects() {
-        var projectRoles = projectRolesRepository.findByUser(user);
+        var projectRoles = projectRolesRepository.findWithProjectByUser(user);
 
         if (selectedProject != null) {
             // Restore selection

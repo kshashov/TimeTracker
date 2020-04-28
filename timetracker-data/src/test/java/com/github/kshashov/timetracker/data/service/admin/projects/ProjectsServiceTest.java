@@ -22,7 +22,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -107,7 +107,7 @@ public class ProjectsServiceTest extends BaseUserTest {
     @Test
     void createProject_ActionsNotEmpty_OkWithEmptyActions() {
         Project project = correctProject("createProject_ActionsNotEmpty");
-        project.setActions(new HashSet<>());
+        project.setActions(new ArrayList<>());
         project.getActions().add(new Action());
 
         Project result = projectsService.createProject(getUser(), project);
@@ -149,12 +149,12 @@ public class ProjectsServiceTest extends BaseUserTest {
     }
 
     @Test
-    void updateProject_ProjectIdIsNull_NullPointerException() {
+    void updateProject_ProjectIdIsNull_IllegalArgumentException() {
         Project project = projectsService.createProject(getUser(), correctProject("updateProject_ProjectIdIsNull"));
         project.setId(null);
 
         assertThatThrownBy(() -> projectsService.updateProject(project))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -318,18 +318,18 @@ public class ProjectsServiceTest extends BaseUserTest {
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
         assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_NoActions")).isFalse();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
     }
 
     @Test
@@ -339,18 +339,18 @@ public class ProjectsServiceTest extends BaseUserTest {
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(2);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(2);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(2);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
         assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_NoClosedEntries")).isFalse();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
     }
 
     @Test
@@ -360,22 +360,22 @@ public class ProjectsServiceTest extends BaseUserTest {
 
         // Project exists and has entries and actions
         assertThat(project).isNotNull();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(2);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(2);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(2);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deactivated
         assertThat(isDeleted).isFalse();
         assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_HasClosedEntries")).isTrue();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).stream()
                 .allMatch(Entry::getIsClosed)
         ).isTrue();
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(1);
-        assertThat(actionsRepository.findByProject(project).stream()
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(1);
+        assertThat(actionsRepository.findWithProjectByProject(project).stream()
                 .noneMatch(Action::getIsActive)
         ).isTrue();
     }
@@ -395,18 +395,18 @@ public class ProjectsServiceTest extends BaseUserTest {
 
         // Project exists and has no entries and actions
         assertThat(project).isNotNull();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
         assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_CorrectUser")).isFalse();
-        assertThat(projectRolesRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
     }
 
     @Test

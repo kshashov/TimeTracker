@@ -84,27 +84,27 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
     }
 
     @Test
-    void createRole_IncorrectProjectRole_NullPointerException() {
+    void createRole_IncorrectProjectRole_IncorrectArgumentException() {
         // Empty project
         ProjectRole projectRole0 = correctRole(getUserRole());
         projectRole0.setProject(null);
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(projectRole0))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
 
         // Empty user
         ProjectRole projectRole1 = correctRole(getUserRole());
         projectRole1.setUser(null);
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(projectRole1))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
 
         // Empty role
         ProjectRole projectRole2 = correctRole(getUserRole());
         projectRole2.setRole(null);
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(projectRole2))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
     }
 
     //
@@ -163,36 +163,36 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
     //
 
     @Test
-    void updateRole_IncorrectAction_NullPointerException() {
+    void updateRole_IncorrectAction_IncorrectArgumentException() {
         // Empty project
         ProjectRole projectRole0 = projectUsersService.createProjectRole(correctRole(getUserRole()));
         projectRole0.setProject(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole0))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
 
         // Empty user
         ProjectRole projectRole1 = projectRolesRepository.findById(projectRole0.getIdentity()).get();
         projectRole1.setUser(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole1))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
 
         // Empty role
         ProjectRole projectRole2 = projectRolesRepository.findById(projectRole0.getIdentity()).get();
         projectRole2.setRole(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole2))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IncorrectArgumentException.class);
     }
 
     @Test
-    void updateRole_ProjectRoleIdIsNull_NullPointerException() {
+    void updateRole_ProjectRoleIdIsNull_IllegalArgumentException() {
         ProjectRole projectRole = projectUsersService.createProjectRole(correctRole(getUserRole()));
         projectRole.setIdentity(null);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

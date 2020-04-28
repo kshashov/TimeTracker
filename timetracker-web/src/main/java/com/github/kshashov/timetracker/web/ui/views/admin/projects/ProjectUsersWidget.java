@@ -10,6 +10,7 @@ import com.github.kshashov.timetracker.web.ui.components.ConfirmDialog;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
+import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleCreatorDialog;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectRoleEditorDialog;
@@ -23,6 +24,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
@@ -30,11 +32,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Scope("prototype")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
-public class ProjectUsersWidget extends Widget implements HasUser {
+public class ProjectUsersWidget extends Widget implements HasUser, HasSubscriptions {
     private final ProjectUsersViewModel viewModel;
-    private List<Subscription> subscriptions = new ArrayList<>();
+    private final List<Subscription> subscriptions = new ArrayList<>();
 
     private final User user;
     private CrudEntity.CrudAccess access;
@@ -85,7 +87,7 @@ public class ProjectUsersWidget extends Widget implements HasUser {
             }
 
             if (access.canDelete() && !ProjectRoleType.isInactive(pr.getRole())) {
-                var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+                var delete = UIUtils.createActionButton(VaadinIcon.MINUS_CIRCLE_O);
                 delete.addClickListener(e -> confirmDialog.open(b -> {
                     if (b) viewModel.deleteProjectRole(pr);
                 }));
@@ -113,7 +115,7 @@ public class ProjectUsersWidget extends Widget implements HasUser {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        subscriptions.add(viewModel.projectRoles()
+        subscribe(viewModel.projectRoles()
                 .subscribe(projectRoles -> {
                     access = projectRoles.getAccess();
                     if (access.canView()) {
@@ -125,13 +127,13 @@ public class ProjectUsersWidget extends Widget implements HasUser {
                     }
                 }));
 
-        subscriptions.add(viewModel.createRoleDialogs()
+        subscribe(viewModel.createRoleDialogs()
                 .subscribe(projectRoleDialog -> {
                     ProjectRoleCreatorDialog dialog = new ProjectRoleCreatorDialog("Create Role", projectRoleDialog.getValidator(), projectRoleDialog.getRoles(), projectRoleDialog.getUsersDataProvider());
                     dialog.open(projectRoleDialog.getProjectRole());
                 }));
 
-        subscriptions.add(viewModel.updateRoleDialogs()
+        subscribe(viewModel.updateRoleDialogs()
                 .subscribe(projectRoleDialog -> {
                     ProjectRoleEditorDialog dialog = new ProjectRoleEditorDialog("Edit Role", projectRoleDialog.getValidator(), projectRoleDialog.getRoles());
                     dialog.open(projectRoleDialog.getProjectRole());
@@ -142,7 +144,11 @@ public class ProjectUsersWidget extends Widget implements HasUser {
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        subscriptions.forEach(Subscription::unsubscribe);
-        subscriptions.clear();
+        unsubscribeAll();
+    }
+
+    @Override
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
     }
 }

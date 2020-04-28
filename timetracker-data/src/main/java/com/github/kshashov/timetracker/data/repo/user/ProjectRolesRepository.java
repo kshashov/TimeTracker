@@ -1,6 +1,7 @@
 package com.github.kshashov.timetracker.data.repo.user;
 
 import com.github.kshashov.timetracker.data.entity.Project;
+import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRoleIdentity;
 import com.github.kshashov.timetracker.data.entity.user.User;
@@ -21,16 +22,23 @@ public interface ProjectRolesRepository extends JpaRepository<ProjectRole, Proje
     ProjectRole findOneByUserIdAndProjectId(Long userId, Long projectId);
 
     @EntityGraph(value = "ProjectRole.project.user")
-    ProjectRole findOneByIdentity(ProjectRoleIdentity id);
+    ProjectRole findFullByIdentity(ProjectRoleIdentity id);
 
     @EntityGraph(value = "ProjectRole.project")
-    List<ProjectRole> findByUser(User user);
+    List<ProjectRole> findWithProjectByUser(User user);
+
+    @EntityGraph(value = "ProjectRole.projectActions")
+    List<ProjectRole> findWithActionsByUserAndRolePermissionsContains(User user, Permission permission);
 
     @EntityGraph(value = "ProjectRole.project")
-    List<ProjectRole> findByUserAndRoleCodeNot(User user, String roleCode);
+    List<ProjectRole> findWithProjectByUserAndRoleCodeNot(User user, String roleCode);
 
     @EntityGraph(value = "ProjectRole.user")
-    List<ProjectRole> findByProject(Project project);
+    List<ProjectRole> findWithUserByProjectAndRoleCodeNot(Project project, String roleCode);
+
+
+    @EntityGraph(value = "ProjectRole.user")
+    List<ProjectRole> findWithUserByProject(Project project);
 
     @Transactional(propagation = Propagation.REQUIRED)
     long deleteByProject(Project project);

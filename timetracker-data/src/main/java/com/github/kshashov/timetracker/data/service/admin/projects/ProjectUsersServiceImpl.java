@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
-import java.util.Objects;
 
 @Service
 public class ProjectUsersServiceImpl implements ProjectUsersService {
@@ -39,8 +38,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole createProjectRole(@NotNull User user, @NotNull ProjectRole projectRole) {
-        Objects.requireNonNull(projectRole.getProject());
-        Objects.requireNonNull(projectRole.getUser());
+        preValidate(projectRole);
 
         if (!rolePermissionsHelper.hasProjectPermission(user, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
             throw new NoPermissionException("You have no permissions to update this project");
@@ -50,13 +48,13 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
             throw new NoPermissionException("Project user cannot be updated by the same user");
         }
 
-        return createProjectRole(projectRole);
+        return doCreateProjectRole(projectRole);
     }
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole updateProjectRole(@NotNull User user, @NotNull ProjectRole projectRole) {
-        Objects.requireNonNull(projectRole.getProject());
+        preValidate(projectRole);
 
         if (!rolePermissionsHelper.hasProjectPermission(user, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
             throw new NoPermissionException("You have no permissions to update this project");
@@ -72,7 +70,8 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull User user, @NotNull ProjectRoleIdentity projectRoleIdentity) {
-        ProjectRole projectRole = projectRolesRepository.findOneByIdentity(projectRoleIdentity);
+        ProjectRole projectRole = projectRolesRepository.findFullByIdentity(projectRoleIdentity);
+
         if (!rolePermissionsHelper.hasProjectPermission(user, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS)) {
             throw new NoPermissionException("You have no permissions to update this project");
         }
@@ -83,25 +82,25 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole createProjectRole(@NotNull ProjectRole projectRole) {
+        preValidate(projectRole);
         return doCreateProjectRole(projectRole);
     }
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public ProjectRole updateProjectRole(@NotNull ProjectRole projectRole) {
+        preValidate(projectRole);
         return doUpdateProjectRole(projectRole);
     }
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProjectRole(@NotNull ProjectRoleIdentity projectRoleIdentity) {
-        ProjectRole projectRole = projectRolesRepository.findOneByIdentity(projectRoleIdentity);
+        ProjectRole projectRole = projectRolesRepository.findFullByIdentity(projectRoleIdentity);
         return doDeleteOrDeactivateProjectRole(projectRole);
     }
 
     private ProjectRole doCreateProjectRole(@NotNull ProjectRole projectRole) {
-        preValidate(projectRole);
-
         // Validate
         if (projectRole.getIdentity() != null) {
             throw new IllegalArgumentException();
@@ -122,10 +121,10 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     public ProjectRole doUpdateProjectRole(@NotNull ProjectRole projectRole) {
-        preValidate(projectRole);
-
         // Validate
-        Objects.requireNonNull(projectRole.getIdentity());
+        if (projectRole.getIdentity() == null) {
+            throw new IllegalArgumentException();
+        }
 
         // Update
         projectRole = projectRolesRepository.save(projectRole);
@@ -156,8 +155,16 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
     }
 
     private void preValidate(@NotNull ProjectRole projectRole) {
-        Objects.requireNonNull(projectRole.getUser());
-        Objects.requireNonNull(projectRole.getProject());
-        Objects.requireNonNull(projectRole.getRole());
+        if (projectRole.getUser() == null) {
+            throw new IncorrectArgumentException("Role user is empty");
+        }
+
+        if (projectRole.getProject() == null) {
+            throw new IncorrectArgumentException("Role project user is empty");
+        }
+
+        if (projectRole.getRole() == null) {
+            throw new IncorrectArgumentException("Project role is empty");
+        }
     }
 }

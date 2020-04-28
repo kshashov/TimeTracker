@@ -30,6 +30,8 @@ public class UIUtils {
     /**
      * Thread-unsafe formatters.
      */
+    private static final ThreadLocal<DecimalFormat> hoursDecimalFormat = ThreadLocal
+            .withInitial(() -> new DecimalFormat("###,###.##", DecimalFormatSymbols.getInstance(Locale.US)));
     private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal
             .withInitial(() -> new DecimalFormat("###,###.00", DecimalFormatSymbols.getInstance(Locale.US)));
     private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
@@ -343,12 +345,23 @@ public class UIUtils {
 
     /* === NUMBERS === */
 
+    public static String formatHours(Double amount) {
+        return hoursDecimalFormat.get().format(amount);
+    }
+
     public static String formatAmount(Double amount) {
         return decimalFormat.get().format(amount);
     }
 
     public static String formatAmount(int amount) {
         return decimalFormat.get().format(amount);
+    }
+
+    public static Label createHoursLabel(double amount) {
+        Label label = createH5Label(formatHours(amount) + "h");
+        label.addClassName(LumoStyles.FontFamily.MONOSPACE);
+
+        return label;
     }
 
     public static Label createAmountLabel(double amount) {

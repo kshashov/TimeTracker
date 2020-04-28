@@ -16,7 +16,10 @@ import javax.validation.constraints.NotNull;
         @NamedEntityGraph(name = "ProjectRole.project.user", attributeNodes = {@NamedAttributeNode("project"), @NamedAttributeNode("user")}),
         @NamedEntityGraph(name = "ProjectRole.project", attributeNodes = @NamedAttributeNode("project")),
         @NamedEntityGraph(name = "ProjectRole.user", attributeNodes = @NamedAttributeNode("user")),
-
+        @NamedEntityGraph(name = "ProjectRole.projectActions",
+                attributeNodes = {@NamedAttributeNode(value = "project", subgraph = "Project.actions")},
+                subgraphs = {@NamedSubgraph(name = "Project.actions", attributeNodes = @NamedAttributeNode("actions"))}
+        )
 })
 public class ProjectRole implements BaseEntity {
 

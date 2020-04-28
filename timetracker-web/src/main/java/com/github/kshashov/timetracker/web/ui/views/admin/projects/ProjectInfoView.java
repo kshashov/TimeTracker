@@ -5,22 +5,24 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.ListItem;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
+import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Scope("prototype")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
-public class ProjectInfoView extends FlexBoxLayout {
+public class ProjectInfoView extends FlexBoxLayout implements HasSubscriptions {
     private final ProjectInfoViewModel viewModel;
-    private List<Subscription> subscriptions = new ArrayList<>();
+    private final List<Subscription> subscriptions = new ArrayList<>();
 
     private final ListItem title = new ListItem("Title");
     private final ListItem status = new ListItem("Status");
@@ -54,7 +56,7 @@ public class ProjectInfoView extends FlexBoxLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        subscriptions.add(viewModel.project()
+        subscribe(viewModel.project()
                 .subscribe(project -> {
                     if (project.getAccess().canView()) {
                         setVisible(true);
@@ -69,7 +71,11 @@ public class ProjectInfoView extends FlexBoxLayout {
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        subscriptions.forEach(Subscription::unsubscribe);
-        subscriptions.clear();
+        unsubscribeAll();
+    }
+
+    @Override
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
     }
 }

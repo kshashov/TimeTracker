@@ -121,7 +121,7 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
             return;
         }
 
-        List<ProjectRole> users = projectRolesRepository.findByProject(project);
+        List<ProjectRole> users = projectRolesRepository.findWithUserByProject(project);
         projectRolesObservable.onNext(new CrudEntity<>(users, access));
     }
 

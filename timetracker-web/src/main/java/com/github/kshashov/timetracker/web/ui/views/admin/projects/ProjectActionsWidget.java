@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.web.ui.components.ConfirmDialog;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
+import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectActionEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
@@ -25,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Scope("prototype")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
-public class ProjectActionsWidget extends Widget {
+public class ProjectActionsWidget extends Widget implements HasSubscriptions {
     private final ProjectActionsViewModel viewModel;
-    private List<Subscription> subscriptions = new ArrayList<>();
+    private final List<Subscription> subscriptions = new ArrayList<>();
 
     private CrudEntity.CrudAccess access;
 
@@ -72,7 +74,7 @@ public class ProjectActionsWidget extends Widget {
             }
 
             if (access.canDelete() && action.getIsActive()) {
-                var delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+                var delete = UIUtils.createActionButton(VaadinIcon.MINUS_CIRCLE_O);
                 delete.addClickListener(e -> deleteDialog.open(b -> {
                     if (b) viewModel.deleteAction(action);
                 }));
@@ -106,7 +108,7 @@ public class ProjectActionsWidget extends Widget {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        subscriptions.add(viewModel.actions().
+        subscribe(viewModel.actions().
                 subscribe(actions -> {
                     access = actions.getAccess();
                     if (access.canView()) {
@@ -118,12 +120,12 @@ public class ProjectActionsWidget extends Widget {
                     }
                 }));
 
-        subscriptions.add(viewModel.createActionDialogs()
+        subscribe(viewModel.createActionDialogs()
                 .subscribe(actionDialog -> {
                     createActionDialog.open(actionDialog.getAction(), actionDialog.getValidator());
                 }));
 
-        subscriptions.add(viewModel.updateActionDialogs()
+        subscribe(viewModel.updateActionDialogs()
                 .subscribe(actionDialog -> {
                     editActionDialog.open(actionDialog.getAction(), actionDialog.getValidator());
                 }));
@@ -133,7 +135,11 @@ public class ProjectActionsWidget extends Widget {
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        subscriptions.forEach(Subscription::unsubscribe);
-        subscriptions.clear();
+        unsubscribeAll();
+    }
+
+    @Override
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
     }
 }

@@ -6,12 +6,21 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "entries", schema = "public")
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Entry.actionProject",
+                attributeNodes = {@NamedAttributeNode(value = "action", subgraph = "Action.project")},
+                subgraphs = {@NamedSubgraph(name = "Action.project", attributeNodes = @NamedAttributeNode("project"))}
+        ),
+        @NamedEntityGraph(name = "Entry.actionProject.user",
+                attributeNodes = {@NamedAttributeNode(value = "action", subgraph = "Action.project"), @NamedAttributeNode(value = "user")},
+                subgraphs = {@NamedSubgraph(name = "Action.project", attributeNodes = @NamedAttributeNode("project"))}
+        )})
 public class Entry implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +29,7 @@ public class Entry implements BaseEntity {
 
     @NotNull
     @Column(name = "obs", nullable = false)
-    private Date obs;
+    private LocalDate obs;
 
     @NotNull
     @Column(name = "hours", scale = 1, nullable = false)
@@ -29,9 +38,6 @@ public class Entry implements BaseEntity {
     @NotNull
     @Column(name = "title")
     private String title;
-
-    @Column(name = "description")
-    private String description;
 
     @NotNull
     @Column(name = "closed")

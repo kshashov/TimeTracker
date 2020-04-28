@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class ProjectsServiceImpl implements ProjectsService {
@@ -78,7 +77,7 @@ public class ProjectsServiceImpl implements ProjectsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public boolean deleteOrDeactivateProject(@NotNull User user, Long projectId) {
+    public boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Long projectId) {
         Project project = projectsRepository.findById(projectId).get();
         if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
             throw new NoPermissionException("You have no permissions to update this project");
@@ -177,7 +176,9 @@ public class ProjectsServiceImpl implements ProjectsService {
         preValidate(project);
 
         // Validate
-        Objects.requireNonNull(project.getId());
+        if (project.getId() == null) {
+            throw new IllegalArgumentException();
+        }
 
         if (projectsRepository.existsByTitleAndIdNot(project.getTitle(), project.getId())) {
             throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");

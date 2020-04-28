@@ -10,6 +10,7 @@ import com.github.kshashov.timetracker.web.ui.components.detail.DetailHeader;
 import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
 import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
+import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
@@ -29,7 +30,7 @@ import java.util.List;
 
 @Route(value = "projects", layout = MainLayout.class)
 @PageTitle("Projects")
-public class ProjectsView extends MasterDetail {
+public class ProjectsPage extends MasterDetail implements HasSubscriptions {
     private final ProjectsViewModel projectsViewModel;
     private final List<Subscription> subscriptions = new ArrayList<>();
 
@@ -44,11 +45,11 @@ public class ProjectsView extends MasterDetail {
     private final ConfirmDialog activateDialog;
     private final ConfirmDialog deleteDialog;
     private final Button edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
-    private final Button delete = UIUtils.createActionButton(VaadinIcon.FILE_REMOVE);
+    private final Button delete = UIUtils.createActionButton(VaadinIcon.MINUS_CIRCLE_O);
     private final Button activate = UIUtils.createActionButton(VaadinIcon.PLUS);
 
     @Autowired
-    public ProjectsView(
+    public ProjectsPage(
             ProjectsViewModel projectsViewModel,
             ProjectsWidget userProjectsView,
             ProjectActionsWidget projectActionsView,
@@ -135,7 +136,7 @@ public class ProjectsView extends MasterDetail {
 
         MainLayout.get().getAppBar().setTitle("My Projects");
 
-        subscriptions.add(projectsViewModel.project()
+        subscribe(projectsViewModel.project()
                 .subscribe(projectRole -> {
 
                     if (projectRole.getEntity() == null) {
@@ -159,7 +160,11 @@ public class ProjectsView extends MasterDetail {
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
 
-        subscriptions.forEach(Subscription::unsubscribe);
-        subscriptions.clear();
+        unsubscribeAll();
+    }
+
+    @Override
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
     }
 }

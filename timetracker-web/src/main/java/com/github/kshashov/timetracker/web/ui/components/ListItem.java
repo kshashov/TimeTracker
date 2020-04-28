@@ -122,6 +122,10 @@ public class ListItem extends FlexBoxLayout {
         secondary.setText(text);
     }
 
+    public Label getSecondary() {
+        return secondary;
+    }
+
     public void setPrefix(Component... components) {
         if (prefix == null) {
             prefix = new Div();

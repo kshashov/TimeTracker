@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,5 +28,5 @@ public class Project implements BaseEntity {
     private Boolean isActive;
 
     @OneToMany(mappedBy = "project")
-    private Set<Action> actions;
+    private List<Action> actions;
 }

@@ -78,11 +78,8 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
 
     public void activateAction(Action action) {
         handleDataManipulation(
-                () -> {
-                    actionsService.activateAction(action.getId());
-                    return true;
-                },
-                result -> reloadActions());
+                () -> actionsService.activateAction(action.getId()),
+                () -> reloadActions());
     }
 
     public void deleteAction(Action action) {
@@ -121,7 +118,7 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
             return;
         }
 
-        List<Action> actions = actionsRepository.findByProject(project);
+        List<Action> actions = actionsRepository.findWithProjectByProject(project);
         actionsObservable.onNext(new CrudEntity<>(actions, access));
     }
 
