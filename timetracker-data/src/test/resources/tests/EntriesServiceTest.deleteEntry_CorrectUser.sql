@@ -1,1 +1,1 @@
-INSERT INTO users (name, email, validated) VALUES ('user', 'deleteEntry_CorrectUser', false);
+INSERT INTO users (name, email, week_start, validated) VALUES ('user', 'deleteEntry_CorrectUser', 1, false);

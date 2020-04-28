@@ -1,12 +1,15 @@
 package com.github.kshashov.timetracker.data.service.admin.user;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
+import com.github.kshashov.timetracker.core.errors.NoPermissionException;
 import com.github.kshashov.timetracker.data.BaseUserTest;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import java.time.DayOfWeek;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +56,7 @@ public class UsersServiceTest extends BaseUserTest {
         assertThat(user.getId()).isNotNull();
         assertThat(user.getEmail()).isEqualTo("getOrCreateUser_NewEmail_0");
         assertThat(user.getName()).isEqualTo("getOrCreateUser_NewEmail_1");
+        assertThat(user.getWeekStart()).isEqualTo(DayOfWeek.MONDAY);
         assertThat(user.getIsValidated()).isEqualTo(false);
 
         // Without name
@@ -61,6 +65,7 @@ public class UsersServiceTest extends BaseUserTest {
         assertThat(user.getId()).isNotNull();
         assertThat(user.getEmail()).isEqualTo("getOrCreateUser_NewEmail_2");
         assertThat(user.getName()).isNull();
+        assertThat(user.getWeekStart()).isEqualTo(DayOfWeek.MONDAY);
         assertThat(user.getIsValidated()).isEqualTo(false);
     }
 
@@ -119,36 +124,45 @@ public class UsersServiceTest extends BaseUserTest {
 
     @Test
     void updateUser_IncorrectUser_IncorrectArgumentException() {
-        User user = usersService.getOrCreateUser("updateUser_IncorrectUser_0", "updateUser_IncorrectUser_1");
-
         // Incorrect email
-        user.setEmail(null);
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        User user0 = usersService.getOrCreateUser("updateUser_IncorrectUser_0", "updateUser_IncorrectUser_1");
+
+        user0.setEmail(null);
+        assertThatThrownBy(() -> usersService.updateUser(user0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        user.setEmail("");
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        user0.setEmail("");
+        assertThatThrownBy(() -> usersService.updateUser(user0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        user.setEmail("  ");
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        user0.setEmail("  ");
+        assertThatThrownBy(() -> usersService.updateUser(user0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        user.setEmail("updateUser_IncorrectUser_0");
+        user0.setEmail("updateUser_IncorrectUser_0");
 
         // Incorrect name
+        User user1 = usersService.getOrCreateUser("updateUser_IncorrectUser_1", "updateUser_IncorrectUser_2");
 
-        user.setName(null);
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        user1.setName(null);
+        assertThatThrownBy(() -> usersService.updateUser(user1))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        user.setName("");
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        user1.setName("");
+        assertThatThrownBy(() -> usersService.updateUser(user1))
                 .isInstanceOf(IncorrectArgumentException.class);
 
-        user.setName("");
-        assertThatThrownBy(() -> usersService.updateUser(user))
+        user1.setName("");
+        assertThatThrownBy(() -> usersService.updateUser(user1))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Incorrect week start
+        User user2 = usersService.getOrCreateUser("updateUser_IncorrectUser_2", "updateUser_IncorrectUser_3");
+
+        user2.setWeekStart(null);
+        assertThatThrownBy(() -> usersService.updateUser(user2))
+                .isInstanceOf(IncorrectArgumentException.class);
+
     }
 
     @Test
@@ -171,12 +185,29 @@ public class UsersServiceTest extends BaseUserTest {
 
     @Test
     void updateUser_UserHasNoPermission_NoPermissionException() {
-        // TODO
+        // Other user
+        User user0 = usersService.getOrCreateUser("updateUser_UserHasNoPermission_0", "updateUser_UserHasNoPermission_1");
+        User user1 = usersService.getOrCreateUser("updateUser_UserHasNoPermission_2", "updateUser_UserHasNoPermission_3");
+
+        assertThatThrownBy(() -> usersService.updateUser(user1, user0))
+                .isInstanceOf(NoPermissionException.class);
     }
 
     @Test
     void updateUser_CorrectUser_Ok() {
-        // TODO
+        // Same user
+        User user = usersService.getOrCreateUser("updateUser_UserHasNoPermission_0", "updateUser_UserHasNoPermission_1");
+
+        user.setName("updateUser_UserHasNoPermission_2");
+        user.setWeekStart(DayOfWeek.FRIDAY);
+
+        User result = usersService.updateUser(user, user);
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(user.getId());
+        assertThat(result.getName()).isEqualTo(user.getName());
+        assertThat(result.getEmail()).isEqualTo(user.getEmail());
+        assertThat(result.getIsValidated()).isEqualTo(user.getIsValidated());
+        assertThat(result.getWeekStart()).isEqualTo(user.getWeekStart());
     }
 
     static User correctUser(String email) {

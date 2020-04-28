@@ -17,6 +17,6 @@ public class BaseActionTest extends BaseProjectTest {
 
     @BeforeAll
     void prepareAction() {
-        this.action = actionsRepository.findWithProjectById(1L);
+        this.action = actionsRepository.findWithProjectById(0L);
     }
 }

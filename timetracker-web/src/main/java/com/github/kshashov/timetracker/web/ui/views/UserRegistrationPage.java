@@ -26,7 +26,6 @@ import org.springframework.util.Base64Utils;
 @Route(value = UserRegistrationPage.USER_VALIDATION_URL)
 public class UserRegistrationPage extends FullScreenButtonsWidget implements HasUser, DataHandler, BeforeEnterObserver, HasUrlParameter<String> {
     public static final String USER_VALIDATION_URL = "registration";
-    public static final String USER_VALIDATION_REDIRECT_PARAM = "redirect";
 
     private final UsersService usersService;
 

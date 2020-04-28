@@ -5,10 +5,7 @@ import com.github.kshashov.timetracker.data.entity.Entry;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.web.ui.components.*;
 import com.github.kshashov.timetracker.web.ui.layout.size.Uniform;
-import com.github.kshashov.timetracker.web.ui.util.FontSize;
-import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
-import com.github.kshashov.timetracker.web.ui.util.LumoStyles;
-import com.github.kshashov.timetracker.web.ui.util.UIUtils;
+import com.github.kshashov.timetracker.web.ui.util.*;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.lumo.BadgeColor;
@@ -20,6 +17,7 @@ import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -36,7 +34,6 @@ import org.springframework.context.annotation.Scope;
 import rx.Subscription;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +43,6 @@ import java.util.function.Function;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
 public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions {
-    private final ZoneId defaultZoneId = ZoneId.systemDefault();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("E, d MMM", Locale.ENGLISH);
 
     private final DailyEntriesViewModel viewModel;
@@ -60,23 +56,17 @@ public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions 
     private final ActionChooser actionChooser = new ActionChooser(FlexDirection.COLUMN);
     private final ActionChooser createActionChooser = new ActionChooser(FlexDirection.ROW);
     private final Grid<Entry> entriesGrid = new Grid<>();
+    private final Span total = new Span();
     private final Editor<Entry> editor = entriesGrid.getEditor();
     private final FlexBoxLayout createLayout = new FlexBoxLayout();
     private final Binder<Entry> createBinder = new Binder<>(Entry.class);
     private final ConfirmDialog deleteDialog = new ConfirmDialog("Delete", "Are you sure you want to delete this work item?");
 
-
     @Autowired
     public DailyEntriesWidget(DailyEntriesViewModel viewModel) {
         this.viewModel = viewModel;
 
-        Button refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
-        refresh.addClickListener(event -> {
-            editor.cancel();
-            viewModel.reloadEntries();
-        });
-
-        addActions(refresh);
+        initActions(viewModel);
 
         initCreateLayout();
         initEntriesGrid();
@@ -95,6 +85,18 @@ public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions 
 
     public LocalDate getDate() {
         return date;
+    }
+
+    private void initActions(DailyEntriesViewModel viewModel) {
+        UIUtils.setFontWeight(FontWeight.BOLD, total);
+
+        Button refresh = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
+        refresh.addClickListener(event -> {
+            editor.cancel();
+            viewModel.reloadEntries();
+        });
+
+        addActions(total, refresh);
     }
 
     private void initCreateLayout() {
@@ -267,6 +269,7 @@ public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions 
         subscribe(viewModel.entries()
                 .subscribe(entries -> {
                     editor.cancel();
+                    total.setText("Total: " + entries.stream().map(Entry::getHours).reduce(0.0, Double::sum));
                     entriesGrid.setItems(entries);
                 }));
     }

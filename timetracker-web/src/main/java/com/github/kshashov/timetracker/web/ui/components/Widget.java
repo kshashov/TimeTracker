@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.web.ui.components;
 
+import com.github.kshashov.timetracker.web.ui.layout.size.Horizontal;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.vaadin.flow.component.Component;
@@ -30,6 +31,7 @@ public class Widget extends FlexBoxLayout {
     protected void initLayout() {
         setClassName(CLASS_NAME);
 
+
         initHeader(header);
         initContent(content);
 
@@ -37,9 +39,12 @@ public class Widget extends FlexBoxLayout {
     }
 
     protected void initHeader(FlexBoxLayout header) {
-        header.setClassName(CLASS_NAME + "__header");
+        actions.setClassName(CLASS_NAME + "__actions");
+        actions.setSpacing(Horizontal.XS);
+
         title.getStyle().set("color", "#3e53cc");
-//        header.setBackgroundColor(LumoStyles.Color.Contrast._5);
+
+        header.setClassName(CLASS_NAME + "__header");
 
         header.add(title);
         header.add(actions);
@@ -60,6 +65,10 @@ public class Widget extends FlexBoxLayout {
 
     public FlexBoxLayout getContent() {
         return content;
+    }
+
+    public FlexBoxLayout getActions() {
+        return actions;
     }
 
     public void addHeaderItems(Component... components) {

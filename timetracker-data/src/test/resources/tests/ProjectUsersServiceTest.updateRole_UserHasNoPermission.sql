@@ -1,1 +1,1 @@
-INSERT INTO users (name, email, validated) VALUES ('user', 'updateRole_UserHasNoPermission', false);
+INSERT INTO users (name, email, week_start, validated) VALUES ('user', 'updateRole_UserHasNoPermission', 1, false);

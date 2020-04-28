@@ -1,1 +1,1 @@
-INSERT INTO users (name, email, validated) VALUES ('user', 'createEntry_UserHasNoPermission', false);
+INSERT INTO users (name, email, week_start, validated) VALUES ('user', 'createEntry_UserHasNoPermission', 1, false);

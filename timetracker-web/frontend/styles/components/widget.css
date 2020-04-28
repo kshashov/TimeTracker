@@ -15,6 +15,11 @@
     box-sizing: border-box;
 }
 
+.widget__actions {
+    justify-content: end;
+    align-items: center;
+}
+
 .widget__content {
     height: 100%;
     flex-direction: column;

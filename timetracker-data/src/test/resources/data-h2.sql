@@ -1,8 +1,8 @@
 INSERT INTO tests (title) VALUES ('text');
 
-INSERT INTO users (id, name, email, validated) VALUES (1, 'user', 'user@mail.com', true);
+INSERT INTO users (id, name, email, week_start, validated) VALUES (1, 'user', 'user@mail.com', 1, true);
 INSERT INTO projects (id, title, active) VALUES (1, 'project', true);
-INSERT INTO actions (id, project_id, title, active) VALUES (1, 1, 'action', true);
+INSERT INTO actions (id, project_id, title, active) VALUES (0, 1, 'action', true);
 
 INSERT INTO permissions (id, code) VALUES (1, 'edit_my_logs');
 

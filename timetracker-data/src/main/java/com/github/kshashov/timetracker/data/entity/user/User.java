@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.DayOfWeek;
 
 @Getter
 @Setter
@@ -31,4 +32,8 @@ public class User implements BaseEntity {
     @NotNull
     @Column(name = "validated")
     private Boolean isValidated;
+
+    @NotNull
+    @Column(name = "weekStart")
+    private DayOfWeek weekStart;
 }
