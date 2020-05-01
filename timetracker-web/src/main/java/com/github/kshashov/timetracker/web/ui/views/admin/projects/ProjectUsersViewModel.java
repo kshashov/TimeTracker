@@ -15,13 +15,15 @@ import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -31,14 +33,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @UIScope
 @SpringComponent
-public class ProjectUsersViewModel extends VerticalLayout implements HasUser, DataHandler {
+public class ProjectUsersViewModel implements HasUser, DataHandler {
+    private final EventBus eventBus;
     private final ProjectUsersServiceImpl projectRolesService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
-    private final List<Role> roles;
 
+    private final List<Role> roles;
     private final User user;
     private Project project;
 
@@ -51,11 +55,13 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
 
     @Autowired
     public ProjectUsersViewModel(
+            EventBus eventBus,
             ProjectUsersServiceImpl projectRolesService,
             ProjectRolesRepository projectRolesRepository,
             RolesRepository rolesRepository,
             UsersRepository usersRepository,
             RolePermissionsHelper rolePermissionsHelper) {
+        this.eventBus = eventBus;
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.user = getUser();
         this.projectRolesService = projectRolesService;
@@ -112,7 +118,12 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
     public void deleteProjectRole(ProjectRole projectRole) {
         handleDataManipulation(
                 () -> projectRolesService.deleteOrDeactivateProjectRole(projectRole.getIdentity()),
-                result -> reloadUsers());
+                result -> {
+                    if (!result) {
+                        notifyPopup("The user role is moved into inactive state instead of deletion, because there are closed working logs related to him.");
+                    }
+                    reloadUsers();
+                });
     }
 
     public void reloadUsers() {
@@ -150,6 +161,15 @@ public class ProjectUsersViewModel extends VerticalLayout implements HasUser, Da
         return CrudEntity.CrudAccess.DENIED;
     }
 
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
+    }
 
     @Getter
     @AllArgsConstructor

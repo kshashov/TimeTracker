@@ -82,7 +82,7 @@ public class ProjectActionsWidget extends Widget implements HasSubscriptions {
             }
 
             if (access.canEnable() && !action.getIsActive()) {
-                var activate = UIUtils.createActionButton(VaadinIcon.PLUS);
+                var activate = UIUtils.createActionButton("Activate");
                 activate.addClickListener(e -> activateDialog.open(b -> {
                     if (b) viewModel.activateAction(action);
                 }));

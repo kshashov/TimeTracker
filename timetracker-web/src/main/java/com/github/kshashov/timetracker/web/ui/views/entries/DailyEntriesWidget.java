@@ -269,7 +269,7 @@ public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions 
         subscribe(viewModel.entries()
                 .subscribe(entries -> {
                     editor.cancel();
-                    total.setText("Total: " + entries.stream().map(Entry::getHours).reduce(0.0, Double::sum));
+                    total.setText("Total: " + entries.stream().map(Entry::getHours).reduce(0.0, Double::sum) + "h");
                     entriesGrid.setItems(entries);
                 }));
     }

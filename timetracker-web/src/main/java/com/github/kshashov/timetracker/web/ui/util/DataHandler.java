@@ -1,13 +1,14 @@
 package com.github.kshashov.timetracker.web.ui.util;
 
 import com.github.kshashov.timetracker.core.errors.TimeTrackerException;
+import com.github.kshashov.timetracker.web.ui.util.notifications.HasNotifications;
 import com.vaadin.flow.data.binder.ValidationResult;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public interface DataHandler {
+public interface DataHandler extends HasNotifications, HasLogger {
 
     default ValidationResult handleDataManipulation(Callback dataManipulation) {
         return handleDataManipulation(() -> {
@@ -49,32 +50,31 @@ public interface DataHandler {
     default <T> ValidationResult handleDataManipulation(Supplier<T> dataManipulation, Consumer<? super T> onSuccess, Callback onFail) {
         boolean isSuccess = false;
         T result = null;
+        String error = "";
         try {
             result = dataManipulation.get();
             isSuccess = true;
         } catch (TimeTrackerException ex) {
-            ex.printStackTrace();
+            getLogger().error(ex.getMessage(), ex);
+
             if (!Strings.isBlank(ex.getMessage())) {
-                UIUtils.showErrorNotification(ex.getMessage());
-                return ValidationResult.error(ex.getMessage());
+                error = ex.getMessage();
             } else {
-                UIUtils.showErrorNotification("Unexpected server error. Please try again later");
+                error = "Unexpected server error. Please try again later";
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
-            if (!Strings.isBlank(ex.getMessage())) {
-                UIUtils.showErrorNotification(ex.getMessage());
-            }
-            UIUtils.showErrorNotification("Unexpected server error. Please try again later");
+            getLogger().error(ex.getMessage(), ex);
+            error = "Unexpected server error. Please try again later";
         }
 
         if (isSuccess) {
             onSuccess.accept(result);
-        } else {
-            onFail.execute();
+            return ValidationResult.ok();
         }
 
-        return ValidationResult.ok();
+        notifyError(error);
+        onFail.execute();
+        return ValidationResult.error(error);
     }
 
     @FunctionalInterface

@@ -6,7 +6,7 @@ INSERT INTO actions (id, project_id, title, active) VALUES (0, 1, 'action', true
 
 INSERT INTO permissions (id, code) VALUES (1, 'edit_my_logs');
 
-INSERT INTO permissions (id, code) VALUES (2, 'edit_project_logs');
+INSERT INTO permissions (id, code) VALUES (2, 'view_project_logs');
 INSERT INTO permissions (id, code) VALUES (3, 'edit_project_info');
 INSERT INTO permissions (id, code) VALUES (4, 'edit_project_actions');
 INSERT INTO permissions (id, code) VALUES (5, 'edit_project_users');

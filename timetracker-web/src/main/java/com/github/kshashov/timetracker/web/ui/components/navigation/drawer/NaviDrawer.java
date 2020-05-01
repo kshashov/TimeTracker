@@ -1,16 +1,11 @@
 package com.github.kshashov.timetracker.web.ui.components.navigation.drawer;
 
-import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import elemental.json.JsonObject;
@@ -21,16 +16,13 @@ public class NaviDrawer extends Div
 		implements AfterNavigationObserver {
 
 	private String CLASS_NAME = "navi-drawer";
-	private String RAIL = "rail";
 	private String OPEN = "open";
 
 	private Div scrim;
 
 	private Div mainContent;
-	private TextField search;
 	private Div scrollableArea;
 
-	private Button railButton;
 	private NaviMenu menu;
 
 	@Override
@@ -54,12 +46,10 @@ public class NaviDrawer extends Div
 		initMainContent();
 
 		initHeader();
-		initSearch();
 
 		initScrollableArea();
 		initMenu();
 
-		initFooter();
 	}
 
 	private void initScrim() {
@@ -80,15 +70,6 @@ public class NaviDrawer extends Div
 		mainContent.add(new BrandExpression("Time Tracker"));
 	}
 
-	private void initSearch() {
-		search = new TextField();
-		search.addValueChangeListener(e -> menu.filter(search.getValue()));
-		search.setClearButtonVisible(true);
-		search.setPlaceholder("Search");
-		search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-		mainContent.add(search);
-	}
-
 	private void initScrollableArea() {
 		scrollableArea = new Div();
 		scrollableArea.addClassName(CLASS_NAME + "__scroll-area");
@@ -98,34 +79,6 @@ public class NaviDrawer extends Div
 	private void initMenu() {
 		menu = new NaviMenu();
 		scrollableArea.add(menu);
-	}
-
-	private void initFooter() {
-		railButton = UIUtils.createSmallButton("Collapse", VaadinIcon.CHEVRON_LEFT_SMALL);
-		railButton.addClassName(CLASS_NAME + "__footer");
-		railButton.addClickListener(event -> toggleRailMode());
-		railButton.getElement().setAttribute("aria-label", "Collapse menu");
-		mainContent.add(railButton);
-	}
-
-	private void toggleRailMode() {
-		if (getElement().hasAttribute(RAIL)) {
-			getElement().setAttribute(RAIL, false);
-			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_LEFT_SMALL));
-			railButton.setText("Collapse");
-			UIUtils.setAriaLabel("Collapse menu", railButton);
-
-		} else {
-			getElement().setAttribute(RAIL, true);
-			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
-			railButton.setText("Expand");
-			UIUtils.setAriaLabel("Expand menu", railButton);
-			getUI().get().getPage().executeJavaScript(
-					"var originalStyle = getComputedStyle($0).pointerEvents;" //
-							+ "$0.style.pointerEvents='none';" //
-							+ "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
-					getElement());
-		}
 	}
 
 	public void toggle() {

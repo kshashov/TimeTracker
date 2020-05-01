@@ -13,9 +13,12 @@ import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.service.EntriesService;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -29,12 +32,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
 public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final ProjectRolesRepository projectRolesRepository;
     private final EntriesRepository entriesRepository;
     private final EntriesService entriesService;
+    private final EventBus eventBus;
 
     private final User user;
     private LocalDate date;
@@ -47,11 +52,13 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final PermissionsRepository permissionsRepository;
 
     public DailyEntriesViewModel(
+            EventBus eventBus,
             EntriesRepository entriesRepository,
             ProjectRolesRepository projectRolesRepository,
             EntriesService entriesService,
             RolesRepository rolesRepository,
             PermissionsRepository permissionsRepository) {
+        this.eventBus = eventBus;
         this.entriesRepository = entriesRepository;
         this.projectRolesRepository = projectRolesRepository;
         this.entriesService = entriesService;
@@ -127,6 +134,16 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
 
     public Observable<UpdateEntryDialog> updateEntryDialog() {
         return updateEntryDialogObservable;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 
     @Getter

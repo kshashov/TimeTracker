@@ -8,20 +8,3 @@
   justify-content: center;
   padding: var(--lumo-space-m);
 }
-
-.brand-expression__logo {
-  max-height: 100%;
-  max-width: 100%;
-}
-
-.brand-expression__title {
-  margin-left: var(--lumo-space-s);
-}
-
-/* === IE 11 workaround === */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /* With max-width, the logo gets too wide */
-  .navi-drawer[rail]:not([open]):not(:hover) .brand-expression__logo {
-    width: 100%;
-  }
-}

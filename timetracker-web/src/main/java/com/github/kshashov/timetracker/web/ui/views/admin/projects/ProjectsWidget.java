@@ -6,7 +6,6 @@ import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.components.RoleBadge;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
-import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.github.kshashov.timetracker.web.ui.util.HasSubscriptions;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
@@ -29,7 +28,7 @@ import java.util.List;
 
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
-public class ProjectsWidget extends Widget implements HasUser, DataHandler, HasSubscriptions {
+public class ProjectsWidget extends Widget implements HasUser, HasSubscriptions {
     private final ProjectsViewModel viewModel;
     private final List<Subscription> subscriptions = new ArrayList<>();
 

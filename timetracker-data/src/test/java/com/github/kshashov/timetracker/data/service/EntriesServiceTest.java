@@ -125,7 +125,7 @@ public class EntriesServiceTest extends BaseActionTest {
 
         // Other user
         Entry entry1 = correctEntry();
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(false);
 
         assertThatThrownBy(() -> entriesService.createEntry(user2, entry1))
@@ -151,7 +151,7 @@ public class EntriesServiceTest extends BaseActionTest {
         // Other user
         Entry entry1 = correctEntry();
 
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(true);
 
         result = entriesService.createEntry(user2, entry1);
@@ -253,7 +253,7 @@ public class EntriesServiceTest extends BaseActionTest {
 
         // Other user
         Entry entry1 = entriesService.createEntry(correctEntry());
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(false);
 
         assertThatThrownBy(() -> entriesService.updateEntry(user2, entry1))
@@ -278,7 +278,7 @@ public class EntriesServiceTest extends BaseActionTest {
         // Other user
         Entry entry1 = entriesService.createEntry(correctEntry());
 
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(true);
 
         result = entriesService.updateEntry(user2, entry1);
@@ -330,7 +330,7 @@ public class EntriesServiceTest extends BaseActionTest {
 
         // Other user
         Entry entry1 = entriesService.createEntry(correctEntry());
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(true);
 
         assertThat(entriesRepository.existsById(entry1.getId())).isTrue();
@@ -354,7 +354,7 @@ public class EntriesServiceTest extends BaseActionTest {
 
         // Other user
         Entry entry1 = entriesService.createEntry(correctEntry());
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.EDIT_LOGS)))
+        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(entry1.getAction().getProject()), eq(ProjectPermissionType.VIEW_PROJECT_LOGS)))
                 .thenReturn(false);
 
         assertThatThrownBy(() -> entriesService.deleteEntry(user2, entry1.getId()))

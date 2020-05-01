@@ -11,6 +11,7 @@ import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -24,7 +25,9 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.DayOfWeek;
@@ -32,10 +35,12 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Objects;
 
+@Slf4j
 @Route(value = "user", layout = MainLayout.class)
 @PageTitle("My Profile")
 public class UserPage extends ViewFrame implements HasUser, DataHandler {
     private final UsersService usersService;
+    private final EventBus eventBus;
 
     private final User user;
 
@@ -50,8 +55,9 @@ public class UserPage extends ViewFrame implements HasUser, DataHandler {
 
 
     @Autowired
-    public UserPage(UsersService usersService) {
+    public UserPage(UsersService usersService, EventBus eventBus) {
         this.usersService = usersService;
+        this.eventBus = eventBus;
         this.user = getUser();
 
         initFormLayout();
@@ -116,5 +122,15 @@ public class UserPage extends ViewFrame implements HasUser, DataHandler {
         setTitle(user.getName());
 
         binder.readBean(user);
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 }

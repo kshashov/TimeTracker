@@ -17,9 +17,9 @@ import com.vaadin.flow.router.Route;
 
 @PageTitle("Welcome")
 @Route(value = "", layout = MainLayout.class)
-public class Home extends ViewFrame {
+public class About extends ViewFrame {
 
-	public Home() {
+	public About() {
 		setId("home");
 		setViewContent(createContent());
 	}

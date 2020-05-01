@@ -7,6 +7,9 @@ import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviDrawer;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviItem;
 import com.github.kshashov.timetracker.web.ui.components.navigation.drawer.NaviMenu;
+import com.github.kshashov.timetracker.web.ui.util.LumoStyles;
+import com.github.kshashov.timetracker.web.ui.util.UIUtils;
+import com.github.kshashov.timetracker.web.ui.util.css.BorderRadius;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
 import com.github.kshashov.timetracker.web.ui.views.*;
@@ -20,9 +23,9 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
@@ -31,11 +34,10 @@ import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.github.kshashov.timetracker.web.ui.util.UIUtils.IMG_PATH;
-
+@Slf4j
 @CssImport(value = "frontend://styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value = "frontend://styles/components/floating-action-button.css", themeFor = "vaadin-button")
 @CssImport(value = "frontend://styles/components/grid.css", themeFor = "vaadin-grid")
@@ -49,12 +51,10 @@ import static com.github.kshashov.timetracker.web.ui.util.UIUtils.IMG_PATH;
 @CssImport("frontend://styles/misc/box-shadow-borders.css")
 @CssImport(value = "frontend://styles/styles.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge")
-//@PWA(name = "Time Tracker", shortName = "Time Tracker", iconPath = "images/logos/18.png", backgroundColor = "#233348", themeColor = "#233348")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 public class MainLayout extends FlexBoxLayout
         implements HasUser, RouterLayout, PageConfigurator, AfterNavigationObserver {
 
-    private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
     private static final String CLASS_NAME = "root";
 
     private final User user;
@@ -73,16 +73,16 @@ public class MainLayout extends FlexBoxLayout
 
     private AppBar appBar;
 
+    @Autowired
     public MainLayout() {
+        this.user = getUser();
+
         VaadinSession.getCurrent()
                 .setErrorHandler((ErrorHandler) errorEvent -> {
-                    log.error("Uncaught UI exception",
-                            errorEvent.getThrowable());
+                    log.error("Uncaught UI exception", errorEvent.getThrowable());
                     Notification.show(
                             "We are sorry, but an internal error occurred");
                 });
-
-        this.user = getUser();
 
         addClassName(CLASS_NAME);
         setFlexDirection(FlexDirection.COLUMN);
@@ -133,29 +133,32 @@ public class MainLayout extends FlexBoxLayout
      */
     private void initNaviItems() {
         NaviMenu menu = naviDrawer.getMenu();
-        menu.addNaviItem(VaadinIcon.HOME, "Home", Home.class);
+
         menu.addNaviItem(VaadinIcon.INSTITUTION, "Accounts", Accounts.class);
         menu.addNaviItem(VaadinIcon.CREDIT_CARD, "Payments", Payments.class);
         menu.addNaviItem(VaadinIcon.CHART, "Statistics", Statistics.class);
 
-        NaviItem personnel = menu.addNaviItem(VaadinIcon.USERS, "Personnel",
-                null);
+        NaviItem personnel = menu.addNaviItem(VaadinIcon.USERS, "Personnel", null);
         menu.addNaviItem(personnel, "Accountants", Accountants.class);
         menu.addNaviItem(personnel, "Managers", Managers.class);
+
+        NaviItem home = menu.addNaviItem(VaadinIcon.HOME, "Home", null);
+        menu.addNaviItem(home, "About", About.class);
+
+        NaviItem entries = menu.addNaviItem(VaadinIcon.CALENDAR_CLOCK, "Work Logs", null);
+        menu.addNaviItem(entries, "Daily", DailyPage.class);
+        menu.addNaviItem(entries, "Weekly", WeeklyPage.class);
+        menu.addNaviItem(entries, "Reports", ReportsPage.class);
+
+        NaviItem admin = menu.addNaviItem(VaadinIcon.CALENDAR_BRIEFCASE, "Admin", null);
+        menu.addNaviItem(admin, "Projects", ProjectsPage.class);
+        menu.addNaviItem(admin, "Days", WeeklyPage.class);
     }
 
     /**
      * Configure the app's inner and outer headers and footers.
      */
     private void initHeadersAndFooters() {
-        // setAppHeaderOuter();
-        // setAppFooterInner();
-        // setAppFooterOuter();
-
-        // Default inner header setup:
-        // - When using tabbed navigation the view title, user avatar and main menu button will appear in the TabBar.
-        // - When tabbed navigation is turned off they appear in the AppBar.
-
         appBar = new AppBar("");
         if (user != null) {
             appBar.addRightCorner(createUserInfo());
@@ -164,22 +167,21 @@ public class MainLayout extends FlexBoxLayout
     }
 
     private Component createUserInfo() {
-        Image avatar = new Image();
-        avatar.setClassName("app-bar__avatar");
-        avatar.setSrc(IMG_PATH + "avatar.png");
-        avatar.setAlt("User menu");
+        FlexBoxLayout avatar = new FlexBoxLayout(UIUtils.createTertiaryIcon(VaadinIcon.USER));
+        avatar.setBackgroundColor(LumoStyles.Color.Contrast._10);
+        avatar.setBorderRadius(BorderRadius.L);
+        avatar.setHeight(LumoStyles.Size.M);
+        avatar.setWidth(LumoStyles.Size.M);
+        avatar.setAlignItems(FlexComponent.Alignment.CENTER);
+        avatar.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
         ContextMenu contextMenu = new ContextMenu(avatar);
         contextMenu.setOpenOnClick(true);
         contextMenu.addItem("Profile", e -> {
             UI.getCurrent().navigate(UserPage.class);
         });
-        contextMenu.addItem("My projects", e -> {
-            UI.getCurrent().navigate(ProjectsPage.class);
-        });
         contextMenu.addItem("Log Out", e -> {
             VaadinSession.getCurrent().getSession().invalidate();
-            //UI.getCurrent().navigate(Home.class);
         });
 
         return avatar;
@@ -249,14 +251,6 @@ public class MainLayout extends FlexBoxLayout
         return appBar;
     }
 
-    @Override
-    public void afterNavigation(AfterNavigationEvent event) {
-        NaviItem active = getActiveItem(event);
-        if (active != null) {
-            getAppBar().setTitle(active.getText());
-        }
-    }
-
     private NaviItem getActiveItem(AfterNavigationEvent e) {
         for (NaviItem item : naviDrawer.getMenu().getNaviItems()) {
             if (item.isHighlighted(e)) {
@@ -266,4 +260,11 @@ public class MainLayout extends FlexBoxLayout
         return null;
     }
 
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        NaviItem active = getActiveItem(event);
+        if (active != null) {
+            getAppBar().setTitle(active.getText());
+        }
+    }
 }

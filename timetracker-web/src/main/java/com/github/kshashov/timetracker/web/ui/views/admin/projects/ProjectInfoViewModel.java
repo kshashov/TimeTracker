@@ -7,22 +7,28 @@ import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
+@Slf4j
 @UIScope
 @SpringComponent
 public class ProjectInfoViewModel implements HasUser, DataHandler {
     private final RolePermissionsHelper rolePermissionsHelper;
+    private final EventBus eventBus;
 
     private final BehaviorSubject<CrudEntity<Project>> projectObservable = BehaviorSubject.create();
 
     @Autowired
-    public ProjectInfoViewModel(RolePermissionsHelper rolePermissionsHelper) {
+    public ProjectInfoViewModel(RolePermissionsHelper rolePermissionsHelper, EventBus eventBus) {
         this.rolePermissionsHelper = rolePermissionsHelper;
+        this.eventBus = eventBus;
     }
 
     public void setProject(Project project, Role role) {
@@ -46,5 +52,15 @@ public class ProjectInfoViewModel implements HasUser, DataHandler {
         }
 
         return CrudEntity.CrudAccess.DENIED;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 }

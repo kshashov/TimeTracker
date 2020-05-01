@@ -6,7 +6,6 @@ import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.LumoStyles;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
-import com.vaadin.flow.component.Component;
 import lombok.Getter;
 
 @Getter
@@ -19,13 +18,8 @@ public class ButtonsDialog extends NoPaddingDialog {
         initFooter();
     }
 
-    public ButtonsDialog(Component... components) {
-        super(components);
-        initContent();
-        initFooter();
-    }
-
     private void initContent() {
+        content.setMaxWidth("calc(var(--lumo-size-m) * 15)");
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setPadding(Horizontal.L, Vertical.L);
         add(content);

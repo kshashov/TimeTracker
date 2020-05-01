@@ -9,6 +9,7 @@ import com.github.kshashov.timetracker.web.ui.components.FullScreenButtonsWidget
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -18,16 +19,20 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.router.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Base64Utils;
 
+@Slf4j
 @PageTitle("User Registration")
 @Route(value = UserRegistrationPage.USER_VALIDATION_URL)
 public class UserRegistrationPage extends FullScreenButtonsWidget implements HasUser, DataHandler, BeforeEnterObserver, HasUrlParameter<String> {
     public static final String USER_VALIDATION_URL = "registration";
 
     private final UsersService usersService;
+    private final EventBus eventBus;
 
     private final Binder<User> binder = new Binder<>();
     private final TextField email = new TextField("Email");
@@ -41,8 +46,9 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
     private String redirectUrl;
 
     @Autowired
-    public UserRegistrationPage(UsersService usersService) {
+    public UserRegistrationPage(UsersService usersService, EventBus eventBus) {
         this.usersService = usersService;
+        this.eventBus = eventBus;
         this.user = getUser();
 
         binder.withValidator(this::save);
@@ -106,6 +112,16 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
         } else {
             redirectUrl = new String(Base64Utils.decodeFromString(parameter));
         }
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 }
 

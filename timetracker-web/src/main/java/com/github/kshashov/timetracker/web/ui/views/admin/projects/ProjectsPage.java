@@ -46,7 +46,7 @@ public class ProjectsPage extends MasterDetail implements HasSubscriptions {
     private final ConfirmDialog deleteDialog;
     private final Button edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
     private final Button delete = UIUtils.createActionButton(VaadinIcon.MINUS_CIRCLE_O);
-    private final Button activate = UIUtils.createActionButton(VaadinIcon.PLUS);
+    private final Button activate = UIUtils.createActionButton("Activate");
 
     @Autowired
     public ProjectsPage(

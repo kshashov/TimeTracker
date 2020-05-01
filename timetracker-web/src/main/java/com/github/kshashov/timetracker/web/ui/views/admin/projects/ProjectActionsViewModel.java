@@ -11,11 +11,14 @@ import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -24,9 +27,11 @@ import rx.subjects.PublishSubject;
 import java.util.List;
 import java.util.function.Function;
 
+@Slf4j
 @UIScope
 @SpringComponent
 public class ProjectActionsViewModel implements HasUser, DataHandler {
+    private final EventBus eventBus;
     private final ActionsRepository actionsRepository;
     private final ProjectActionsService actionsService;
     private final RolePermissionsHelper rolePermissionsHelper;
@@ -40,7 +45,12 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
     private final BehaviorSubject<CrudEntity<List<Action>>> actionsObservable = BehaviorSubject.create();
 
     @Autowired
-    public ProjectActionsViewModel(ActionsRepository actionsRepository, ProjectActionsService actionsService, RolePermissionsHelper rolePermissionsHelper) {
+    public ProjectActionsViewModel(
+            EventBus eventBus,
+            ActionsRepository actionsRepository,
+            ProjectActionsService actionsService,
+            RolePermissionsHelper rolePermissionsHelper) {
+        this.eventBus = eventBus;
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.user = getUser();
         this.actionsRepository = actionsRepository;
@@ -85,7 +95,12 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
     public void deleteAction(Action action) {
         handleDataManipulation(
                 () -> actionsService.deleteOrDeactivateAction(user, action.getId()),
-                result -> reloadActions());
+                result -> {
+                    if (!result) {
+                        notifyPopup("The action is moved into inactive state instead of deletion, because there are closed working logs related to it.");
+                    }
+                    reloadActions();
+                });
     }
 
     public Observable<CrudEntity<List<Action>>> actions() {
@@ -120,6 +135,16 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
 
         List<Action> actions = actionsRepository.findWithProjectByProject(project);
         actionsObservable.onNext(new CrudEntity<>(actions, access));
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 
     @Getter

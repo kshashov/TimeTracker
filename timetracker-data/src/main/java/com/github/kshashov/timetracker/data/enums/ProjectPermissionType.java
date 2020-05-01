@@ -10,7 +10,7 @@ import lombok.Getter;
 public enum ProjectPermissionType implements HasPermissionCode {
     VIEW_PROJECT_INFO("view_project_info"),
     EDIT_MY_LOGS("edit_my_logs"),
-    EDIT_LOGS("edit_project_logs"),
+    VIEW_PROJECT_LOGS("view_project_logs"),
     EDIT_PROJECT_INFO("edit_project_info"),
     EDIT_PROJECT_ACTIONS("edit_project_actions"),
     EDIT_PROJECT_USERS("edit_project_users");

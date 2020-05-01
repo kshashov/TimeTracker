@@ -1,9 +1,6 @@
 package com.github.kshashov.timetracker.web.ui.components.navigation.drawer;
 
-import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -27,8 +24,6 @@ public class NaviItem extends Div {
 	private Component link;
 	private Class<? extends Component> navigationTarget;
 	private String text;
-
-	protected Button expandCollapse;
 
 	private List<NaviItem> subItems;
 	private boolean subItemsVisible;
@@ -59,25 +54,14 @@ public class NaviItem extends Div {
 
 		} else {
 			Div div = new Div(new Span(text));
-			div.addClickListener(e -> expandCollapse.click());
-			div.setClassName(CLASS_NAME + "__link");
+			div.setClassName(CLASS_NAME + "__group");
 			this.link = div;
 		}
 
-		expandCollapse = UIUtils.createButton(VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-		expandCollapse.addClickListener(event -> setSubItemsVisible(!subItemsVisible));
-		expandCollapse.setVisible(false);
-
 		subItems = new ArrayList<>();
 		subItemsVisible = true;
-		updateAriaLabel();
 
-		add(link, expandCollapse);
-	}
-
-	private void updateAriaLabel() {
-		String action = (subItemsVisible ? "Collapse " : "Expand ") + text;
-		UIUtils.setAriaLabel(action, expandCollapse);
+		add(link);
 	}
 
 	public boolean isHighlighted(AfterNavigationEvent e) {
@@ -101,20 +85,13 @@ public class NaviItem extends Div {
 	}
 
 	public void addSubItem(NaviItem item) {
-		if (!expandCollapse.isVisible()) {
-			expandCollapse.setVisible(true);
-		}
 		item.setLevel(getLevel() + 1);
 		subItems.add(item);
 	}
 
 	private void setSubItemsVisible(boolean visible) {
-		if (level == 0) {
-			expandCollapse.setIcon(new Icon(visible ? VaadinIcon.CARET_UP : VaadinIcon.CARET_DOWN));
-		}
 		subItems.forEach(item -> item.setVisible(visible));
 		subItemsVisible = visible;
-		updateAriaLabel();
 	}
 
 	public String getText() {
@@ -125,12 +102,8 @@ public class NaviItem extends Div {
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 
-		// If true, we only update the icon. If false, we hide all the sub items
-		if (visible) {
-			if (level == 0) {
-				expandCollapse.setIcon(new Icon(VaadinIcon.CARET_DOWN));
-			}
-		} else {
+		// If false, we hide all the sub items
+		if (!visible) {
 			setSubItemsVisible(visible);
 		}
 	}

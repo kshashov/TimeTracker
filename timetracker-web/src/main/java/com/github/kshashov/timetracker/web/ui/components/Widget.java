@@ -41,8 +41,8 @@ public class Widget extends FlexBoxLayout {
     protected void initHeader(FlexBoxLayout header) {
         actions.setClassName(CLASS_NAME + "__actions");
         actions.setSpacing(Horizontal.XS);
-
-        title.getStyle().set("color", "#3e53cc");
+        actions.getStyle().set("color", "#9386e9");
+        title.getStyle().set("color", "#9386e9");
 
         header.setClassName(CLASS_NAME + "__header");
 

@@ -11,11 +11,14 @@ import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
+import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -24,9 +27,11 @@ import rx.subjects.PublishSubject;
 import java.util.List;
 import java.util.function.Function;
 
+@Slf4j
 @UIScope
 @SpringComponent
 public class ProjectsViewModel implements HasUser, DataHandler {
+    private final EventBus eventBus;
     private final ProjectsService projectsService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
@@ -41,9 +46,11 @@ public class ProjectsViewModel implements HasUser, DataHandler {
 
     @Autowired
     public ProjectsViewModel(
+            EventBus eventBus,
             ProjectsService projectsService,
             ProjectRolesRepository projectRolesRepository,
             RolePermissionsHelper rolePermissionsHelper) {
+        this.eventBus = eventBus;
         this.projectsService = projectsService;
         this.projectRolesRepository = projectRolesRepository;
         this.rolePermissionsHelper = rolePermissionsHelper;
@@ -92,7 +99,12 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     public void deleteProject(Project project) {
         handleDataManipulation(
                 () -> projectsService.deleteOrDeactivateProject(project.getId()),
-                result -> reloadProjects());
+                result -> {
+                    if (!result) {
+                        notifyPopup("The project with some actions are moved into inactive state instead of deletion, because there are closed working logs related to it.");
+                    }
+                    reloadProjects();
+                });
     }
 
     public void reloadProjects() {
@@ -139,6 +151,16 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         }
 
         return CrudEntity.CrudAccess.DENIED;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return log;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return eventBus;
     }
 
     @Getter
