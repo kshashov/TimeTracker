@@ -7,7 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class ClosedDayIdentity implements Serializable {
 
     @NotNull
     @Column(name = "obs")
-    private Date obs;
+    private LocalDate obs;
 
     @NotNull
     @Column(name = "project_id")

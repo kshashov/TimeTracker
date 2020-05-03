@@ -1,8 +1,9 @@
 .master-detail {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    padding: var(--lumo-space-r-m);
 }
 
 .master-detail__header {
@@ -35,11 +36,11 @@
 @media(min-width: 720px) {
 
     .master-detail__content {
-      margin: var(--lumo-space-l)
+        margin-right: var(--lumo-space-l)
     }
 
     .master-detail__details {
-      margin: var(--lumo-space-l) var(--lumo-space-l) var(--lumo-space-l) 0
+        /*margin: var(--lumo-space-l) var(--lumo-space-l) var(--lumo-space-l) 0*/
     }
 
     .master-detail__details[size="small"] {

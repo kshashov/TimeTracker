@@ -14,19 +14,18 @@ import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
 import com.github.kshashov.timetracker.web.ui.layout.size.Bottom;
-import com.github.kshashov.timetracker.web.ui.layout.size.Horizontal;
-import com.github.kshashov.timetracker.web.ui.layout.size.Top;
 import com.github.kshashov.timetracker.web.ui.util.FontSize;
 import com.github.kshashov.timetracker.web.ui.util.FontWeight;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
-import com.github.kshashov.timetracker.web.ui.views.reports.ReportsDateFilter;
+import com.github.kshashov.timetracker.web.ui.views.reports.DatesFilter;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
@@ -59,8 +58,7 @@ public class ReportsPage extends ViewFrame implements HasUser {
     private final PermissionsRepository permissionsRepository;
     private final FlexBoxLayout filtersLayout = new FlexBoxLayout();
     private final Span total = new Span();
-    private final ReportsDateFilter dateFilter = new ReportsDateFilter();
-
+    private final DatesFilter dateFilter = new DatesFilter();
 
     @Autowired
     public ReportsPage(EntriesRepository entriesRepository, PermissionsRepository permissionsRepository) {
@@ -76,7 +74,6 @@ public class ReportsPage extends ViewFrame implements HasUser {
         content.setFlexDirection(FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
-        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
         initGrid();
 
@@ -108,13 +105,13 @@ public class ReportsPage extends ViewFrame implements HasUser {
         entriesGrid.setHeightByRows(false);
 
         Grid.Column<Entry> userColumn = entriesGrid.addColumn(new ComponentRenderer<>(entry -> {
-            return new Span(entry.getUser().getName());
+            return UIUtils.createLink("/users/" + user.getId(), user.getName());
         })).setHeader("Author").setSortable(true).setComparator(e -> e.getUser().getName()).setAutoWidth(true);
 
         Grid.Column<Entry> projectColumn = entriesGrid.addColumn(new ComponentRenderer<>(entry -> {
             Action action = entry.getAction();
             Project project = action.getProject();
-            Span item = new Span(StringUtils.defaultString(project.getTitle()));
+            Anchor item = UIUtils.createLinkTitle("/projects/" + project.getId(), project.getTitle(), project.getIsActive());
 
             if (!project.getIsActive()) {
                 item.getStyle().set("text-decoration", "line-through");
@@ -201,7 +198,7 @@ public class ReportsPage extends ViewFrame implements HasUser {
     private void reloadEntities(LocalDate from, LocalDate to) {
         Permission permission = permissionsRepository.findOneByCode(ProjectPermissionType.VIEW_PROJECT_LOGS.getCode());
         dataProvider.getItems().clear();
-        dataProvider.getItems().addAll(entriesRepository.findFullByUserAndReporterPermission(getUser(), permission, from, to));
+        dataProvider.getItems().addAll(entriesRepository.findFullByUserAndReporterUserPermission(getUser(), permission, from, to));
         dataProvider.refreshAll();
 
         total.setText("Total: " + dataProvider.getItems().stream().map(Entry::getHours).reduce(0.0, Double::sum) + "h");
@@ -218,7 +215,7 @@ public class ReportsPage extends ViewFrame implements HasUser {
                     .toLocalDate();
 
             dateFilter.setDate(date);
-            dateFilter.setType(ReportsDateFilter.FilterType.THIS_WEEK);
+            dateFilter.setType(DatesFilter.FilterType.THIS_WEEK);
         });
 
         AppBar appBar = MainLayout.get().getAppBar();

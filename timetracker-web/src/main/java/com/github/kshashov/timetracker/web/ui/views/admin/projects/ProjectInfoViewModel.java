@@ -9,15 +9,16 @@ import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
 @Slf4j
-@UIScope
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SpringComponent
 public class ProjectInfoViewModel implements HasUser, DataHandler {
     private final RolePermissionsHelper rolePermissionsHelper;

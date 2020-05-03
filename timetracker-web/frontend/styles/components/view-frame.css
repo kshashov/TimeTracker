@@ -20,6 +20,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
+  padding: var(--lumo-space-r-m);
   -webkit-overflow-scrolling: touch;
 }
 

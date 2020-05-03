@@ -30,7 +30,7 @@ public class LoginPage extends FullScreenWidget {
 
         initSsoButtons();
 
-        setTitle("Login");
+        setTitle("TimeTracker");
         addContentItems(ssoButtons);
     }
 

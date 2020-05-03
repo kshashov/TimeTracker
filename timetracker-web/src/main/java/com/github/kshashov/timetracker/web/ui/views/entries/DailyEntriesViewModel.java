@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
+import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
@@ -29,6 +30,7 @@ import rx.subjects.PublishSubject;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,8 +41,12 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final ProjectRolesRepository projectRolesRepository;
     private final EntriesRepository entriesRepository;
     private final EntriesService entriesService;
+    private final ClosedDaysRepository closedDaysRepository;
+    private final RolesRepository rolesRepository;
+    private final PermissionsRepository permissionsRepository;
     private final EventBus eventBus;
 
+    private final Permission permission;
     private final User user;
     private LocalDate date;
 
@@ -48,23 +54,28 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final PublishSubject<UpdateEntryDialog> updateEntryDialogObservable = PublishSubject.create();
     private final BehaviorSubject<List<Entry>> entriesObservable = BehaviorSubject.create();
     private final BehaviorSubject<List<Project>> projectsObservable = BehaviorSubject.create();
-    private final RolesRepository rolesRepository;
-    private final PermissionsRepository permissionsRepository;
+    private final BehaviorSubject<List<Project>> openProjectsObservable = BehaviorSubject.create();
+    private final BehaviorSubject<Boolean> createAccessObservable = BehaviorSubject.create();
+
 
     public DailyEntriesViewModel(
             EventBus eventBus,
             EntriesRepository entriesRepository,
             ProjectRolesRepository projectRolesRepository,
             EntriesService entriesService,
+            ClosedDaysRepository closedDaysRepository,
             RolesRepository rolesRepository,
             PermissionsRepository permissionsRepository) {
         this.eventBus = eventBus;
         this.entriesRepository = entriesRepository;
         this.projectRolesRepository = projectRolesRepository;
         this.entriesService = entriesService;
+        this.closedDaysRepository = closedDaysRepository;
         this.rolesRepository = rolesRepository;
         this.permissionsRepository = permissionsRepository;
         this.user = getUser();
+
+        permission = permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
     }
 
     public void setDate(@NotNull LocalDate date) {
@@ -110,14 +121,24 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     }
 
     private void reloadProjects() {
-        Permission permission = permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
+        Set<Long> closedProjects = closedDaysRepository.findByIdentityObsBetween(date, date)
+                .stream()
+                .map(day -> day.getIdentity().getProjectId())
+                .collect(Collectors.toSet());
 
         List<Project> projects = projectRolesRepository
                 .findWithActionsByUserAndRolePermissionsContains(user, permission)
                 .stream()
                 .map(ProjectRole::getProject)
                 .collect(Collectors.toList());
+
+        List<Project> openProjects = projects
+                .stream()
+                .filter(project -> !closedProjects.contains(project.getId()))
+                .collect(Collectors.toList());
+
         projectsObservable.onNext(projects);
+        openProjectsObservable.onNext(openProjects);
     }
 
     public Observable<List<Entry>> entries() {
@@ -128,12 +149,20 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
         return projectsObservable;
     }
 
+    public Observable<List<Project>> openProjects() {
+        return openProjectsObservable;
+    }
+
     public Observable<CreateEntryDialog> createEntryDialog() {
         return createEntryDialogObservable;
     }
 
     public Observable<UpdateEntryDialog> updateEntryDialog() {
         return updateEntryDialogObservable;
+    }
+
+    public Observable<Boolean> createAccess() {
+        return createAccessObservable;
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.github.kshashov.timetracker.web.ui.util.css.BorderRadius;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
 import com.github.kshashov.timetracker.web.ui.views.*;
+import com.github.kshashov.timetracker.web.ui.views.admin.dates.DatesPage;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.ProjectsPage;
 import com.github.kshashov.timetracker.web.ui.views.personnel.Accountants;
 import com.github.kshashov.timetracker.web.ui.views.personnel.Managers;
@@ -152,7 +153,7 @@ public class MainLayout extends FlexBoxLayout
 
         NaviItem admin = menu.addNaviItem(VaadinIcon.CALENDAR_BRIEFCASE, "Admin", null);
         menu.addNaviItem(admin, "Projects", ProjectsPage.class);
-        menu.addNaviItem(admin, "Days", WeeklyPage.class);
+        menu.addNaviItem(admin, "Date Intervals", DatesPage.class);
     }
 
     /**

@@ -55,15 +55,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // (production mode) static resources //
                 "/frontend-es5/**", "/frontend-es6/**");
     }
-
-/*    @Bean
-    public PrincipalExtractor principalExtractor(UsersRepository usersRepository) {
-        PrincipalExtractor extractor = map -> {
-            var email = (String) map.get("email");
-            var user = usersRepository.findOneByEmail(email);
-            return user;
-        };
-
-        return extractor;
-    }*/
 }

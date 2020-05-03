@@ -263,6 +263,10 @@ public class DailyEntriesWidget extends LargeWidget implements HasSubscriptions 
                 .subscribe(projects -> {
                     editor.cancel();
                     actionChooser.setProjects(projects);
+                }));
+
+        subscribe(viewModel.openProjects()
+                .subscribe(projects -> {
                     createActionChooser.setProjects(projects);
                 }));
 

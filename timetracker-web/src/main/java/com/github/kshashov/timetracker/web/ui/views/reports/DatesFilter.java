@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Locale;
 
-public class ReportsDateFilter extends FlexBoxLayout implements HasUser {
+public class DatesFilter extends FlexBoxLayout implements HasUser {
     private boolean supressEvents = false;
     private final User user;
     private LocalDate date;
@@ -28,7 +28,7 @@ public class ReportsDateFilter extends FlexBoxLayout implements HasUser {
     private final DatePicker to = new DatePicker("To");
     private final FlexBoxLayout datePickerLayout = new FlexBoxLayout();
 
-    public ReportsDateFilter() {
+    public DatesFilter() {
         this.user = getUser();
 
         setFlexDirection(FlexDirection.ROW);
@@ -166,11 +166,11 @@ public class ReportsDateFilter extends FlexBoxLayout implements HasUser {
     }
 
     @Getter
-    public static class DateChangedEvent extends ComponentEvent<ReportsDateFilter> {
+    public static class DateChangedEvent extends ComponentEvent<DatesFilter> {
         private final LocalDate from;
         private final LocalDate to;
 
-        public DateChangedEvent(LocalDate from, LocalDate to, ReportsDateFilter source, boolean fromClient) {
+        public DateChangedEvent(LocalDate from, LocalDate to, DatesFilter source, boolean fromClient) {
             super(source, fromClient);
             this.from = from;
             this.to = to;
