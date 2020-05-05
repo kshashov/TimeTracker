@@ -9,12 +9,10 @@ import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
-import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,9 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProjectsServiceTest extends BaseUserTest {
-    @MockBean
-    RolePermissionsHelper rolePermissionsHelper;
-
     @Autowired
     ProjectsService projectsService;
     @Autowired

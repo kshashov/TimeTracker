@@ -1,24 +1,16 @@
 package com.github.kshashov.timetracker.data.service.admin.actions;
 
 import com.github.kshashov.timetracker.data.entity.Action;
-import com.github.kshashov.timetracker.data.entity.user.User;
 
 import javax.validation.constraints.NotNull;
 
 public interface ProjectActionsService {
-    Action createAction(@NotNull Action action);
+    Action createAction(@NotNull Long projectId, @NotNull ActionInfo actionInfo);
 
-    Action createAction(@NotNull User user, @NotNull Action action);
-
-    Action updateAction(@NotNull Action action);
-
-    Action updateAction(@NotNull User user, @NotNull Action action);
-
-    void activateAction(@NotNull User user, @NotNull Long actionId);
+    Action updateAction(@NotNull Long actionId, @NotNull ActionInfo actionInfo);
 
     void activateAction(@NotNull Long actionId);
 
     boolean deleteOrDeactivateAction(@NotNull Long actionId);
 
-    boolean deleteOrDeactivateAction(@NotNull User user, @NotNull Long actionId);
 }

@@ -25,10 +25,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
 
+import static com.github.kshashov.timetracker.data.PermissionsMock.whenPermission;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @DataJpaTest
 public class ProjectUsersServiceTest extends BaseProjectTest {
@@ -121,8 +120,7 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
         Project project = getProject();
 
         // Make user to has EDIT_PROJECT_USERS project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.EDIT_PROJECT_USERS);
 
         // Create
         assertThat(projectRolesRepository.existsByUserAndProject(user, project)).isFalse();
@@ -146,15 +144,13 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
         ProjectRole projectRole = correctRole(getUserRole());
 
         // Make user to has no EDIT_PROJECT_USERS project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.EDIT_PROJECT_USERS);
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(user2, projectRole))
                 .isInstanceOf(NoPermissionException.class);
 
         // Check with the same user
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_PROJECT_USERS);
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(user, projectRole))
                 .isInstanceOf(NoPermissionException.class);
@@ -226,8 +222,7 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
         ProjectRole projectRole = projectUsersService.createProjectRole(correctRole(getUserRole()));
 
         // Make user to has EDIT_PROJECT_USERS project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(projectRole.getProject()), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user2, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS);
 
         // Update role
         projectRole.setRole(getAdminRole());
@@ -249,15 +244,14 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
         projectRole.setRole(getAdminRole());
 
         // Make user to has no EDIT_PROJECT_USERS project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.EDIT_PROJECT_USERS);
+
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(user2, projectRole))
                 .isInstanceOf(NoPermissionException.class);
 
         // Check with the same user
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_PROJECT_USERS);
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(user, projectRole))
                 .isInstanceOf(NoPermissionException.class);
@@ -342,8 +336,7 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
 
         // Make user to has EDIT_PROJECT_USERS project permission
         //ArgumentMatcher<Project> argumentMatcher = project -> project.getId().equals(projectRole.getProject().getId());
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(projectRole.getProject()), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user2, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS);
 
         boolean isDeleted = projectUsersService.deleteOrDeactivateProjectRole(user2, projectRole.getIdentity());
 
@@ -366,15 +359,13 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
         assertThat(entriesRepository.findFullByUserAndActionProject(projectRole.getUser(), projectRole.getProject()).size()).isEqualTo(0);
 
         // Make user to has no EDIT_PROJECT_USERS project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user2), eq(projectRole.getProject()), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user2, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS);
 
         assertThatThrownBy(() -> projectUsersService.deleteOrDeactivateProjectRole(user2, projectRole.getIdentity()))
                 .isInstanceOf(NoPermissionException.class);
 
         // Check with the same user
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(getProject()), eq(ProjectPermissionType.EDIT_PROJECT_USERS)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, projectRole.getProject(), ProjectPermissionType.EDIT_PROJECT_USERS);
 
         assertThatThrownBy(() -> projectUsersService.deleteOrDeactivateProjectRole(user, projectRole.getIdentity()))
                 .isInstanceOf(NoPermissionException.class);

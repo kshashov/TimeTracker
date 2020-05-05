@@ -18,10 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import static com.github.kshashov.timetracker.data.PermissionsMock.whenPermission;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -73,8 +72,7 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         ProjectInfo projectInfo = correctProjectInfo("updateProject_CorrectUser_1");
 
         // Make user to has EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
 
         // Update project
         projectsService.updateProject(user, project.getId(), projectInfo);
@@ -92,8 +90,7 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         Project project = projectsService.createProject(getUser(), correctProjectInfo("updateProject_UserHasNoPermission"));
         ProjectInfo projectInfo = correctProjectInfo("updateProject_UserHasNoPermission");
         // Make user to has no EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
 
         assertThatThrownBy(() -> projectsService.updateProject(user, project.getId(), projectInfo))
                 .isInstanceOf(NoPermissionException.class);
@@ -119,8 +116,7 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         assertThat(project.getIsActive()).isFalse();
 
         // Make user to has EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
 
         // Activate
         projectsService.activateProject(user, project.getId());
@@ -148,8 +144,11 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         assertThat(project.getIsActive()).isFalse();
 
         // Make user to has no EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
+
+        Project finalProject = project;
+        assertThatThrownBy(() -> projectsService.activateProject(getUser(), finalProject.getId()))
+                .isInstanceOf(NoPermissionException.class);
     }
 
     //
@@ -162,8 +161,7 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         Project project = projectsService.createProject(user, correctProjectInfo("deleteOrDeactivateProject_CorrectUser"));
 
         // Make user to has EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(true);
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
 
         // Project exists and has no entries and actions
         assertThat(project).isNotNull();
@@ -187,8 +185,7 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
         Project project = projectsService.createProject(user, correctProjectInfo("deleteOrDeactivateProject_UserHasNoPermission"));
 
         // Make user to has no EDIT_PROJECT_INFO project permission
-        when(rolePermissionsHelper.hasProjectPermission(eq(user), eq(project), eq(ProjectPermissionType.EDIT_PROJECT_INFO)))
-                .thenReturn(false);
+        whenPermission(rolePermissionsHelper).deny(user, project, ProjectPermissionType.EDIT_PROJECT_INFO);
 
         assertThatThrownBy(() -> projectsService.deleteOrDeactivateProject(getUser(), project.getId()))
                 .isInstanceOf(NoPermissionException.class);

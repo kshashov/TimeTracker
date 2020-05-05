@@ -76,6 +76,10 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
             throw new NoPermissionException("You have no permissions to update this project");
         }
 
+        if (user.getId().equals(projectRole.getUser().getId())) {
+            throw new NoPermissionException("Project user cannot be updated by the same user");
+        }
+
         return doDeleteOrDeactivateProjectRole(projectRole);
     }
 
