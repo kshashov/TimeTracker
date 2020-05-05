@@ -19,6 +19,8 @@ public interface ProjectRolesRepository extends JpaRepository<ProjectRole, Proje
 
     boolean existsByUserAndProject(User user, Project project);
 
+    boolean existsByUserIdAndProjectId(Long userId, Long projectId);
+
     ProjectRole findOneByUserIdAndProjectId(Long userId, Long projectId);
 
     @EntityGraph(value = "ProjectRole.project.user")

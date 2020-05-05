@@ -2,12 +2,12 @@ package com.github.kshashov.timetracker.data.service.admin.projects;
 
 import com.github.kshashov.timetracker.core.errors.NoPermissionException;
 import com.github.kshashov.timetracker.data.entity.Project;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
+import com.github.kshashov.timetracker.data.service.admin.roles.ProjectRoleInfo;
 import com.github.kshashov.timetracker.data.service.admin.roles.ProjectUsersService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,11 +46,9 @@ public class AuthorizedProjectsServiceImpl implements AuthorizedProjectsService 
         Project project = projectsService.createProject(projectInfo);
 
         // Add admin project role to user
-        ProjectRole projectRole = new ProjectRole();
-        projectRole.setUser(user);
-        projectRole.setProject(project);
-        projectRole.setRole(rolesRepository.findOneByCode(ProjectRoleType.ADMIN.getCode()));
-        projectUsersService.createProjectRole(projectRole);
+        ProjectRoleInfo projectRoleInfo = new ProjectRoleInfo();
+        projectRoleInfo.setRoleId(rolesRepository.findOneByCode(ProjectRoleType.ADMIN.getCode()).getId());
+        projectUsersService.createProjectRole(project.getId(), user.getId(), projectRoleInfo);
 
         return project;
     }
