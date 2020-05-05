@@ -1,4 +1,4 @@
-package com.github.kshashov.timetracker.data.service.admin.projects;
+package com.github.kshashov.timetracker.data.service.admin.roles;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.core.errors.NoPermissionException;
@@ -16,6 +16,8 @@ import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
+import com.github.kshashov.timetracker.data.service.admin.actions.ProjectActionsService;
+import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

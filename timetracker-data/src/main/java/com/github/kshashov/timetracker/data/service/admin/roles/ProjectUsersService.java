@@ -1,4 +1,4 @@
-package com.github.kshashov.timetracker.data.service.admin.projects;
+package com.github.kshashov.timetracker.data.service.admin.roles;
 
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRoleIdentity;

@@ -6,7 +6,7 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
-import com.github.kshashov.timetracker.data.service.admin.projects.ProjectActionsService;
+import com.github.kshashov.timetracker.data.service.admin.actions.ProjectActionsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;

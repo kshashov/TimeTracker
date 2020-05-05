@@ -9,7 +9,7 @@ import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
-import com.github.kshashov.timetracker.data.service.admin.projects.ProjectUsersServiceImpl;
+import com.github.kshashov.timetracker.data.service.admin.roles.ProjectUsersServiceImpl;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;

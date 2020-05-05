@@ -17,7 +17,7 @@ The goal was to try to create a project from scratch using Vaadin 14+ and Spring
     * Test
     * OAuth2 Client (For Google OpenID)
 * JUnit 5 + Mockito (Tests cover only complex database manipulations in `com.github.kshashov.timetracker.data.service` package.
-)
+
 ### Database scheme
 
 ## Pages

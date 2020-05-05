@@ -6,7 +6,8 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
-import com.github.kshashov.timetracker.data.service.admin.projects.ProjectsService;
+import com.github.kshashov.timetracker.data.service.admin.projects.AuthorizedProjectsService;
+import com.github.kshashov.timetracker.data.service.admin.projects.ProjectInfo;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
@@ -33,7 +34,7 @@ import java.util.function.Function;
 @SpringComponent
 public class ProjectsViewModel implements HasUser, DataHandler {
     private final EventBus eventBus;
-    private final ProjectsService projectsService;
+    private final AuthorizedProjectsService projectsService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
 
@@ -48,7 +49,7 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     @Autowired
     public ProjectsViewModel(
             EventBus eventBus,
-            ProjectsService projectsService,
+            AuthorizedProjectsService projectsService,
             ProjectRolesRepository projectRolesRepository,
             RolePermissionsHelper rolePermissionsHelper) {
         this.eventBus = eventBus;
@@ -77,7 +78,10 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         createProjectDialogObservable.onNext(new ProjectsViewModel.ProjectDialog(
                 project,
                 bean -> handleDataManipulation(
-                        () -> projectsService.createProject(user, bean),
+                        () -> {
+                            ProjectInfo projectInfo = new ProjectInfo(bean.getTitle());
+                            return projectsService.createProject(user, projectInfo);
+                        },
                         result -> reloadProjects())
         ));
     }
@@ -86,20 +90,23 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         updateProjectDialogObservable.onNext(new ProjectsViewModel.ProjectDialog(
                 project,
                 bean -> handleDataManipulation(
-                        () -> projectsService.updateProject(user, bean),
+                        () -> {
+                            ProjectInfo projectInfo = new ProjectInfo(bean.getTitle());
+                            return projectsService.updateProject(user, bean.getId(), projectInfo);
+                        },
                         result -> reloadProjects())
         ));
     }
 
     public void activateProject(Project project) {
         handleDataManipulation(
-                () -> projectsService.activateProject(project.getId()),
+                () -> projectsService.activateProject(user, project.getId()),
                 () -> reloadProjects());
     }
 
     public void deleteProject(Project project) {
         handleDataManipulation(
-                () -> projectsService.deleteOrDeactivateProject(project.getId()),
+                () -> projectsService.deleteOrDeactivateProject(user, project.getId()),
                 result -> {
                     if (!result) {
                         notifyPopup("The project with some actions are moved into inactive state instead of deletion, because there are closed working logs related to it.");

@@ -1,7 +1,7 @@
 package com.github.kshashov.timetracker.web.ui.views;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.admin.user.UsersService;
+import com.github.kshashov.timetracker.data.service.admin.users.UsersService;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;

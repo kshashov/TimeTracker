@@ -1,18 +1,12 @@
 package com.github.kshashov.timetracker.data.service.admin.projects;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
-import com.github.kshashov.timetracker.core.errors.NoPermissionException;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
-import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
-import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
-import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
-import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
-import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
+import com.github.kshashov.timetracker.data.service.admin.actions.ProjectActionsService;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,28 +21,18 @@ import java.util.List;
 
 @Service
 public class ProjectsServiceImpl implements ProjectsService {
-    private final RolePermissionsHelper rolePermissionsHelper;
     private final ProjectsRepository projectsRepository;
-    private final RolesRepository rolesRepository;
-    private final ProjectUsersService projectUsersService;
     private final ProjectActionsService projectActionsService;
     private final ActionsRepository actionsRepository;
     private final ProjectRolesRepository projectRolesRepository;
 
-
     @Autowired
     public ProjectsServiceImpl(
-            RolePermissionsHelper rolePermissionsHelper,
             ProjectsRepository projectsRepository,
-            RolesRepository rolesRepository,
-            ProjectUsersService projectUsersService,
             ProjectActionsService projectActionsService,
             ActionsRepository actionsRepository,
             ProjectRolesRepository projectRolesRepository) {
-        this.rolePermissionsHelper = rolePermissionsHelper;
         this.projectsRepository = projectsRepository;
-        this.rolesRepository = rolesRepository;
-        this.projectUsersService = projectUsersService;
         this.projectActionsService = projectActionsService;
         this.actionsRepository = actionsRepository;
         this.projectRolesRepository = projectRolesRepository;
@@ -56,49 +40,16 @@ public class ProjectsServiceImpl implements ProjectsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public Project updateProject(@NotNull User user, @NotNull Project project) {
-        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return updateProject(project);
-    }
-
-    @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public void activateProject(@NotNull User user, Long projectId) {
-        Project project = projectsRepository.findById(projectId).get();
-        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        doActivateProject(project);
-    }
-
-    @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public boolean deleteOrDeactivateProject(@NotNull User user, @NotNull Long projectId) {
-        Project project = projectsRepository.findById(projectId).get();
-        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_INFO)) {
-            throw new NoPermissionException("You have no permissions to update this project");
-        }
-
-        return doDeleteOrDeactivateProject(project);
-    }
-
-    @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public Project createProject(@NotNull User user, @NotNull Project project) {
+    public Project createProject(@NotNull ProjectInfo projectInfo) {
         try {
-            project.setIsActive(true);
-            return doCreateProject(user, project);
+            return doCreateProject(projectInfo);
         } catch (javax.validation.ConstraintViolationException ex) {
             throw new IncorrectArgumentException("Invalid request", ex);
         } catch (DataIntegrityViolationException ex) {
             if (ex.getCause() instanceof ConstraintViolationException) {
                 ConstraintViolationException casted = (ConstraintViolationException) ex.getCause();
                 if ("projects_unique_title".equals(casted.getConstraintName())) {
-                    throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists", ex);
+                    throw new IncorrectArgumentException("Project " + projectInfo.getTitle() + " already exists", ex);
                 } else {
                     throw new IncorrectArgumentException("Invalid request", ex);
                 }
@@ -109,16 +60,16 @@ public class ProjectsServiceImpl implements ProjectsService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-    public Project updateProject(@NotNull Project project) {
+    public Project updateProject(@NotNull Long projectId, @NotNull ProjectInfo projectInfo) {
         try {
-            return doUpdateProject(project);
+            return doUpdateProject(projectId, projectInfo);
         } catch (javax.validation.ConstraintViolationException ex) {
             throw new IncorrectArgumentException("Invalid request", ex);
         } catch (DataIntegrityViolationException ex) {
             if (ex.getCause() instanceof ConstraintViolationException) {
                 ConstraintViolationException casted = (ConstraintViolationException) ex.getCause();
                 if ("projects_unique_title".equals(casted.getConstraintName())) {
-                    throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists", ex);
+                    throw new IncorrectArgumentException("Project " + projectInfo.getTitle() + " already exists", ex);
                 } else {
                     throw new IncorrectArgumentException("Invalid request", ex);
                 }
@@ -130,67 +81,57 @@ public class ProjectsServiceImpl implements ProjectsService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void activateProject(@NotNull Long projectId) {
-        Project project = projectsRepository.findById(projectId).get();
-        doActivateProject(project);
+        doActivateProject(projectId);
     }
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public boolean deleteOrDeactivateProject(@NotNull Long projectId) {
-        Project project = projectsRepository.findById(projectId).get();
-        return doDeleteOrDeactivateProject(project);
+        return doDeleteOrDeactivateProject(projectId);
     }
 
-    private Project doCreateProject(@NotNull User user, @NotNull Project project) {
-        preValidate(project);
-
-        // TODO check if user can create projects
+    private Project doCreateProject(@NotNull ProjectInfo projectInfo) {
+        preValidate(projectInfo);
 
         // Validate
-        if (project.getId() != null) {
-            throw new IllegalArgumentException();
-        }
-
-        if ((project.getActions() != null) && !project.getActions().isEmpty()) {
-            project.getActions().clear();
-        }
-
-        if (projectsRepository.existsByTitle(project.getTitle())) {
-            throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
+        if (projectsRepository.existsByTitle(projectInfo.getTitle())) {
+            throw new IncorrectArgumentException("Project " + projectInfo.getTitle() + " already exists");
         }
 
         // Create project
-        project = projectsRepository.save(project);
+        Project project = new Project();
+        project.setTitle(projectInfo.getTitle());
+        project.setIsActive(true);
 
-        // Add highest project role to user
-        ProjectRole projectRole = new ProjectRole();
-        projectRole.setUser(user);
-        projectRole.setProject(project);
-        projectRole.setRole(rolesRepository.findOneByCode(ProjectRoleType.ADMIN.getCode())); // TODO get rid of string literal
-        projectUsersService.createProjectRole(projectRole);
+        project = projectsRepository.save(project);
 
         return project;
     }
 
-    private Project doUpdateProject(@NotNull Project project) {
-        preValidate(project);
+    private Project doUpdateProject(@NotNull Long projectId, @NotNull ProjectInfo projectInfo) {
+        preValidate(projectInfo);
+
+        Project project = projectsRepository.getOne(projectId);
 
         // Validate
-        if (project.getId() == null) {
-            throw new IllegalArgumentException();
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
-        if (projectsRepository.existsByTitleAndIdNot(project.getTitle(), project.getId())) {
-            throw new IncorrectArgumentException("Project " + project.getTitle() + " already exists");
+        if (projectsRepository.existsByTitleAndIdNot(projectInfo.getTitle(), projectId)) {
+            throw new IncorrectArgumentException("Project " + projectInfo.getTitle() + " already exists");
         }
 
         // Update
+        project.setTitle(projectInfo.getTitle());
         project = projectsRepository.save(project);
 
         return project;
     }
 
-    private void doActivateProject(@NotNull Project project) {
+    private void doActivateProject(@NotNull Long projectId) {
+        Project project = projectsRepository.getOne(projectId);
+
         // Validate
         if (project.getIsActive()) {
             throw new IncorrectArgumentException("Project is already active");
@@ -200,7 +141,9 @@ public class ProjectsServiceImpl implements ProjectsService {
         projectsRepository.save(project);
     }
 
-    public boolean doDeleteOrDeactivateProject(@NotNull Project project) {
+    public boolean doDeleteOrDeactivateProject(@NotNull Long projectId) {
+        Project project = projectsRepository.getOne(projectId);
+
         // Validate
         if (!project.getIsActive()) {
             throw new IncorrectArgumentException("Project is already inactive");
@@ -226,13 +169,9 @@ public class ProjectsServiceImpl implements ProjectsService {
         return true;
     }
 
-    private void preValidate(@NotNull Project project) {
+    private void preValidate(@NotNull ProjectInfo project) {
         if (Strings.isBlank(project.getTitle())) {
             throw new IncorrectArgumentException("Project title is empty");
-        }
-
-        if (!project.getIsActive()) {
-            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
     }
 }

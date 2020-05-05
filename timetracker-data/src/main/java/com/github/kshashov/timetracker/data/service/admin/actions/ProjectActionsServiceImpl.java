@@ -1,4 +1,4 @@
-package com.github.kshashov.timetracker.data.service.admin.projects;
+package com.github.kshashov.timetracker.data.service.admin.actions;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.core.errors.NoPermissionException;
