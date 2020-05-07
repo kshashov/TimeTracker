@@ -53,7 +53,7 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
         if (sameUser && !rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_MY_LOGS)) {
             throw new NoPermissionException("You have no permissions to create work items for this project");
         } else if (!sameUser) {
-            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.VIEW_PROJECT_LOGS);
+            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, action.getProject(), ProjectPermissionType.EDIT_PROJECT_LOGS);
             if (!hasProjectPermission) {
                 throw new NoPermissionException("You have no permissions to create other people's work items for this project");
             }
@@ -75,7 +75,7 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
         if (sameUser && !rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_MY_LOGS)) {
             throw new NoPermissionException("You have no permissions to update work items for this project");
         } else if (!sameUser) {
-            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
             if (!hasProjectPermission) {
                 throw new NoPermissionException("You have no permissions to update other people's work items for this project");
             }
@@ -96,7 +96,7 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
         if (sameUser && !rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_MY_LOGS)) {
             throw new NoPermissionException("You have no permissions to delete work items for this project");
         } else if (!sameUser) {
-            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+            boolean hasProjectPermission = rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
             if (!hasProjectPermission) {
                 throw new NoPermissionException("You have no permissions to delete other people's work items for this project");
             }

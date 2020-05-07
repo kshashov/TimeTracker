@@ -54,7 +54,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
 
         // Other user
         EntryInfo entry1 = correctEntry();
-        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
 
         assertThatThrownBy(() -> entriesService.createEntry(user2, user.getId(), entry1))
                 .isInstanceOf(NoPermissionException.class);
@@ -78,7 +78,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         // Other user
         EntryInfo entry1 = correctEntry();
 
-        whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
         result = entriesService.createEntry(user2, user.getId(), entry1);
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
@@ -108,7 +108,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_MY_LOGS);
         Entry entry1 = entriesService.createEntry(user, user.getId(), correctEntry());
 
-        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
         assertThatThrownBy(() -> entriesService.updateEntry(user2, entry1.getId(), correctEntry()))
                 .isInstanceOf(NoPermissionException.class);
     }
@@ -130,7 +130,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         // Other user
         Entry entry1 = entriesService.createEntry(user, user.getId(), correctEntry());
 
-        whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
         result = entriesService.updateEntry(user2, entry1.getId(), correctEntry());
         assertThat(result).isNotNull();
     }
@@ -158,7 +158,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_MY_LOGS);
         Entry entry1 = entriesService.createEntry(user, user.getId(), correctEntry());
 
-        whenPermission(rolePermissionsHelper).allow(user2, entry1.getAction().getProject(), ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).allow(user2, entry1.getAction().getProject(), ProjectPermissionType.EDIT_PROJECT_LOGS);
         assertThat(entriesRepository.existsById(entry1.getId())).isTrue();
         entriesService.deleteEntry(user2, entry1.getId());
         assertThat(entriesRepository.existsById(entry1.getId())).isFalse();
@@ -182,7 +182,7 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         // Other user
         whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.EDIT_MY_LOGS);
         Entry entry1 = entriesService.createEntry(user, user.getId(), correctEntry());
-        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+        whenPermission(rolePermissionsHelper).deny(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
 
         assertThatThrownBy(() -> entriesService.deleteEntry(user2, entry1.getId()))
                 .isInstanceOf(NoPermissionException.class);

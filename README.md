@@ -50,12 +50,13 @@ Permissions:
 
 Permission Code | Description
 ------------ | -------------
-`view_project_info` | Content from cell 2
-`edit_my_logs` | Content from cell 2
-`view_project_logs` | Content from cell 2
-`edit_project_info` | Content from cell 2
-`edit_project_actions` | Content from cell 2
-`edit_project_users` | Content from cell 2
+`view_project_info` | Viewing project information
+`edit_my_logs` | Creating, editing, deleting by the user of his work logs
+`view_project_logs` | Viewing, closing project work logs
+`edit_project_logs` | Creating, editing, deleting project work logs (Not implemented)
+`edit_project_info` | Editing, deleting project Information
+`edit_project_actions` | Creating, editing, deleting actions in the project
+`edit_project_users` | Adding a user to the project, changing the user role, exclusion from the project
 
 In general, there are no restrictions on the number and composition of project roles, so you can create any roles in the database. The only limitation is that the following roles must exist:
 
