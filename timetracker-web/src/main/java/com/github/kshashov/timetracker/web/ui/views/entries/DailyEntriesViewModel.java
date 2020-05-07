@@ -11,7 +11,7 @@ import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
-import com.github.kshashov.timetracker.data.service.EntriesService;
+import com.github.kshashov.timetracker.data.service.admin.entries.EntriesService;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;

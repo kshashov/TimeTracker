@@ -55,7 +55,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     //
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.createRole_CorrectUser.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.createRole_CorrectUser.sql")
     void createRole_CorrectUser_Ok() {
         User user2 = getUsersRepository().findOneByEmail("createRole_CorrectUser");
         User user = getUser();
@@ -77,7 +77,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     }
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.createRole_UserHasNoPermission.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.createRole_UserHasNoPermission.sql")
     void createRole_UserHasNoPermission_NoPermissionException() {
         User user2 = getUsersRepository().findOneByEmail("createRole_UserHasNoPermission");
         User user = getUser();
@@ -103,7 +103,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     //
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.updateRole_CorrectUser.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.updateRole_CorrectUser.sql")
     void updateRole_CorrectUser_Ok() {
         User user2 = getUsersRepository().findOneByEmail("updateRole_CorrectUser");
         User user = getUser();
@@ -125,7 +125,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     }
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.updateRole_UserHasNoPermission.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.updateRole_UserHasNoPermission.sql")
     void updateRole_UserHasNoPermission_NoPermissionException() {
         User user2 = getUsersRepository().findOneByEmail("updateRole_UserHasNoPermission");
         User user = getUser();
@@ -153,7 +153,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     //
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.deleteOrDeactivateProjectRole_CorrectUser.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.deleteOrDeactivateProjectRole_CorrectUser.sql")
     void deleteOrDeactivateProjectRole_CorrectUser_Ok() {
         User user = getUser();
         Project project = getProject();
@@ -178,7 +178,7 @@ public class AuthorizedProjectUsersServiceTest extends BaseProjectTest {
     }
 
     @Test
-    @Sql("classpath:tests/ProjectUsersServiceTest.deleteOrDeactivateProjectRole_UserHasNoPermission.sql")
+    @Sql("classpath:tests/AuthorizedProjectUsersServiceTest.deleteOrDeactivateProjectRole_UserHasNoPermission.sql")
     void deleteOrDeactivateProjectRole_UserHasNoPermission_ExceptionThrown() {
         User user2 = getUsersRepository().findOneByEmail("deleteOrDeactivateProjectRole_UserHasNoPermission");
         User user = getUser();
