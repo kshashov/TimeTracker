@@ -4,6 +4,7 @@ import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.BaseProjectTest;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Entry;
+import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import org.junit.jupiter.api.Test;
@@ -54,11 +55,18 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
     @Test
     void createAction_IncorrectAction_IncorrectArgumentException() {
-        // Empty title
-        ActionInfo actionInfo = correctAction("");
+        Project project = getProjectsRepository().getOne(getProject().getId());
 
-        assertThatThrownBy(() -> actionsService.createAction(getProject().getId(), actionInfo))
+        // Empty title
+        assertThatThrownBy(() -> actionsService.createAction(project.getId(), correctAction("")))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Inactive project
+        project.setIsActive(false);
+        assertThatThrownBy(() -> actionsService.createAction(project.getId(), correctAction("createAction_IncorrectAction")))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        project.setIsActive(true);
     }
 
     //
@@ -80,19 +88,30 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
 
     @Test
     void updateAction_IncorrectAction_IncorrectArgumentException() {
+        Project project = getProjectsRepository().getOne(getProject().getId());
+
         // Empty title
-        Action action0 = actionsService.createAction(getProject().getId(), correctAction("updateAction_IncorrectAction_0"));
+        Action action0 = actionsService.createAction(project.getId(), correctAction("updateAction_IncorrectAction_0"));
         ActionInfo actionInfo0 = correctAction("");
 
         assertThatThrownBy(() -> actionsService.updateAction(action0.getId(), actionInfo0))
                 .isInstanceOf(IncorrectArgumentException.class);
 
         // Inactive action
-        Action action1 = actionsService.createAction(getProject().getId(), correctAction("updateAction_IncorrectAction_1"));
+        Action action1 = actionsService.createAction(project.getId(), correctAction("updateAction_IncorrectAction_1"));
         action1.setIsActive(false);
 
         assertThatThrownBy(() -> actionsService.updateAction(action1.getId(), correctAction("updateAction_IncorrectAction_2")))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Inactive project
+        Action action2 = actionsService.createAction(project.getId(), correctAction("activateAction_IncorrectAction_1"));
+        project.setIsActive(false);
+
+        assertThatThrownBy(() -> actionsService.updateAction(action2.getId(), correctAction("activateAction_IncorrectAction_1")))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        project.setIsActive(true);
     }
 
     @Test
@@ -115,7 +134,6 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
     void activateAction_IncorrectAction_IncorrectArgumentException() {
         // Active action
         Action action0 = actionsService.createAction(getProject().getId(), correctAction("activateAction_IncorrectAction_0"));
-        action0.setIsActive(true);
 
         assertThatThrownBy(() -> actionsService.activateAction(action0.getId()))
                 .isInstanceOf(IncorrectArgumentException.class);
@@ -161,6 +179,15 @@ public class ProjectActionsServiceTest extends BaseProjectTest {
                 .isInstanceOf(IncorrectArgumentException.class);
 
         action.setIsActive(true);
+
+        // Inactive project
+        Action action_1 = actionsService.createAction(getProject().getId(), correctAction("activateAction_IncorrectAction_1"));
+        action_1.getProject().setIsActive(false);
+
+        assertThatThrownBy(() -> actionsService.deleteOrDeactivateAction(action_1.getId()))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        action_1.getProject().setIsActive(true);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.data.service.admin.days;
 
+import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.BaseProjectTest;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
@@ -12,6 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -25,6 +27,19 @@ public class ClosedDaysServiceTest extends BaseProjectTest {
     //
     // OPEN
     //
+
+    @Test
+    void openDays_IncorrectProject_IncorrectArgumentException() {
+        LocalDate from = LocalDate.of(2020, 1, 10);
+        LocalDate to = LocalDate.of(2020, 1, 5);
+        Project project = getProjectsRepository().getOne(getProject().getId());
+
+        // Inactive project
+        project.setIsActive(false);
+        assertThatThrownBy(() -> closedDaysService.openDays(project.getId(), from, to))
+                .isInstanceOf(IncorrectArgumentException.class);
+        project.setIsActive(true);
+    }
 
     @Test
     @Sql("classpath:tests/ClosedDaysServiceTest.openDays.sql")
@@ -151,6 +166,19 @@ public class ClosedDaysServiceTest extends BaseProjectTest {
     //
     // CLOSE
     //
+
+    @Test
+    void closeDays_IncorrectProject_IncorrectArgumentException() {
+        LocalDate from = LocalDate.of(2020, 1, 10);
+        LocalDate to = LocalDate.of(2020, 1, 5);
+        Project project = getProjectsRepository().getOne(getProject().getId());
+
+        // Inactive project
+        project.setIsActive(false);
+        assertThatThrownBy(() -> closedDaysService.closeDays(project.getId(), from, to))
+                .isInstanceOf(IncorrectArgumentException.class);
+        project.setIsActive(true);
+    }
 
     @Test
     @Sql("classpath:tests/ClosedDaysServiceTest.closeDays.sql")

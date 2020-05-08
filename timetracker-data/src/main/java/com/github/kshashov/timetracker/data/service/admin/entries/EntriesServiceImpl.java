@@ -8,6 +8,7 @@ import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
+import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
@@ -32,6 +33,7 @@ public class EntriesServiceImpl implements EntriesService {
     private final ProjectsRepository projectsRepository;
     private final PermissionsRepository permissionsRepository;
     private final Permission selfPermission;
+    private final ClosedDaysRepository closedDaysRepository;
 
     @Autowired
     public EntriesServiceImpl(
@@ -40,13 +42,15 @@ public class EntriesServiceImpl implements EntriesService {
             ActionsRepository actionsRepository,
             UsersRepository usersRepository,
             ProjectsRepository projectsRepository,
-            PermissionsRepository permissionsRepository) {
+            PermissionsRepository permissionsRepository,
+            ClosedDaysRepository closedDaysRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.entriesRepository = entriesRepository;
         this.actionsRepository = actionsRepository;
         this.usersRepository = usersRepository;
         this.projectsRepository = projectsRepository;
         this.permissionsRepository = permissionsRepository;
+        this.closedDaysRepository = closedDaysRepository;
         this.selfPermission = this.permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
 
 
@@ -88,6 +92,19 @@ public class EntriesServiceImpl implements EntriesService {
         Action action = actionsRepository.getOne(entryInfo.getActionId());
         User user = usersRepository.getOne(userId);
 
+        Long closed = closedDaysRepository.countByProjectAndIdentityObsBetween(action.getProject(), entryInfo.getObs(), entryInfo.getObs());
+        if (closed > 0) {
+            throw new IncorrectArgumentException("Closed day can't be updated");
+        }
+
+        if (!action.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive action can't be updated");
+        }
+
+        if (!action.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
+
         Entry entry = new Entry();
         entry.setIsClosed(false);
         entry.setObs(entryInfo.getObs());
@@ -108,6 +125,14 @@ public class EntriesServiceImpl implements EntriesService {
             throw new IncorrectArgumentException("Closed entry can't be updated");
         }
 
+        if (!entry.getAction().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive action can't be updated");
+        }
+
+        if (!entry.getAction().getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
+
         Action action = actionsRepository.getOne(entryInfo.getActionId());
         entry.setObs(entryInfo.getObs());
         entry.setHours(entryInfo.getHours());
@@ -124,12 +149,22 @@ public class EntriesServiceImpl implements EntriesService {
             throw new IncorrectArgumentException("Closed entry can't be deleted");
         }
 
+        if (!entry.getAction().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive action can't be updated");
+        }
+
+        if (!entry.getAction().getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
+
         entriesRepository.deleteById(entry.getId());
     }
 
     private void doOpenEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
         Project project = projectsRepository.getOne(projectId);
-
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
         // Open entries with:
         // - specified project
         // - user with edit_my_logs permission
@@ -141,7 +176,9 @@ public class EntriesServiceImpl implements EntriesService {
 
     private void doCloseEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
         Project project = projectsRepository.getOne(projectId);
-
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
         // Close entries with:
         // - specified project
         // - user with edit_my_logs permission

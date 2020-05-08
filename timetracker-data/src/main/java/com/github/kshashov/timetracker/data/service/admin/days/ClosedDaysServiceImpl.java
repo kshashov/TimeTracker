@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.data.service.admin.days;
 
+import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.entity.ClosedDay;
 import com.github.kshashov.timetracker.data.entity.ClosedDayIdentity;
 import com.github.kshashov.timetracker.data.entity.Project;
@@ -29,6 +30,9 @@ public class ClosedDaysServiceImpl implements ClosedDaysService {
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void openDays(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
         Project project = projectsRepository.getOne(projectId);
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
         closedDaysRepository.deleteByProjectAndIdentityObsBetween(project, from, to);
     }
 
@@ -36,6 +40,9 @@ public class ClosedDaysServiceImpl implements ClosedDaysService {
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void closeDays(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
         Project project = projectsRepository.getOne(projectId);
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
 
         closedDaysRepository.deleteByProjectAndIdentityObsBetween(project, from, to);
 

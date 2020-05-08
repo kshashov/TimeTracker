@@ -84,7 +84,7 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
     @Test
     void createRole_IncorrectProjectRole_IncorrectArgumentException() {
         User user = getUser();
-        Project project = getProject();
+        Project project = projectsRepository.getOne(getProject().getId());
 
         // Empty role
         ProjectRoleInfo projectRoleInfo = correctRole(getUserRole());
@@ -92,6 +92,14 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
 
         assertThatThrownBy(() -> projectUsersService.createProjectRole(project.getId(), user.getId(), projectRoleInfo))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Inactive project
+        project.setIsActive(false);
+
+        assertThatThrownBy(() -> projectUsersService.createProjectRole(project.getId(), user.getId(), correctRole(getUserRole())))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        project.setIsActive(true);
     }
 
     //
@@ -99,9 +107,9 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
     //
 
     @Test
-    void updateRole_IncorrectAction_IncorrectArgumentException() {
+    void updateRole_IncorrectProjectRole_IncorrectArgumentException() {
         User user = getUser();
-        Project project = getProject();
+        Project project = projectsRepository.getOne(getProject().getId());
 
         // Empty role
         ProjectRole projectRole = projectUsersService.createProjectRole(project.getId(), user.getId(), correctRole(getUserRole()));
@@ -109,6 +117,14 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
 
         assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole.getIdentity(), projectRoleInfo))
                 .isInstanceOf(IncorrectArgumentException.class);
+
+        // Inactive project
+        project.setIsActive(false);
+
+        assertThatThrownBy(() -> projectUsersService.updateProjectRole(projectRole.getIdentity(), correctRole(getUserRole())))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        project.setIsActive(true);
     }
 
     @Test
@@ -131,6 +147,21 @@ public class ProjectUsersServiceTest extends BaseProjectTest {
     //
     // DELETE 
     //
+
+    @Test
+    void deleteOrDeactivateProjectRole_IncorrectProjectRole_IncorrectArgumentException() {
+        User user = getUser();
+        Project project = projectsRepository.getOne(getProject().getId());
+
+        ProjectRole projectRole = projectUsersService.createProjectRole(project.getId(), user.getId(), correctRole(getUserRole()));
+
+        project.setIsActive(false);
+
+        assertThatThrownBy(() -> projectUsersService.deleteOrDeactivateProjectRole(projectRole.getIdentity()))
+                .isInstanceOf(IncorrectArgumentException.class);
+
+        project.setIsActive(true);
+    }
 
     @Test
     void deleteOrDeactivateProjectRole_NoEntries_ReturnsTrue() {

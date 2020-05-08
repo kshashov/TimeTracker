@@ -1,6 +1,7 @@
 package com.github.kshashov.timetracker.data.service.admin.roles;
 
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
+import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRoleIdentity;
 import com.github.kshashov.timetracker.data.entity.user.Role;
@@ -62,10 +63,15 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         preValidate(projectRoleInfo);
 
         Role role = rolesRepository.getOne(projectRoleInfo.getRoleId());
+        Project project = projectsRepository.getOne(projectId);
 
         // Validate
         if (projectRolesRepository.existsByUserIdAndProjectId(userId, projectId)) {
             throw new IncorrectArgumentException("Project user already exists");
+        }
+
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         // Create
@@ -73,7 +79,7 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         var id = new ProjectRoleIdentity();
         id.setUserId(userId);
         id.setProjectId(projectId);
-        projectRole.setProject(projectsRepository.getOne(projectId));
+        projectRole.setProject(project);
         projectRole.setUser(usersRepository.getOne(userId));
         projectRole.setRole(role);
         projectRole.setIdentity(id);
@@ -88,6 +94,10 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         ProjectRole projectRole = projectRolesRepository.findFullByIdentity(identity);
         Role role = rolesRepository.getOne(projectRoleInfo.getRoleId());
 
+        if (!projectRole.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
+
         // Update
         projectRole.setRole(role);
         projectRole = projectRolesRepository.save(projectRole);
@@ -99,6 +109,10 @@ public class ProjectUsersServiceImpl implements ProjectUsersService {
         ProjectRole projectRole = projectRolesRepository.findFullByIdentity(identity);
         if (ProjectRoleType.isInactive(projectRole.getRole())) {
             throw new IncorrectArgumentException("Project role is already inactive");
+        }
+
+        if (!projectRole.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         // Delete open entries with user

@@ -94,6 +94,10 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
             throw new IncorrectArgumentException("Project action already exists");
         }
 
+        if (!project.getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
+        }
+
         // Create action
         Action action = new Action();
         action.setTitle(actionInfo.getTitle());
@@ -112,6 +116,10 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         // Validate
         if (actionsRepository.existsByProjectAndTitleAndIdNot(action.getProject(), actionInfo.getTitle(), action.getId())) {
             throw new IncorrectArgumentException("Project action already exists");
+        }
+
+        if (!action.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         if (!action.getIsActive()) {
@@ -134,7 +142,7 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
         }
 
         if (!action.getProject().getIsActive()) {
-            throw new IncorrectArgumentException("Project is inactive");
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         action.setIsActive(true);
@@ -146,6 +154,10 @@ public class ProjectActionsServiceImpl implements ProjectActionsService {
 
         if (!action.getIsActive()) {
             throw new IncorrectArgumentException("Action is already inactive");
+        }
+
+        if (!action.getProject().getIsActive()) {
+            throw new IncorrectArgumentException("Inactive project can't be updated");
         }
 
         // Delete open entries with action
