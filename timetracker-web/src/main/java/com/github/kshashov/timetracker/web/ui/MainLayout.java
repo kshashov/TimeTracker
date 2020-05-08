@@ -144,7 +144,7 @@ public class MainLayout extends FlexBoxLayout
         menu.addNaviItem(personnel, "Managers", Managers.class);
 
         NaviItem home = menu.addNaviItem(VaadinIcon.HOME, "Home", null);
-        menu.addNaviItem(home, "About", About.class);
+        menu.addNaviItem(home, "Home", HomePage.class);
 
         NaviItem entries = menu.addNaviItem(VaadinIcon.CALENDAR_CLOCK, "Work Logs", null);
         menu.addNaviItem(entries, "Daily", DailyPage.class);

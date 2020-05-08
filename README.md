@@ -72,7 +72,7 @@ Role Code | Permission Codes
 `project_inactive` | -
 `project_user` |  `view_project_info`, `edit_my_logs`
 `project_reporter` | `view_project_info`, `edit_my_logs`, `view_project_logs`
-`project_admin` | `view_project_info`, `edit_my_logs`, `view_project_logs`, `edit_project_info`, `edit_project_actions`, `edit_project_users`
+`project_admin` | `view_project_info`, `edit_my_logs`, `view_project_logs`, `edit_project_logs`, `edit_project_info`, `edit_project_actions`, `edit_project_users`
 
 ### Dates Management
 

@@ -3,14 +3,19 @@ package com.github.kshashov.timetracker.data.service.admin.entries;
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.BaseActionTest;
 import com.github.kshashov.timetracker.data.entity.Entry;
+import com.github.kshashov.timetracker.data.entity.Project;
+import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
+import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
 
@@ -21,14 +26,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EntriesServiceTest extends BaseActionTest {
 
-    @Autowired
-    EntriesService entriesService;
-
-    @Autowired
-    EntriesRepository entriesRepository;
-
     @MockBean
     RolePermissionsHelper rolePermissionsHelper;
+    @Autowired
+    EntriesService entriesService;
+    @Autowired
+    EntriesRepository entriesRepository;
+    @Autowired
+    PermissionsRepository permissionsRepository;
 
     //
     // CREATE
@@ -147,6 +152,70 @@ public class EntriesServiceTest extends BaseActionTest {
         entryInfo4.setActionId(null);
         assertThatThrownBy(() -> entriesService.updateEntry(entry0.getId(), entryInfo4))
                 .isInstanceOf(IncorrectArgumentException.class);
+    }
+
+    //
+    // OPEN
+    //
+
+    @Test
+    @Sql("classpath:tests/EntriesServiceTest.openEntries_Ok.sql")
+    void openEntries_Ok() {
+        Project project = getProject();
+
+        LocalDate allFrom = LocalDate.of(2020, 1, 1);
+        LocalDate allTo = LocalDate.of(2020, 2, 1);
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        Permission selfPermission = permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
+
+        assertThat(entriesRepository.countByProjectAndUserPermission(project, selfPermission, allFrom, allTo))
+                .isEqualTo(6);
+
+        assertThat(entriesRepository.countClosedByProjectAndUserPermission(project, selfPermission, from, to))
+                .isEqualTo(2);
+
+        entriesService.openEntries(project.getId(), from, to);
+
+        assertThat(entriesRepository.countByProjectAndUserPermission(project, selfPermission, allFrom, allTo))
+                .isEqualTo(6);
+
+        assertThat(entriesRepository.countClosedByProjectAndUserPermission(project, selfPermission, from, to))
+                .isEqualTo(0);
+    }
+
+    //
+    // CLOSE
+    //
+
+    @Test
+    @Sql("classpath:tests/EntriesServiceTest.closeEntries_Ok.sql")
+    void closeEntries_Ok() {
+        Project project = getProject();
+
+        LocalDate allFrom = LocalDate.of(2020, 1, 1);
+        LocalDate allTo = LocalDate.of(2020, 2, 1);
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        Permission selfPermission = permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
+
+        assertThat(entriesRepository.countByProjectAndUserPermission(project, selfPermission, allFrom, allTo))
+                .isEqualTo(6);
+
+        assertThat(entriesRepository.countClosedByProjectAndUserPermission(project, selfPermission, from, to))
+                .isEqualTo(2);
+
+        entriesService.closeEntries(project.getId(), from, to);
+
+        assertThat(entriesRepository.countByProjectAndUserPermission(project, selfPermission, allFrom, allTo))
+                .isEqualTo(6);
+
+        assertThat(entriesRepository.countClosedByProjectAndUserPermission(project, selfPermission, from, to))
+                .isEqualTo(4);
     }
 
     //

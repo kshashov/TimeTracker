@@ -8,6 +8,7 @@ import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
+import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Service
@@ -26,6 +28,7 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
     private final EntriesRepository entriesRepository;
     private final ActionsRepository actionsRepository;
     private final UsersRepository usersRepository;
+    private final ProjectsRepository projectsRepository;
 
     @Autowired
     public AuthorizedEntriesServiceImpl(
@@ -33,12 +36,14 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
             EntriesService entriesService,
             EntriesRepository entriesRepository,
             ActionsRepository actionsRepository,
-            UsersRepository usersRepository) {
+            UsersRepository usersRepository,
+            ProjectsRepository projectsRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.entriesService = entriesService;
         this.entriesRepository = entriesRepository;
         this.actionsRepository = actionsRepository;
         this.usersRepository = usersRepository;
+        this.projectsRepository = projectsRepository;
     }
 
     @Override
@@ -82,6 +87,30 @@ public class AuthorizedEntriesServiceImpl implements AuthorizedEntriesService {
         }
 
         return entriesService.updateEntry(entryId, entryInfo);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void openEntries(@NotNull User user, @NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        Project project = projectsRepository.getOne(projectId);
+
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS)) {
+            throw new NoPermissionException("You have no permissions to open work items for this project");
+        }
+
+        entriesService.openEntries(projectId, from, to);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void closeEntries(@NotNull User user, @NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        Project project = projectsRepository.getOne(projectId);
+
+        if (!rolePermissionsHelper.hasProjectPermission(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS)) {
+            throw new NoPermissionException("You have no permissions to close work items for this project");
+        }
+
+        entriesService.closeEntries(projectId, from, to);
     }
 
     @Override

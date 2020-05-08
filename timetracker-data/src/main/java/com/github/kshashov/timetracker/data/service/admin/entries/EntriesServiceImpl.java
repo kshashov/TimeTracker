@@ -3,9 +3,14 @@ package com.github.kshashov.timetracker.data.service.admin.entries;
 import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Entry;
+import com.github.kshashov.timetracker.data.entity.Project;
+import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.User;
+import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
+import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
+import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.apache.logging.log4j.util.Strings;
@@ -16,6 +21,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Service
 public class EntriesServiceImpl implements EntriesService {
@@ -23,17 +29,27 @@ public class EntriesServiceImpl implements EntriesService {
     private final EntriesRepository entriesRepository;
     private final ActionsRepository actionsRepository;
     private final UsersRepository usersRepository;
+    private final ProjectsRepository projectsRepository;
+    private final PermissionsRepository permissionsRepository;
+    private final Permission selfPermission;
 
     @Autowired
     public EntriesServiceImpl(
             RolePermissionsHelper rolePermissionsHelper,
             EntriesRepository entriesRepository,
             ActionsRepository actionsRepository,
-            UsersRepository usersRepository) {
+            UsersRepository usersRepository,
+            ProjectsRepository projectsRepository,
+            PermissionsRepository permissionsRepository) {
         this.rolePermissionsHelper = rolePermissionsHelper;
         this.entriesRepository = entriesRepository;
         this.actionsRepository = actionsRepository;
         this.usersRepository = usersRepository;
+        this.projectsRepository = projectsRepository;
+        this.permissionsRepository = permissionsRepository;
+        this.selfPermission = this.permissionsRepository.findOneByCode(ProjectPermissionType.EDIT_MY_LOGS.getCode());
+
+
     }
 
     @Override
@@ -52,6 +68,18 @@ public class EntriesServiceImpl implements EntriesService {
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
     public void deleteEntry(@NotNull Long entryId) {
         doDeleteEntry(entryId);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void openEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        doOpenEntries(projectId, from, to);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+    public void closeEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        doCloseEntries(projectId, from, to);
     }
 
     private Entry doCreateEntry(@NotNull Long userId, @NotNull EntryInfo entryInfo) {
@@ -97,6 +125,30 @@ public class EntriesServiceImpl implements EntriesService {
         }
 
         entriesRepository.deleteById(entry.getId());
+    }
+
+    private void doOpenEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        Project project = projectsRepository.getOne(projectId);
+
+        // Open entries with:
+        // - specified project
+        // - user with edit_my_logs permission
+        // - open state
+        // - active project
+        // - active action
+        entriesRepository.openByProjectAndUserPermission(project, selfPermission, from, to);
+    }
+
+    private void doCloseEntries(@NotNull Long projectId, @NotNull LocalDate from, @NotNull LocalDate to) {
+        Project project = projectsRepository.getOne(projectId);
+
+        // Close entries with:
+        // - specified project
+        // - user with edit_my_logs permission
+        // - open state
+        // - active project
+        // - active action
+        entriesRepository.closeByProjectAndUserPermission(project, selfPermission, from, to);
     }
 
     private void preValidate(@NotNull EntryInfo entryInfo) {

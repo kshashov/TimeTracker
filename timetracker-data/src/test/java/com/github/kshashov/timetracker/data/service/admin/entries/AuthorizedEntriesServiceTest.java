@@ -7,6 +7,7 @@ import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
+import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,14 +26,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthorizedEntriesServiceTest extends BaseActionTest {
 
-    @Autowired
-    AuthorizedEntriesService entriesService;
-
-    @Autowired
-    EntriesRepository entriesRepository;
-
     @MockBean
     RolePermissionsHelper rolePermissionsHelper;
+    @Autowired
+    AuthorizedEntriesService entriesService;
+    @Autowired
+    EntriesRepository entriesRepository;
+    @Autowired
+    PermissionsRepository permissionsRepository;
 
     //
     // CREATE BY USER
@@ -133,6 +134,68 @@ public class AuthorizedEntriesServiceTest extends BaseActionTest {
         whenPermission(rolePermissionsHelper).allow(user2, project, ProjectPermissionType.EDIT_PROJECT_LOGS);
         result = entriesService.updateEntry(user2, entry1.getId(), correctEntry());
         assertThat(result).isNotNull();
+    }
+
+    //
+    // OPEN
+    //
+
+    @Test
+    void openEntries_CorrectUser_Ok() {
+        User user = getUser();
+        Project project = getProject();
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+
+        entriesService.openEntries(user, project.getId(), from, to);
+    }
+
+    @Test
+    void openEntries_UserHasNoPermission_NoPermissionException() {
+        User user = getUser();
+        Project project = getProject();
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        whenPermission(rolePermissionsHelper).deny(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+
+        assertThatThrownBy(() -> entriesService.openEntries(user, project.getId(), from, to))
+                .isInstanceOf(NoPermissionException.class);
+    }
+
+    //
+    // CLOSE
+    //
+
+    @Test
+    void closeEntries_CorrectUser_Ok() {
+        User user = getUser();
+        Project project = getProject();
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        whenPermission(rolePermissionsHelper).allow(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+
+        entriesService.closeEntries(user, project.getId(), from, to);
+    }
+
+    @Test
+    void closeEntries_UserHasNoPermission_Ok() {
+        User user = getUser();
+        Project project = getProject();
+
+        LocalDate from = LocalDate.of(2020, 1, 6);
+        LocalDate to = LocalDate.of(2020, 1, 9);
+
+        whenPermission(rolePermissionsHelper).deny(user, project, ProjectPermissionType.VIEW_PROJECT_LOGS);
+
+        assertThatThrownBy(() -> entriesService.closeEntries(user, project.getId(), from, to))
+                .isInstanceOf(NoPermissionException.class);
     }
 
     //

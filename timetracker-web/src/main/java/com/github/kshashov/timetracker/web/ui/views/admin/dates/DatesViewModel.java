@@ -1,7 +1,5 @@
 package com.github.kshashov.timetracker.web.ui.views.admin.dates;
 
-import com.github.kshashov.timetracker.data.entity.ClosedDay;
-import com.github.kshashov.timetracker.data.entity.ClosedDayIdentity;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.entity.user.Permission;
 import com.github.kshashov.timetracker.data.entity.user.ProjectRole;
@@ -11,6 +9,8 @@ import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
+import com.github.kshashov.timetracker.data.service.admin.days.AuthorizedClosedDaysService;
+import com.github.kshashov.timetracker.data.service.admin.entries.AuthorizedEntriesService;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
@@ -35,9 +35,10 @@ import java.util.stream.Collectors;
 @SpringComponent
 public class DatesViewModel implements HasUser, DataHandler {
     private final EventBus eventBus;
+    private final AuthorizedClosedDaysService closedDaysService;
+    private final AuthorizedEntriesService entriesService;
     private final EntriesRepository entriesRepository;
     private final ClosedDaysRepository closedDaysRepository;
-    private final PermissionsRepository permissionsRepository;
     private final ProjectRolesRepository projectRolesRepository;
 
     private final Permission selfPermission;
@@ -53,15 +54,18 @@ public class DatesViewModel implements HasUser, DataHandler {
     @Autowired
     public DatesViewModel(
             EventBus eventBus,
+            AuthorizedClosedDaysService closedDaysService,
             EntriesRepository entriesRepository,
             ClosedDaysRepository closedDaysRepository,
             PermissionsRepository permissionsRepository,
-            ProjectRolesRepository projectRolesRepository) {
+            ProjectRolesRepository projectRolesRepository,
+            AuthorizedEntriesService entriesService) {
         this.eventBus = eventBus;
+        this.closedDaysService = closedDaysService;
         this.entriesRepository = entriesRepository;
         this.closedDaysRepository = closedDaysRepository;
-        this.permissionsRepository = permissionsRepository;
         this.projectRolesRepository = projectRolesRepository;
+        this.entriesService = entriesService;
 
         this.user = getUser();
 
@@ -86,40 +90,39 @@ public class DatesViewModel implements HasUser, DataHandler {
     }
 
     public void openDays() {
-        Long count = closedDaysRepository.deleteByProjectAndIdentityObsBetween(project, from, to);
-
-        updateVisibility();
+        if ((project != null) && (from != null) && (to != null)) {
+            handleDataManipulation(
+                    () -> closedDaysService.openDays(user, project.getId(), from, to),
+                    this::updateVisibility,
+                    this::updateVisibility);
+        }
     }
 
     public void closeDays() {
-        closedDaysRepository.deleteByProjectAndIdentityObsBetween(project, from, to);
-
-        LocalDate from = this.from;
-        while (!from.isAfter(to)) {
-            ClosedDayIdentity identity = new ClosedDayIdentity();
-            identity.setProjectId(project.getId());
-            identity.setObs(from);
-
-            ClosedDay day = new ClosedDay();
-            day.setIdentity(identity);
-
-            closedDaysRepository.save(day);
-            from = from.plusDays(1);
+        if ((project != null) && (from != null) && (to != null)) {
+            handleDataManipulation(
+                    () -> closedDaysService.closeDays(user, project.getId(), from, to),
+                    this::updateVisibility,
+                    this::updateVisibility);
         }
-
-        updateVisibility();
     }
 
     public void openEntries() {
-        entriesRepository.openByProjectAndUserPermission(project, selfPermission, from, to);
-
-        updateVisibility();
+        if ((project != null) && (from != null) && (to != null)) {
+            handleDataManipulation(
+                    () -> entriesService.openEntries(user, project.getId(), from, to),
+                    this::updateVisibility,
+                    this::updateVisibility);
+        }
     }
 
     public void closeEntries() {
-        entriesRepository.closeByProjectAndUserPermission(project, selfPermission, from, to);
-
-        updateVisibility();
+        if ((project != null) && (from != null) && (to != null)) {
+            handleDataManipulation(
+                    () -> entriesService.closeEntries(user, project.getId(), from, to),
+                    this::updateVisibility,
+                    this::updateVisibility);
+        }
     }
 
     private void reloadProjects() {

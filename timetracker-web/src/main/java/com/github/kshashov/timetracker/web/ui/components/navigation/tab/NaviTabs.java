@@ -2,7 +2,7 @@ package com.github.kshashov.timetracker.web.ui.components.navigation.tab;
 
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
-import com.github.kshashov.timetracker.web.ui.views.About;
+import com.github.kshashov.timetracker.web.ui.views.HomePage;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -93,7 +93,7 @@ public class NaviTabs extends Tabs {
                 if (getTabCount() > 0) {
                     setSelectedIndex(getTabCount() - 1);
                 } else {
-                    UI.getCurrent().navigate(About.class);
+                    UI.getCurrent().navigate(HomePage.class);
                 }
             }
         }

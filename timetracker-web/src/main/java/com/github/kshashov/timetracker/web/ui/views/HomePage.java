@@ -15,20 +15,20 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@PageTitle("Welcome")
+@PageTitle("Home")
 @Route(value = "", layout = MainLayout.class)
-public class About extends ViewFrame {
+public class HomePage extends ViewFrame {
 
-	public About() {
-		setId("home");
-		setViewContent(createContent());
-	}
+    public HomePage() {
+        setId("home");
+        setViewContent(createContent());
+    }
 
-	private Component createContent() {
-		Html intro = new Html("<p>A responsive application template with some dummy data. Loosely based on " +
-				"the <b>responsive layout grid</b> guidelines set by " +
-				"<a href=\"https://material.io/design/layout/responsive-layout-grid.html\">Material Design</a>. " +
-				"Utilises the <a href=\"https://vaadin.com/themes/lumo\">Lumo</a> theme.</p>");
+    private Component createContent() {
+        Html intro = new Html("<p>A responsive application template with some dummy data. Loosely based on " +
+                "the <b>responsive layout grid</b> guidelines set by " +
+                "<a href=\"https://material.io/design/layout/responsive-layout-grid.html\">Material Design</a>. " +
+                "Utilises the <a href=\"https://vaadin.com/themes/lumo\">Lumo</a> theme.</p>");
 
 		Html productivity = new Html("<p>The starter gives you a productivity boost and a head start. " +
 				"You get an app shell with a typical hierarchical left-hand menu. The shell, the views and the " +
