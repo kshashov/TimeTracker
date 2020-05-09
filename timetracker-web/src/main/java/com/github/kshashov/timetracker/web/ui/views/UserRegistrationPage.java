@@ -1,7 +1,7 @@
 package com.github.kshashov.timetracker.web.ui.views;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.admin.users.UsersService;
+import com.github.kshashov.timetracker.data.service.admin.users.AuthorizedUsersService;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.security.SecurityUtils;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
@@ -19,6 +19,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ import org.springframework.util.Base64Utils;
 public class UserRegistrationPage extends FullScreenButtonsWidget implements HasUser, DataHandler, BeforeEnterObserver, HasUrlParameter<String> {
     public static final String USER_VALIDATION_URL = "registration";
 
-    private final UsersService usersService;
+    private final AuthorizedUsersService usersService;
     private final EventBus eventBus;
 
     private final Binder<User> binder = new Binder<>();
@@ -39,6 +40,7 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
     private final TextField name = new TextField("Name");
     private final FlexBoxLayout layout = new FlexBoxLayout();
     private final Button save = UIUtils.createPrimaryButton("Save");
+    private final Button logout = UIUtils.createTertiaryButton("Log Out");
     private final FormLayout formLayout = new FormLayout();
     private final Label statusText = UIUtils.createErrorLabel("");
 
@@ -46,7 +48,7 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
     private String redirectUrl;
 
     @Autowired
-    public UserRegistrationPage(UsersService usersService, EventBus eventBus) {
+    public UserRegistrationPage(AuthorizedUsersService usersService, EventBus eventBus) {
         this.usersService = usersService;
         this.eventBus = eventBus;
         this.user = getUser();
@@ -62,8 +64,12 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
             }
         });
 
+        logout.addClickListener(event -> {
+            VaadinSession.getCurrent().getSession().invalidate();
+        });
+
         addContentItems(statusText, formLayout);
-        addFooterItems(save);
+        addFooterItems(save, logout);
     }
 
     private void initFormLayout() {
@@ -84,7 +90,9 @@ public class UserRegistrationPage extends FullScreenButtonsWidget implements Has
     }
 
     private ValidationResult save(User user, ValueContext valueContext) {
-        return handleDataManipulation(() -> usersService.validate(user));
+        return handleDataManipulation(() -> {
+            this.user.setIsValidated(usersService.validate(user, user.getId(), user.getName()));
+        });
     }
 
     private void redirect() {

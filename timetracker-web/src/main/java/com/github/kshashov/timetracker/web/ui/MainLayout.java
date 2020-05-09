@@ -148,7 +148,6 @@ public class MainLayout extends FlexBoxLayout
 
         NaviItem entries = menu.addNaviItem(VaadinIcon.CALENDAR_CLOCK, "Work Logs", null);
         menu.addNaviItem(entries, "Daily", DailyPage.class);
-        menu.addNaviItem(entries, "Weekly", WeeklyPage.class);
         menu.addNaviItem(entries, "Reports", ReportsPage.class);
 
         NaviItem admin = menu.addNaviItem(VaadinIcon.CALENDAR_BRIEFCASE, "Admin", null);

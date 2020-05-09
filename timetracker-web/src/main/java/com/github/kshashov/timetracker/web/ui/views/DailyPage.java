@@ -10,6 +10,7 @@ import com.github.kshashov.timetracker.web.ui.layout.size.Vertical;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.views.entries.DailyEntriesWidget;
+import com.github.kshashov.timetracker.web.ui.views.reports.WeekDaySelector;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -27,17 +28,19 @@ import java.util.Locale;
 @Route(value = "daily", layout = MainLayout.class)
 @PageTitle("Daily Work")
 public class DailyPage extends ViewFrame implements HasUser {
-    private final DailyEntriesWidget dailyEntriesWidget;
     private final User user;
 
+    private final DailyEntriesWidget dailyEntriesWidget;
+    private final WeekDaySelector weekDaySelector;
     private final FlexBoxLayout content = new FlexBoxLayout();
     private final DatePicker datePicker = new DatePicker();
     private final Button previous = UIUtils.createTertiaryButton(VaadinIcon.ANGLE_LEFT);
     private final Button next = UIUtils.createTertiaryButton(VaadinIcon.ANGLE_RIGHT);
 
     @Autowired
-    public DailyPage(DailyEntriesWidget dailyEntriesWidget) {
+    public DailyPage(DailyEntriesWidget dailyEntriesWidget, WeekDaySelector weekDaySelector) {
         this.dailyEntriesWidget = dailyEntriesWidget;
+        this.weekDaySelector = weekDaySelector;
         this.user = getUser();
 
         prepareContent();
@@ -45,9 +48,16 @@ public class DailyPage extends ViewFrame implements HasUser {
 
         datePicker.addValueChangeListener(event -> {
             dailyEntriesWidget.setVisible(event.getValue() != null);
+            weekDaySelector.setVisible(event.getValue() != null);
+
             if (event.getValue() != null) {
+                weekDaySelector.setDate(event.getValue());
                 dailyEntriesWidget.setDate(event.getValue());
             }
+        });
+
+        weekDaySelector.addDateChangedEventListener(event -> {
+            datePicker.setValue(event.getDate());
         });
 
         previous.addClickListener(event -> {
@@ -67,10 +77,10 @@ public class DailyPage extends ViewFrame implements HasUser {
 
     private void prepareContent() {
         content.setFlexDirection(FlexDirection.COLUMN);
+        content.setAlignItems(FlexComponent.Alignment.CENTER);
         content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
         content.setMaxWidth("840px");
 
-        datePicker.setWeekNumbersVisible(true);
         datePicker.setLocale(Locale.ENGLISH);
 
         FlexBoxLayout datePickerLayout = new FlexBoxLayout();
@@ -81,6 +91,7 @@ public class DailyPage extends ViewFrame implements HasUser {
         datePickerLayout.add(next);
 
         content.add(datePickerLayout);
+        content.add(weekDaySelector);
         content.add(dailyEntriesWidget);
     }
 

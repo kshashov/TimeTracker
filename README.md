@@ -65,6 +65,8 @@ Role Code | Description
 `project_inactive` | Used when removing a user from a project when he has closed work logs.
 `project_admin` | Used when a user creates a new project.
 
+The existence of these roles is required and checked by application via custom `ContextRefreshedEvent` listener.
+
 By default I use the following roles:
 
 Role Code | Permission Codes

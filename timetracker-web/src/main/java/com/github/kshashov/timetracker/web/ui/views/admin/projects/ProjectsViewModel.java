@@ -15,13 +15,12 @@ import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Slf4j
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@UIScope
 @SpringComponent
 public class ProjectsViewModel implements HasUser, DataHandler {
     private final EventBus eventBus;
@@ -59,7 +58,6 @@ public class ProjectsViewModel implements HasUser, DataHandler {
         this.user = getUser();
 
         select(null);
-        reloadProjects();
     }
 
     public void select(ProjectRole projectRole) {

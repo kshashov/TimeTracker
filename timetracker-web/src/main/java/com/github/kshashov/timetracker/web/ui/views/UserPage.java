@@ -1,7 +1,8 @@
 package com.github.kshashov.timetracker.web.ui.views;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.admin.users.UsersService;
+import com.github.kshashov.timetracker.data.service.admin.users.AuthorizedUsersService;
+import com.github.kshashov.timetracker.data.service.admin.users.UserInfo;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.select.Select;
@@ -39,7 +41,7 @@ import java.util.Objects;
 @Route(value = "user", layout = MainLayout.class)
 @PageTitle("My Profile")
 public class UserPage extends ViewFrame implements HasUser, DataHandler {
-    private final UsersService usersService;
+    private final AuthorizedUsersService usersService;
     private final EventBus eventBus;
 
     private final User user;
@@ -55,7 +57,7 @@ public class UserPage extends ViewFrame implements HasUser, DataHandler {
 
 
     @Autowired
-    public UserPage(UsersService usersService, EventBus eventBus) {
+    public UserPage(AuthorizedUsersService usersService, EventBus eventBus) {
         this.usersService = usersService;
         this.eventBus = eventBus;
         this.user = getUser();
@@ -67,7 +69,7 @@ public class UserPage extends ViewFrame implements HasUser, DataHandler {
         layout.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
         layout.setMaxWidth("840px");
 
-        layout.add(formLayout, save);
+        layout.add(formLayout, new Div(save));
         setViewContent(layout);
     }
 
@@ -106,7 +108,10 @@ public class UserPage extends ViewFrame implements HasUser, DataHandler {
     }
 
     private ValidationResult save(User user, ValueContext valueContext) {
-        return handleDataManipulation(() -> usersService.updateUser(user, user));
+        return handleDataManipulation(() -> {
+            UserInfo userInfo = new UserInfo(user);
+            usersService.updateUser(user, user.getId(), userInfo);
+        });
     }
 
     private void setTitle(String title) {

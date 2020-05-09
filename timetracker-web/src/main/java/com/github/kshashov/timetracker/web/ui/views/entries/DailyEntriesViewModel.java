@@ -11,7 +11,8 @@ import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
-import com.github.kshashov.timetracker.data.service.admin.entries.EntriesService;
+import com.github.kshashov.timetracker.data.service.admin.entries.AuthorizedEntriesService;
+import com.github.kshashov.timetracker.data.service.admin.entries.EntryInfo;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.DataHandler;
 import com.google.common.eventbus.EventBus;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final ProjectRolesRepository projectRolesRepository;
     private final EntriesRepository entriesRepository;
-    private final EntriesService entriesService;
+    private final AuthorizedEntriesService entriesService;
     private final ClosedDaysRepository closedDaysRepository;
     private final RolesRepository rolesRepository;
     private final PermissionsRepository permissionsRepository;
@@ -62,7 +63,7 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
             EventBus eventBus,
             EntriesRepository entriesRepository,
             ProjectRolesRepository projectRolesRepository,
-            EntriesService entriesService,
+            AuthorizedEntriesService entriesService,
             ClosedDaysRepository closedDaysRepository,
             RolesRepository rolesRepository,
             PermissionsRepository permissionsRepository) {
@@ -94,7 +95,10 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
         createEntryDialogObservable.onNext(new CreateEntryDialog(
                 entry,
                 bean -> handleDataManipulation(
-                        () -> entriesService.createEntry(user, bean),
+                        () -> {
+                            EntryInfo entryInfo = new EntryInfo(bean);
+                            return entriesService.createEntry(user, user.getId(), entryInfo);
+                        },
                         result -> reloadEntries())
         ));
     }
@@ -103,7 +107,10 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
         updateEntryDialogObservable.onNext(new UpdateEntryDialog(
                 entry,
                 bean -> handleDataManipulation(
-                        () -> entriesService.updateEntry(user, bean),
+                        () -> {
+                            EntryInfo entryInfo = new EntryInfo(bean);
+                            return entriesService.updateEntry(user, bean.getId(), entryInfo);
+                        },
                         result -> reloadEntries())
         ));
     }

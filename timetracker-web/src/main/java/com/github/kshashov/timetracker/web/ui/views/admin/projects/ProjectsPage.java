@@ -15,6 +15,7 @@ import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.views.MasterDetail;
+import com.github.kshashov.timetracker.web.ui.views.admin.projects.dialogs.ProjectEditorDialog;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
@@ -44,6 +45,7 @@ public class ProjectsPage extends MasterDetail implements HasSubscriptions {
     private final DetailHeader detailsDrawerHeader = new DetailHeader("");
     private final ConfirmDialog activateDialog;
     private final ConfirmDialog deleteDialog;
+    private final ProjectEditorDialog editProjectDialog = new ProjectEditorDialog("Edit Project");
     private final Button edit = UIUtils.createActionButton(VaadinIcon.PENCIL);
     private final Button delete = UIUtils.createActionButton(VaadinIcon.MINUS_CIRCLE_O);
     private final Button activate = UIUtils.createActionButton("Activate");
@@ -153,6 +155,11 @@ public class ProjectsPage extends MasterDetail implements HasSubscriptions {
                         activate.setVisible(access.canEnable() && !selectedProject.getIsActive());
                         showProjectDetails(projectRole.getEntity().getProject(), projectRole.getEntity().getRole());
                     }
+                }));
+
+        subscribe(projectsViewModel.updateProjectDialogs()
+                .subscribe(projectDialog -> {
+                    editProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
                 }));
     }
 

@@ -12,7 +12,10 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.shared.Registration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Locale;
@@ -59,26 +62,9 @@ public class DatesFilter extends FlexBoxLayout implements HasUser {
         LocalDate from;
         LocalDate to;
 
-        if (type.equals(FilterType.THIS_WEEK)) {
-            from = date.with(TemporalAdjusters.previousOrSame(user.getWeekStart()));
-            to = from.plusDays(6);
-        } else if (type.equals(FilterType.LAST_WEEK)) {
-            from = date.with(TemporalAdjusters.previousOrSame(user.getWeekStart())).with(TemporalAdjusters.previous(user.getWeekStart()));
-            to = from.plusDays(6);
-        } else if (type.equals(FilterType.THIS_MONTH)) {
-            from = date.with(TemporalAdjusters.firstDayOfMonth());
-            to = date.with(TemporalAdjusters.lastDayOfMonth());
-        } else if (type.equals(FilterType.LAST_MONTH)) {
-            from = date.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
-            to = from.with(TemporalAdjusters.lastDayOfMonth());
-        } else if (type.equals(FilterType.THIS_YEAR)) {
-            from = date.with(TemporalAdjusters.firstDayOfYear());
-            to = date.with(TemporalAdjusters.lastDayOfYear());
-        } else {
-            // FilterType.LAST_YEAR
-            from = date.minusYears(1).with(TemporalAdjusters.firstDayOfYear());
-            to = from.with(TemporalAdjusters.lastDayOfYear());
-        }
+        Pair<LocalDate, LocalDate> range = calcDateRange(date, type, user.getWeekStart());
+        from = range.getLeft();
+        to = range.getRight();
 
         fireEvent(new DateChangedEvent(from, to, this, false));
 
@@ -165,9 +151,37 @@ public class DatesFilter extends FlexBoxLayout implements HasUser {
         private final String title;
     }
 
+    public static Pair<LocalDate, LocalDate> calcDateRange(LocalDate date, FilterType type, DayOfWeek weekStart) {
+        LocalDate from;
+        LocalDate to;
+
+        if (type.equals(FilterType.THIS_WEEK)) {
+            from = date.with(TemporalAdjusters.previousOrSame(weekStart));
+            to = from.plusDays(6);
+        } else if (type.equals(FilterType.LAST_WEEK)) {
+            from = date.with(TemporalAdjusters.previousOrSame(weekStart)).with(TemporalAdjusters.previous(weekStart));
+            to = from.plusDays(6);
+        } else if (type.equals(FilterType.THIS_MONTH)) {
+            from = date.with(TemporalAdjusters.firstDayOfMonth());
+            to = date.with(TemporalAdjusters.lastDayOfMonth());
+        } else if (type.equals(FilterType.LAST_MONTH)) {
+            from = date.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+            to = from.with(TemporalAdjusters.lastDayOfMonth());
+        } else if (type.equals(FilterType.THIS_YEAR)) {
+            from = date.with(TemporalAdjusters.firstDayOfYear());
+            to = date.with(TemporalAdjusters.lastDayOfYear());
+        } else {
+            // FilterType.LAST_YEAR
+            from = date.minusYears(1).with(TemporalAdjusters.firstDayOfYear());
+            to = from.with(TemporalAdjusters.lastDayOfYear());
+        }
+        return new ImmutablePair<>(from, to);
+    }
+
     @Getter
     public static class DateChangedEvent extends ComponentEvent<DatesFilter> {
         private final LocalDate from;
+
         private final LocalDate to;
 
         public DateChangedEvent(LocalDate from, LocalDate to, DatesFilter source, boolean fromClient) {

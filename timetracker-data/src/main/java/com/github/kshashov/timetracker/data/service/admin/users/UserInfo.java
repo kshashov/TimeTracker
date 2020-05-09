@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.data.service.admin.users;
 
+import com.github.kshashov.timetracker.data.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,9 @@ import java.time.DayOfWeek;
 public class UserInfo {
     private String name;
     private DayOfWeek weekStart;
+
+    public UserInfo(User user) {
+        setWeekStart(user.getWeekStart());
+        setName(user.getName());
+    }
 }

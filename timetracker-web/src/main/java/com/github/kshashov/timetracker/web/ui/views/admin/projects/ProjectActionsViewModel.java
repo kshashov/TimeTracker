@@ -6,7 +6,8 @@ import com.github.kshashov.timetracker.data.entity.user.Role;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import com.github.kshashov.timetracker.data.enums.ProjectPermissionType;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
-import com.github.kshashov.timetracker.data.service.admin.actions.ProjectActionsService;
+import com.github.kshashov.timetracker.data.service.admin.actions.ActionInfo;
+import com.github.kshashov.timetracker.data.service.admin.actions.AuthorizedProjectActionsService;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.util.CrudEntity;
@@ -34,7 +35,7 @@ import java.util.function.Function;
 public class ProjectActionsViewModel implements HasUser, DataHandler {
     private final EventBus eventBus;
     private final ActionsRepository actionsRepository;
-    private final ProjectActionsService actionsService;
+    private final AuthorizedProjectActionsService actionsService;
     private final RolePermissionsHelper rolePermissionsHelper;
 
     private Project project;
@@ -49,7 +50,7 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
     public ProjectActionsViewModel(
             EventBus eventBus,
             ActionsRepository actionsRepository,
-            ProjectActionsService actionsService,
+            AuthorizedProjectActionsService actionsService,
             RolePermissionsHelper rolePermissionsHelper) {
         this.eventBus = eventBus;
         this.rolePermissionsHelper = rolePermissionsHelper;
@@ -73,7 +74,10 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
         createActionDialogObservable.onNext(new ActionDialog(
                 action,
                 bean -> handleDataManipulation(
-                        () -> actionsService.createAction(user, bean),
+                        () -> {
+                            ActionInfo actionInfo = new ActionInfo(bean);
+                            return actionsService.createAction(user, bean.getProject().getId(), actionInfo);
+                        },
                         result -> reloadActions())
         ));
     }
@@ -82,14 +86,17 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
         updateActionDialogObservable.onNext(new ActionDialog(
                 action,
                 bean -> handleDataManipulation(
-                        () -> actionsService.updateAction(user, bean),
+                        () -> {
+                            ActionInfo actionInfo = new ActionInfo(bean);
+                            return actionsService.updateAction(user, bean.getId(), actionInfo);
+                        },
                         result -> reloadActions())
         ));
     }
 
     public void activateAction(Action action) {
         handleDataManipulation(
-                () -> actionsService.activateAction(action.getId()),
+                () -> actionsService.activateAction(user, action.getId()),
                 () -> reloadActions());
     }
 

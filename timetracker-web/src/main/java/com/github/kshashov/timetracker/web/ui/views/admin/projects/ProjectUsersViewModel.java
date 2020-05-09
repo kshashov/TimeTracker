@@ -9,7 +9,8 @@ import com.github.kshashov.timetracker.data.enums.ProjectRoleType;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.repo.user.UsersRepository;
-import com.github.kshashov.timetracker.data.service.admin.roles.ProjectUsersServiceImpl;
+import com.github.kshashov.timetracker.data.service.admin.roles.AuthorizedProjectUsersService;
+import com.github.kshashov.timetracker.data.service.admin.roles.ProjectRoleInfo;
 import com.github.kshashov.timetracker.data.utils.OffsetLimitRequest;
 import com.github.kshashov.timetracker.data.utils.RolePermissionsHelper;
 import com.github.kshashov.timetracker.web.security.HasUser;
@@ -39,7 +40,7 @@ import java.util.stream.Collectors;
 @SpringComponent
 public class ProjectUsersViewModel implements HasUser, DataHandler {
     private final EventBus eventBus;
-    private final ProjectUsersServiceImpl projectRolesService;
+    private final AuthorizedProjectUsersService projectRolesService;
     private final ProjectRolesRepository projectRolesRepository;
     private final RolePermissionsHelper rolePermissionsHelper;
 
@@ -57,7 +58,7 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
     @Autowired
     public ProjectUsersViewModel(
             EventBus eventBus,
-            ProjectUsersServiceImpl projectRolesService,
+            AuthorizedProjectUsersService projectRolesService,
             ProjectRolesRepository projectRolesRepository,
             RolesRepository rolesRepository,
             UsersRepository usersRepository,
@@ -98,7 +99,10 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
         createProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
-                        () -> projectRolesService.createProjectRole(user, bean),
+                        () -> {
+                            ProjectRoleInfo roleInfo = new ProjectRoleInfo(bean);
+                            return projectRolesService.createProjectRole(user, bean.getProject().getId(), bean.getUser().getId(), roleInfo);
+                        },
                         result -> reloadUsers()),
                 roles,
                 usersDataProvider
@@ -109,7 +113,10 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
         updateProjectRoleObservable.onNext(new ProjectUsersViewModel.ProjectRoleDialog(
                 projectRole,
                 bean -> handleDataManipulation(
-                        () -> projectRolesService.updateProjectRole(user, bean),
+                        () -> {
+                            ProjectRoleInfo roleInfo = new ProjectRoleInfo(bean);
+                            return projectRolesService.updateProjectRole(user, bean.getIdentity(), roleInfo);
+                        },
                         result -> reloadUsers()),
                 roles,
                 usersDataProvider
@@ -118,7 +125,7 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
 
     public void deleteProjectRole(ProjectRole projectRole) {
         handleDataManipulation(
-                () -> projectRolesService.deleteOrDeactivateProjectRole(projectRole.getIdentity()),
+                () -> projectRolesService.deleteOrDeactivateProjectRole(user, projectRole.getIdentity()),
                 result -> {
                     if (!result) {
                         notifyPopup("The user role is moved into inactive state instead of deletion, because there are closed working logs related to him.");

@@ -56,6 +56,12 @@ public interface EntriesRepository extends JpaRepository<Entry, Long>, BaseRepo 
             "AND (e.obs BETWEEN :#{#from} AND :#{#to})")
     List<Entry> findFullByUserAndReporterUserPermission(User user, Permission permission, LocalDate from, LocalDate to);
 
+    @Query("SELECT new com.github.kshashov.timetracker.data.repo.EntriesStats(e.action.project.title, e.hours) " +
+            "FROM Entry e " +
+            "WHERE (e.user.id = :#{#user.id}) AND (e.obs BETWEEN :#{#from} AND :#{#to})" +
+            "GROUP BY e.action.project.title")
+    List<EntriesStats> statsByUser(User user, LocalDate from, LocalDate to);
+
     @Modifying
     @Transactional(propagation = Propagation.REQUIRED)
     @Query("UPDATE Entry e SET e.isClosed = false WHERE e.id IN (" +

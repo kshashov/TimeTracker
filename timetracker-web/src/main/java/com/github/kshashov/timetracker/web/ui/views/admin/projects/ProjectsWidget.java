@@ -35,7 +35,6 @@ public class ProjectsWidget extends Widget implements HasUser, HasSubscriptions 
     private final Grid<ProjectRole> projectsGrid = new Grid<>();
     private final Button createProject = UIUtils.createTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
     private final ProjectEditorDialog createProjectDialog = new ProjectEditorDialog("Create Project");
-    private final ProjectEditorDialog editProjectDialog = new ProjectEditorDialog("Edit Project");
 
     @Autowired
     public ProjectsWidget(ProjectsViewModel viewModel) {
@@ -106,10 +105,7 @@ public class ProjectsWidget extends Widget implements HasUser, HasSubscriptions 
                     createProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
                 }));
 
-        subscribe(viewModel.updateProjectDialogs()
-                .subscribe(projectDialog -> {
-                    editProjectDialog.open(projectDialog.getProject(), projectDialog.getValidator());
-                }));
+        viewModel.reloadProjects();
     }
 
     @Override

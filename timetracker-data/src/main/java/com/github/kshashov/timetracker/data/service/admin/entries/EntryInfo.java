@@ -1,5 +1,6 @@
 package com.github.kshashov.timetracker.data.service.admin.entries;
 
+import com.github.kshashov.timetracker.data.entity.Entry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,11 @@ public class EntryInfo {
     private Double hours;
     private String title;
     private Long actionId;
+
+    public EntryInfo(Entry entry) {
+        setObs(entry.getObs());
+        setTitle(entry.getTitle());
+        setHours(entry.getHours());
+        setActionId(entry.getAction().getId());
+    }
 }

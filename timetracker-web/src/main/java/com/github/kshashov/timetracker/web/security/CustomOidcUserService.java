@@ -1,7 +1,7 @@
 package com.github.kshashov.timetracker.web.security;
 
 import com.github.kshashov.timetracker.data.entity.user.User;
-import com.github.kshashov.timetracker.data.service.admin.users.UsersService;
+import com.github.kshashov.timetracker.data.service.admin.users.UsersAdminService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,10 +19,10 @@ import java.util.Map;
 @Service
 public class CustomOidcUserService extends OidcUserService {
 
-    private final UsersService usersService;
+    private final UsersAdminService usersService;
 
     @Autowired
-    public CustomOidcUserService(UsersService usersService) {
+    public CustomOidcUserService(UsersAdminService usersService) {
         this.usersService = usersService;
     }
 
