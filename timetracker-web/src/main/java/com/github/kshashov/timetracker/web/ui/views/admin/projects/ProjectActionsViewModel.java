@@ -141,7 +141,7 @@ public class ProjectActionsViewModel implements HasUser, DataHandler {
             return;
         }
 
-        List<Action> actions = actionsRepository.findWithProjectByProject(project);
+        List<Action> actions = actionsRepository.findWithProjectByProjectOrderByTitleAsc(project);
         actionsObservable.onNext(new CrudEntity<>(actions, access));
     }
 

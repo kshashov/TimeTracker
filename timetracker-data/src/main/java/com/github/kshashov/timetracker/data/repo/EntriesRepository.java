@@ -26,7 +26,7 @@ public interface EntriesRepository extends JpaRepository<Entry, Long>, BaseRepo 
     Entry findWithUserAndProjectById(Long id);
 
     @EntityGraph("Entry.actionProject.user")
-    List<Entry> findFullByUserAndObs(User user, LocalDate obs);
+    List<Entry> findFullByUserAndObsOrderByActionProjectTitleAscActionTitleAscCreatedAtAsc(User user, LocalDate obs);
 
     List<Entry> findByActionProject(Project project);
 
@@ -53,13 +53,15 @@ public interface EntriesRepository extends JpaRepository<Entry, Long>, BaseRepo 
     @Query("SELECT e FROM Entry e LEFT JOIN ProjectRole pr " +
             "ON (e.action.project.id = pr.project.id) AND (pr.user.id = :#{#user.id})" +
             "WHERE ((e.user.id = :#{#user.id}) OR (:#{#permission} member pr.role.permissions))" +
-            "AND (e.obs BETWEEN :#{#from} AND :#{#to})")
+            "AND (e.obs BETWEEN :#{#from} AND :#{#to})" +
+            "ORDER BY e.user.name, e.action.project.title, e.action.title, e.obs, e.hours, e.createdAt ASC")
     List<Entry> findFullByUserAndReporterUserPermission(User user, Permission permission, LocalDate from, LocalDate to);
 
-    @Query("SELECT new com.github.kshashov.timetracker.data.repo.EntriesStats(e.action.project.title, e.hours) " +
+    @Query("SELECT new com.github.kshashov.timetracker.data.repo.EntriesStats(e.action.project.title, SUM(e.hours)) " +
             "FROM Entry e " +
             "WHERE (e.user.id = :#{#user.id}) AND (e.obs BETWEEN :#{#from} AND :#{#to})" +
-            "GROUP BY e.action.project.title")
+            "GROUP BY e.action.project.title " +
+            "ORDER BY SUM(e.hours), e.action.project.title")
     List<EntriesStats> statsByUser(User user, LocalDate from, LocalDate to);
 
     @Modifying

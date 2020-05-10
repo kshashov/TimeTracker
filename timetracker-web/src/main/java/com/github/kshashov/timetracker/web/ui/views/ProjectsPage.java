@@ -99,7 +99,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
     }
 
     private void initProjectActions() {
-        List<Action> actions = actionsRepository.findWithProjectByProject(project);
+        List<Action> actions = actionsRepository.findWithProjectByProjectOrderByTitleAsc(project);
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Actions (" + actions.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -120,7 +120,7 @@ public class ProjectsPage extends ViewFrame implements HasUser, HasUrlParameter<
     }
 
     private void initProjectUsers() {
-        List<ProjectRole> users = projectRolesRepository.findWithUserByProjectAndRoleCodeNot(project, ProjectRoleType.INACTIVE.getCode());
+        List<ProjectRole> users = projectRolesRepository.findWithUserByProjectAndRoleCodeNotOrderByUserName(project, ProjectRoleType.INACTIVE.getCode());
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Users (" + users.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);

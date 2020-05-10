@@ -114,7 +114,7 @@ public class ProjectsViewModel implements HasUser, DataHandler {
     }
 
     public void reloadProjects() {
-        var projectRoles = projectRolesRepository.findWithProjectByUser(user);
+        var projectRoles = projectRolesRepository.findWithProjectByUserOrderByProjectTitleAsc(user);
 
         if (selectedProject != null) {
             // Restore selection

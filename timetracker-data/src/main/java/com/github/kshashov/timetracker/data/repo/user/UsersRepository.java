@@ -16,6 +16,7 @@ public interface UsersRepository extends JpaRepository<User, Long>, BaseRepo {
 
     @Query("SELECT DISTINCT u FROM User u " +
             "LEFT JOIN ProjectRole pr ON (u.id = pr.user.id) AND (pr.project.id = :#{#project.id})" +
-            "WHERE (pr = null) AND (u.name LIKE %:name%)")
+            "WHERE (pr = null) AND (u.name LIKE %:name%)" +
+            "ORDER BY u.name ASC")
     Page<User> findMissingProjectUsers(@Param("project") Project project, @Param("name") String name, Pageable offsetLimitRequest);
 }

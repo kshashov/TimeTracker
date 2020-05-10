@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Sort;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
@@ -70,7 +71,7 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
         this.projectRolesRepository = projectRolesRepository;
 
         // Except inactive
-        this.roles = rolesRepository.findAll().stream()
+        this.roles = rolesRepository.findAll(Sort.by(Sort.Direction.ASC, "title")).stream()
                 .filter(r -> !ProjectRoleType.isInactive(r))
                 .collect(Collectors.toList());
 
@@ -140,7 +141,7 @@ public class ProjectUsersViewModel implements HasUser, DataHandler {
             return;
         }
 
-        List<ProjectRole> users = projectRolesRepository.findWithUserByProject(project);
+        List<ProjectRole> users = projectRolesRepository.findWithUserByProjectOrderByUserName(project);
         projectRolesObservable.onNext(new CrudEntity<>(users, access));
     }
 

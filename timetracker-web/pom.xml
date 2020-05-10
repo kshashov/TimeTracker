@@ -73,6 +73,11 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>dev.mett.vaadin</groupId>
+            <artifactId>tooltip</artifactId>
+            <version>1.4.9</version>
+        </dependency>
     </dependencies>
 
     <build>

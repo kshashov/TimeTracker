@@ -10,7 +10,6 @@ import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
-import com.github.kshashov.timetracker.data.repo.user.RolesRepository;
 import com.github.kshashov.timetracker.data.service.admin.entries.AuthorizedEntriesService;
 import com.github.kshashov.timetracker.data.service.admin.entries.EntryInfo;
 import com.github.kshashov.timetracker.web.security.HasUser;
@@ -43,7 +42,6 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     private final EntriesRepository entriesRepository;
     private final AuthorizedEntriesService entriesService;
     private final ClosedDaysRepository closedDaysRepository;
-    private final RolesRepository rolesRepository;
     private final PermissionsRepository permissionsRepository;
     private final EventBus eventBus;
 
@@ -65,14 +63,12 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
             ProjectRolesRepository projectRolesRepository,
             AuthorizedEntriesService entriesService,
             ClosedDaysRepository closedDaysRepository,
-            RolesRepository rolesRepository,
             PermissionsRepository permissionsRepository) {
         this.eventBus = eventBus;
         this.entriesRepository = entriesRepository;
         this.projectRolesRepository = projectRolesRepository;
         this.entriesService = entriesService;
         this.closedDaysRepository = closedDaysRepository;
-        this.rolesRepository = rolesRepository;
         this.permissionsRepository = permissionsRepository;
         this.user = getUser();
 
@@ -122,7 +118,7 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
     }
 
     public void reloadEntries() {
-        List<Entry> entries = entriesRepository.findFullByUserAndObs(user, date);
+        List<Entry> entries = entriesRepository.findFullByUserAndObsOrderByActionProjectTitleAscActionTitleAscCreatedAtAsc(user, date);
 
         entriesObservable.onNext(entries);
     }
@@ -131,10 +127,10 @@ public class DailyEntriesViewModel implements HasUser, DataHandler {
         Set<Long> closedProjects = closedDaysRepository.findByIdentityObsBetween(date, date)
                 .stream()
                 .map(day -> day.getIdentity().getProjectId())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
 
         List<Project> projects = projectRolesRepository
-                .findWithActionsByUserAndRolePermissionsContains(user, permission)
+                .findWithActionsByUserAndRolePermissionsContainsOrderByProjectTitleAsc(user, permission)
                 .stream()
                 .map(ProjectRole::getProject)
                 .collect(Collectors.toList());

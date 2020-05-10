@@ -4,6 +4,7 @@ import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.layout.size.Right;
 import com.github.kshashov.timetracker.web.ui.util.css.*;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
@@ -15,6 +16,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import dev.mett.vaadin.tooltip.Tooltips;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -40,6 +42,10 @@ public class UIUtils {
     /* ==== BUTTONS ==== */
 
     // Styles
+
+    public static <T extends Component & HasStyle> void addTooltip(T component, String text) {
+        Tooltips.getCurrent().setTooltip(component, text);
+    }
 
     public static Anchor createLinkTitle(String url, String title, boolean active) {
         return active ? createLink(url, title) : createInactiveLink(url, title);

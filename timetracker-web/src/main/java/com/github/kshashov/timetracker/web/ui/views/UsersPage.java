@@ -99,7 +99,7 @@ public class UsersPage extends ViewFrame implements HasUser, HasUrlParameter<Lon
     }
 
     private void initUserProjects() {
-        List<ProjectRole> projects = projectRolesRepository.findWithProjectByUserAndRoleCodeNot(user, ProjectRoleType.INACTIVE.getCode());
+        List<ProjectRole> projects = projectRolesRepository.findWithProjectByUserAndRoleCodeNotOrderByProjectTitle(user, ProjectRoleType.INACTIVE.getCode());
 
         FlexBoxLayout header = new FlexBoxLayout(UIUtils.createH4Label("Projects (" + projects.size() + "):"));
         header.setAlignItems(FlexComponent.Alignment.CENTER);

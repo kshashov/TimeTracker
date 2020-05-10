@@ -27,6 +27,7 @@ public class Project implements BaseEntity {
     @Column(name = "active")
     private Boolean isActive;
 
+    @OrderBy("title")
     @OneToMany(mappedBy = "project")
     private List<Action> actions;
 }

@@ -127,7 +127,7 @@ public class DatesViewModel implements HasUser, DataHandler {
 
     private void reloadProjects() {
         List<Project> projects = projectRolesRepository
-                .findWithActionsByUserAndRolePermissionsContains(user, permission)
+                .findWithActionsByUserAndRolePermissionsContainsOrderByProjectTitleAsc(user, permission)
                 .stream()
                 .map(ProjectRole::getProject)
                 .collect(Collectors.toList());

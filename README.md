@@ -98,6 +98,10 @@ Users with the `view_project_logs` permissions can view all project's work logs 
 {PIC reports page}
 
 ### Other
+#### Login page
+
+{PIC login page}
+
 #### Current User
 
 {PIC current user page}

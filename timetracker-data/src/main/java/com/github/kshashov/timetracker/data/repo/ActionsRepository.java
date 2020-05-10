@@ -22,7 +22,7 @@ public interface ActionsRepository extends JpaRepository<Action, Long>, BaseRepo
     Action findOneByProjectAndTitle(Project project, String title);
 
     @EntityGraph(value = "Action.project")
-    List<Action> findWithProjectByProject(Project project);
+    List<Action> findWithProjectByProjectOrderByTitleAsc(Project project);
 
     List<Action> findByProjectAndIsActive(Project project, Boolean isActive);
 }

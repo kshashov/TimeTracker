@@ -27,19 +27,19 @@ public interface ProjectRolesRepository extends JpaRepository<ProjectRole, Proje
     ProjectRole findFullByIdentity(ProjectRoleIdentity id);
 
     @EntityGraph(value = "ProjectRole.project")
-    List<ProjectRole> findWithProjectByUser(User user);
+    List<ProjectRole> findWithProjectByUserOrderByProjectTitleAsc(User user);
 
     @EntityGraph(value = "ProjectRole.projectActions")
-    List<ProjectRole> findWithActionsByUserAndRolePermissionsContains(User user, Permission permission);
+    List<ProjectRole> findWithActionsByUserAndRolePermissionsContainsOrderByProjectTitleAsc(User user, Permission permission);
 
     @EntityGraph(value = "ProjectRole.project")
-    List<ProjectRole> findWithProjectByUserAndRoleCodeNot(User user, String roleCode);
+    List<ProjectRole> findWithProjectByUserAndRoleCodeNotOrderByProjectTitle(User user, String roleCode);
 
     @EntityGraph(value = "ProjectRole.user")
-    List<ProjectRole> findWithUserByProjectAndRoleCodeNot(Project project, String roleCode);
+    List<ProjectRole> findWithUserByProjectAndRoleCodeNotOrderByUserName(Project project, String roleCode);
 
     @EntityGraph(value = "ProjectRole.user")
-    List<ProjectRole> findWithUserByProject(Project project);
+    List<ProjectRole> findWithUserByProjectOrderByUserName(Project project);
 
     @Transactional(propagation = Propagation.REQUIRED)
     long deleteByProject(Project project);

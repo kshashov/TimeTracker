@@ -22,6 +22,8 @@ public class EntryInfo {
         setObs(entry.getObs());
         setTitle(entry.getTitle());
         setHours(entry.getHours());
-        setActionId(entry.getAction().getId());
+        if (entry.getAction() != null) {
+            setActionId(entry.getAction().getId());
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.user.PermissionsRepository;
 import com.github.kshashov.timetracker.web.security.HasUser;
 import com.github.kshashov.timetracker.web.ui.MainLayout;
+import com.github.kshashov.timetracker.web.ui.components.Badge;
 import com.github.kshashov.timetracker.web.ui.components.FlexBoxLayout;
 import com.github.kshashov.timetracker.web.ui.components.Widget;
 import com.github.kshashov.timetracker.web.ui.components.navigation.bar.AppBar;
@@ -19,6 +20,7 @@ import com.github.kshashov.timetracker.web.ui.util.FontWeight;
 import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BoxSizing;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
+import com.github.kshashov.timetracker.web.ui.util.css.lumo.BadgeColor;
 import com.github.kshashov.timetracker.web.ui.views.reports.DatesFilter;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
@@ -143,6 +145,13 @@ public class ReportsPage extends ViewFrame implements HasUser {
         Grid.Column<Entry> hoursColumn = entriesGrid.addColumn(new ComponentRenderer<>(entry -> {
             return UIUtils.createHoursLabel(entry.getHours());
         })).setHeader("Time Spent").setSortable(true).setComparator(Entry::getHours).setAutoWidth(true);
+
+        Grid.Column<Entry> stateColumn = entriesGrid.addColumn(new ComponentRenderer<>(entry -> {
+            Badge badge = entry.getIsClosed()
+                    ? new Badge("Closed", BadgeColor.ERROR)
+                    : new Badge("Opened", BadgeColor.NORMAL);
+            return badge;
+        })).setHeader("State").setSortable(true).setComparator(Entry::getIsClosed).setAutoWidth(true);
 
         HeaderRow filterRow = entriesGrid.appendHeaderRow();
 

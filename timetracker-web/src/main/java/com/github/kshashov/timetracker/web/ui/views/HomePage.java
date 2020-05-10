@@ -131,7 +131,7 @@ public class HomePage extends ViewFrame implements HasUser {
         private Grid<EntriesStats> initStatsGrid() {
             grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
             grid.addColumn(EntriesStats::getProject).setTextAlign(ColumnTextAlign.START);
-            grid.addColumn(s -> s.getHours() + "h").setTextAlign(ColumnTextAlign.END);
+            grid.addComponentColumn(s -> UIUtils.createHoursLabel(s.getHours())).setTextAlign(ColumnTextAlign.END);
             grid.setHeightByRows(true);
             grid.setWidthFull();
             return grid;

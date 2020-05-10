@@ -1,5 +1,5 @@
 .fullscreen-widget__footer {
-    flex-direction: column;
+    flex-direction: row;
     box-sizing: border-box;
     align-items: start;
     border-bottom-left-radius: var(--lumo-border-radius-l);

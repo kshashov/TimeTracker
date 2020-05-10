@@ -83,6 +83,9 @@ public class DatesPage extends ViewFrame implements HasSubscriptions {
     }
 
     private void initDaysLayout() {
+        UIUtils.addTooltip(openDays, "Opened days allow the creation of new work logs");
+        UIUtils.addTooltip(closeDays, "Closed days prohibit the creation of new work logs");
+
         daysLayout.setSpacing(Horizontal.XS);
         daysLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
@@ -100,6 +103,9 @@ public class DatesPage extends ViewFrame implements HasSubscriptions {
     }
 
     private void initEntriesLayout() {
+        UIUtils.addTooltip(openEntries, "Opened work logs can be updated and removed");
+        UIUtils.addTooltip(closeEntries, "Opened work logs can't be updated and removed");
+
         entriesLayout.setSpacing(Horizontal.XS);
         entriesLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 

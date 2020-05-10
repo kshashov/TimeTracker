@@ -3,10 +3,13 @@ package com.github.kshashov.timetracker.data.entity;
 import com.github.kshashov.timetracker.data.entity.user.User;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,11 +31,11 @@ public class Entry implements BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "obs", nullable = false)
+    @Column(name = "obs")
     private LocalDate obs;
 
     @NotNull
-    @Column(name = "hours", scale = 1, nullable = false)
+    @Column(name = "hours", scale = 1)
     private Double hours;
 
     @NotNull
@@ -45,11 +48,19 @@ public class Entry implements BaseEntity {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "action_id", nullable = false)
+    @JoinColumn(name = "action_id")
     private Action action;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @Column(name = "update_at", updatable = false)
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

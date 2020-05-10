@@ -165,18 +165,18 @@ public class AuthorizedProjectsServiceTest extends BaseUserTest {
 
         // Project exists and has no entries and actions
         assertThat(project).isNotNull();
-        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(1);
+        assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(0);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(user, project.getId());
 
         // Project is deleted
         assertThat(isDeleted).isTrue();
         assertThat(projectsRepository.existsByTitle("deleteOrDeactivateProject_CorrectUser")).isFalse();
-        assertThat(projectRolesRepository.findWithUserByProject(project).size()).isEqualTo(0);
+        assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
-        assertThat(actionsRepository.findWithProjectByProject(project).size()).isEqualTo(0);
+        assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(0);
     }
 
     @Test
