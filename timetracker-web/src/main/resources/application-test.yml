@@ -14,7 +14,16 @@ spring:
     hikari:
       connectionTimeout: 20000
       maximumPoolSize: 3
+#    initialization-mode: never
   jpa:
+    #    properties:
+    #      javax:
+    #        persistence:
+    #          schema-generation:
+    #            create-source: metadata
+    #            scripts:
+    #              action: create
+    #              create-target: create.sql
     hibernate:
       ddl-auto: create #none
       show-sql: true
@@ -24,17 +33,18 @@ spring:
       client:
         registration:
           google:
-            client-id: 225595139383-ed8qhoq4vbuvj5g5aldhf3lobd5ljkqb.apps.googleusercontent.com
-            client-secret: TR-3ZimYu79O4Tb6KL4RLDtq
+            client-id: ENC(l/JM8iF/F15BWFeApyFG6tx6IojfXOGaW+BdRIIIIDodjWpt3H56bvD8A8uhCJK5cM0p/jVvms8GSGlJd2llcQnYTXXta0LV3nkzUUuZFQTD8EyWnmEIyX4ilctBTnD9JPG1nvSgFMX2+CdK3GbEGw==)
+            client-secret: ENC(YjmQDne9Tc1HO/Rko65x5GwOxBLB+MAseO0aDah27ZAxgRXxziaV79CIkHuAFqz4BaxjVIkYA0ZEhSUJo7JoYg==)
+  flyway:
+    enabled: false
+#    locations: classpath:db-test/migration
 
 jasypt:
   encryptor:
-    bean:
-      timeTrackerStringEncryptor
+    bean: timeTrackerStringEncryptor
 
 #TIMETRACKER_ENCRYPTOR_SECRET:
 #  password
 
 secret:
-  property:
-    ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)
+  property: ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)

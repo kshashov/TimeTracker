@@ -1,0 +1,16 @@
+language: java
+
+jdk:
+  - openjdk11
+script:
+  - mvn clean package
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: heroku
+  api-key:
+    secure: $HEROKU_API_KEY
+  app: $HEROKU_APP_NAME
+
+before_install:
+  - chmod +x mvnw

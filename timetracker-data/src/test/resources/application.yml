@@ -18,7 +18,6 @@ spring:
       connectionTimeout: 20000
       maximumPoolSize: 3
   jpa:
-    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create #none
       show-sql: true

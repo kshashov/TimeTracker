@@ -1,5 +1,6 @@
 # TimeTracker
-{PIC about}
+
+{PIC gif some use cases}
 
 ## Summary
 The application is a simple time tracker.
@@ -101,6 +102,10 @@ Users with the `view_project_logs` permissions can view all project's work logs 
 #### Login page
 
 {PIC login page}
+
+#### Home page
+
+{PIC home page}
 
 #### Current User
 

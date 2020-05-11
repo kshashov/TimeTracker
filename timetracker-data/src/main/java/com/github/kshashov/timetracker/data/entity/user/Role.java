@@ -40,6 +40,7 @@ public class Role implements BaseEntity {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "roles_permissions",
+            schema = "public",
             joinColumns = {@JoinColumn(name = "role_id")},
             inverseJoinColumns = {@JoinColumn(name = "permission_id")})
     private Set<Permission> permissions;

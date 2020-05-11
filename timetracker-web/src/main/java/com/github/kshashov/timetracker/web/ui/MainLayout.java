@@ -12,11 +12,12 @@ import com.github.kshashov.timetracker.web.ui.util.UIUtils;
 import com.github.kshashov.timetracker.web.ui.util.css.BorderRadius;
 import com.github.kshashov.timetracker.web.ui.util.css.FlexDirection;
 import com.github.kshashov.timetracker.web.ui.util.css.Overflow;
-import com.github.kshashov.timetracker.web.ui.views.*;
+import com.github.kshashov.timetracker.web.ui.views.DailyPage;
+import com.github.kshashov.timetracker.web.ui.views.HomePage;
+import com.github.kshashov.timetracker.web.ui.views.ReportsPage;
+import com.github.kshashov.timetracker.web.ui.views.UserPage;
 import com.github.kshashov.timetracker.web.ui.views.admin.dates.DatesPage;
 import com.github.kshashov.timetracker.web.ui.views.admin.projects.ProjectsPage;
-import com.github.kshashov.timetracker.web.ui.views.personnel.Accountants;
-import com.github.kshashov.timetracker.web.ui.views.personnel.Managers;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -134,14 +135,6 @@ public class MainLayout extends FlexBoxLayout
      */
     private void initNaviItems() {
         NaviMenu menu = naviDrawer.getMenu();
-
-        menu.addNaviItem(VaadinIcon.INSTITUTION, "Accounts", Accounts.class);
-        menu.addNaviItem(VaadinIcon.CREDIT_CARD, "Payments", Payments.class);
-        menu.addNaviItem(VaadinIcon.CHART, "Statistics", Statistics.class);
-
-        NaviItem personnel = menu.addNaviItem(VaadinIcon.USERS, "Personnel", null);
-        menu.addNaviItem(personnel, "Accountants", Accountants.class);
-        menu.addNaviItem(personnel, "Managers", Managers.class);
 
         NaviItem home = menu.addNaviItem(VaadinIcon.HOME, "Home", null);
         menu.addNaviItem(home, "Home", HomePage.class);

@@ -1,7 +1,3 @@
-INSERT INTO tests (title) VALUES ('text');
-
-INSERT INTO users (id, name, email, week_start, validated) VALUES (1, 'user', 'user@mail.com', 0, false);
-
 INSERT INTO permissions (id, code) VALUES (0, 'view_project_info');
 INSERT INTO permissions (id, code) VALUES (1, 'edit_my_logs');
 
@@ -32,6 +28,7 @@ INSERT INTO roles_permissions (role_id, permission_id) VALUES (4, 1);
 INSERT INTO roles_permissions (role_id, permission_id) VALUES (4, 2);
 
 -- tests
+INSERT INTO users (id, name, email, week_start, validated) VALUES (1, 'user', 'user@mail.com', 0, false);
 INSERT INTO users (id, name, email, week_start, validated) VALUES (2, 'user2', 'envoy93@gmail.com', 0, true);
 
 INSERT INTO projects (id, title, active) VALUES (0, 'project0', true);

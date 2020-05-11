@@ -1,29 +1,31 @@
 spring:
   datasource:
     # PostgreSQL
-    url: jdbc:postgresql://rogue.db.elephantsql.com:5432/fbdkoakq
-    username: fbdkoakq
-    password: rL7HFkcEbAyi640n6H_BJtoeoeXzCDAS
+    url: ENC(Vx1thPdvzH6P3gF9fUwVE7d9wpIZimWgJyit9ott6GArHMJwlt9E9UuZcZRwjLSZ15hmzUAu9ApY0sytu6f41gZ/IyEHmhEIC6ujCILr3opzMQJsuQjaUB/SZQGA1Se6)
+    username: ENC(kTQjaB5b71kTLD1WXT+sYqQwbJOEjmf040523f0VIn4s5So/GHzLO697ds48mJUb)
+    password: ENC(5xJ2ntClQ9Qv9SuEygLCFgtP/Oo/ELmTcmeOIdR6aIK5OKLXigHRNc+M8374m2lsnTarCY/QbLgbPCGeel2CI0u83Aa4F0XpM/nRZoZo7zs=)
     platform: postgres
     driver-class-name: org.postgresql.Driver
+    initialization-mode: never
     # connection pool
     hikari:
       connectionTimeout: 20000
-      maximumPoolSize: 3
+      maximumPoolSize: 2
   jpa:
     #    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate #none
-      show-sql: true
+      show-sql: false
+  flyway:
+    locations: classpath:db/migration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(l/JM8iF/F15BWFeApyFG6tx6IojfXOGaW+BdRIIIIDodjWpt3H56bvD8A8uhCJK5cM0p/jVvms8GSGlJd2llcQnYTXXta0LV3nkzUUuZFQTD8EyWnmEIyX4ilctBTnD9JPG1nvSgFMX2+CdK3GbEGw==)
+            client-secret: ENC(YjmQDne9Tc1HO/Rko65x5GwOxBLB+MAseO0aDah27ZAxgRXxziaV79CIkHuAFqz4BaxjVIkYA0ZEhSUJo7JoYg==)
 
 jasypt:
   encryptor:
-    bean:
-      timeTrackerStringEncryptor
-
-#TIMETRACKER_ENCRYPTOR_SECRET:
-#  password
-
-secret:
-  property:
-    ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)
+    bean: timeTrackerStringEncryptor

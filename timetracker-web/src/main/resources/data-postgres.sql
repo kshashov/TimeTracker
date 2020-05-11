@@ -1,1 +1,0 @@
-INS1ERT INTO tests (title) VALUES ('text');
