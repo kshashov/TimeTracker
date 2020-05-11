@@ -9,8 +9,10 @@ after_success:
 deploy:
   provider: heroku
   api-key:
-    secure: $HEROKU_API_KEY
-  app: $HEROKU_APP_NAME
-
+    secure: OxPFBiPW2g/uscrqOM1gy3HeK1Wdx3rCPrGhJHF50abDkRXPkMl6KO9DytG3lsxiUvJJc+J9+NkZPJvCK8InYycYq+pvKa6d1fTUICYoTnyLi7osbdU3SC/zm2i2EPJtxRrF2eUmr6fr5K21hVqX2eaNvFtC4OHKiSM8EbN9MOiHtZVpqeIO5egMA8PUJZv/9TVYo59ldAq4jugOCjvxG9BhZwlvCHx7hm0j8ACmqywh3ovblgNSsvwjoTQn4j+09vNQ727W+ZAwsBEVo8XVvufWFgTz5S/CDN9aoLeXOzSTN4AMgaIGF6X2xhIwuN2wew6fQdUNa49urO4DEdeoLn8gyWoSqe89rAAbrH7dM9BPaG0qSEzwRY2NeGMnJ1h/ako21rJC27/E8RlNxJtexG7s6ddZMji+IKtfiQFcbi3TskUua4hH6HcT5YbQq7YRAMNhTz+YJijrhm8TpQ+cCS+3CtHeNcRf/DdK+A9yR3w4EnpiP+I8GhP2C03iYsz0SxF2M7p43/L8p6v/toTpikINqtNfxRYS2feBSbK3aw0EyZg0w9S5BkG8C+FWCZEUdfQuDLRC82yK8fHSvIGO57/M/WroF8lLqL9Z3cm/1ZCL2g9lJIT/0rKa7F5qZOpFmtHHY6Ij8fav6AP7jpad9WI1duakbEJFi/rYkS+7UU4=
+  app: time-tracker1
+  skip_cleanup: true
+  on:
+    branch: master
 before_install:
   - chmod +x mvnw

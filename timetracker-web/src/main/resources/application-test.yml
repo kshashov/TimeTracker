@@ -33,18 +33,17 @@ spring:
       client:
         registration:
           google:
-            client-id: ENC(l/JM8iF/F15BWFeApyFG6tx6IojfXOGaW+BdRIIIIDodjWpt3H56bvD8A8uhCJK5cM0p/jVvms8GSGlJd2llcQnYTXXta0LV3nkzUUuZFQTD8EyWnmEIyX4ilctBTnD9JPG1nvSgFMX2+CdK3GbEGw==)
-            client-secret: ENC(YjmQDne9Tc1HO/Rko65x5GwOxBLB+MAseO0aDah27ZAxgRXxziaV79CIkHuAFqz4BaxjVIkYA0ZEhSUJo7JoYg==)
+            client-id: ENC(xrPLrs94xXjVK9qaodvRg3gwG/1mS5Gx5JJvBA036IIXmESCGSvNt2vEVlfrlC/InMhMk5f+ORldCL6LPiYcnOZsO00/mgoOlM8b3kCK79pvFAIJk7hAoNJxvlMbUhNJN23tuOX1I6qKYjcZl657iA==)
+            client-secret: ENC(+gR8pW9O4KEgbRKLHFgiDDBbXBAXp2KviE4lpGC/uo5YpIUFHT+HxukzYnePapT3sJ19ajvcXyvv1KcLIdp5gQ==)
+          github:
+            client-id: ENC(ZCJD2N0Dv4M0g0rwxoL/1ALEHvJcs8nldrnfRoQt4mqOnEyR9SCuCJAcQcFNc6vvJhhj1IidAYVRZs4K3q/s+A==)
+            client-secret: ENC(KNkDOygBNyteH2s4WDoQaNJ88FDht4G595CsV25PEogkQcbUDnUZaDZcF2RoJjP5dQBw18/691GyB07EW6TxcOtHiPQKVVypkxNad+CwUDI=)
+
   flyway:
     enabled: false
-#    locations: classpath:db-test/migration
 
 jasypt:
   encryptor:
     bean: timeTrackerStringEncryptor
 
-#TIMETRACKER_ENCRYPTOR_SECRET:
-#  password
-
-secret:
-  property: ENC(JqcDg7lBax6sQEJ3szy23VwIfENaEjKJ2aZlKKudUQ7Do4qbSA42TdgtvlEuao4K)
+# TIMETRACKER_ENCRYPTOR_SECRET

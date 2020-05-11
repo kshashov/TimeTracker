@@ -9,11 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties = {"secret.property=ENC(RH9JweLibTm0+4Tukivw4Y11qukSqAabrKukgpW0zcQWg10PIs0aR79a3YhqCPu9)"})
 class TimeTrackerApplicationTests extends BaseIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(TimeTrackerApplicationTests.class);
 
@@ -35,14 +37,14 @@ class TimeTrackerApplicationTests extends BaseIntegrationTest {
     }
 
     @Test
-    void testDecrypt() {
-        var decrypted = env.getProperty("secret.property");
-        Assertions.assertEquals("test", decrypted);
-    }
-
-    @Test
     void testI18n() {
         assertThat(translator.toLocale("lang", Locale.ENGLISH)).isEqualTo("en");
         assertThat(translator.toLocale("lang", new Locale("ru"))).isEqualTo("ru");
+    }
+
+    @Test
+    void testEncrypt() {
+        var decrypted = env.getProperty("secret.property");
+        Assertions.assertEquals("test", decrypted);
     }
 }

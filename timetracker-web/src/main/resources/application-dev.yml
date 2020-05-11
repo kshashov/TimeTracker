@@ -1,9 +1,9 @@
 spring:
   datasource:
     # PostgreSQL
-    url: ENC(Vx1thPdvzH6P3gF9fUwVE7d9wpIZimWgJyit9ott6GArHMJwlt9E9UuZcZRwjLSZ15hmzUAu9ApY0sytu6f41gZ/IyEHmhEIC6ujCILr3opzMQJsuQjaUB/SZQGA1Se6)
-    username: ENC(kTQjaB5b71kTLD1WXT+sYqQwbJOEjmf040523f0VIn4s5So/GHzLO697ds48mJUb)
-    password: ENC(5xJ2ntClQ9Qv9SuEygLCFgtP/Oo/ELmTcmeOIdR6aIK5OKLXigHRNc+M8374m2lsnTarCY/QbLgbPCGeel2CI0u83Aa4F0XpM/nRZoZo7zs=)
+    url: ENC(fuQnBLOckeUshTmr9K4094RWg/KhUXzmuk/vUoZ3s5Ej+2u2oYXv/dxXxkrsNaIhKgPN++3TLq+5bBdgGfIDXqED4JgH8h+70HcoiowILzkxS7obFo+6YuWVK+0Hz9RF)
+    username: ENC(c0nByy204QrUAJBwilP9FZBNj3c2DuQnl6A0n99eIOy+L9t4pSs3/eCcDsocX4L7)
+    password: ENC(OxV90gJvsh2xxoiAomtH1Ltienrj1GkPpC1Pa2Ho69q6iGlUHS1/GgIbsXoxnAdmx0EaMsgCWYG47MsHPaykA6dZx3Urj4ZVMfCvrMttuo0=)
     platform: postgres
     driver-class-name: org.postgresql.Driver
     initialization-mode: never
@@ -23,8 +23,11 @@ spring:
       client:
         registration:
           google:
-            client-id: ENC(l/JM8iF/F15BWFeApyFG6tx6IojfXOGaW+BdRIIIIDodjWpt3H56bvD8A8uhCJK5cM0p/jVvms8GSGlJd2llcQnYTXXta0LV3nkzUUuZFQTD8EyWnmEIyX4ilctBTnD9JPG1nvSgFMX2+CdK3GbEGw==)
-            client-secret: ENC(YjmQDne9Tc1HO/Rko65x5GwOxBLB+MAseO0aDah27ZAxgRXxziaV79CIkHuAFqz4BaxjVIkYA0ZEhSUJo7JoYg==)
+            client-id: ENC(qzwqys5+l29oB9aR5Vo/KIg0FfdI4I65plcLu4lMDDf0bA0hS4X6DpFpgvuAlrHgsJ1OCYGnPa6CexpgqiS5y273cXqCY3vv/IVt6xMGWG7MCVoKSwtnTvn02ZXdbYuAKCQxH1m8M5YNBpIsXmudQQ==)
+            client-secret: ENC(gBTxBP+YR5b2HurmAa0L+9/p7Qh+w+MZV/3HX1ewXunmVuJU3yicg6UME96uWhNVeqms8d/oVGpTKmyRGuCQdQ==)
+          github:
+            client-id: ENC(mHYYxhv9DLNA3tX0UxZBOJpOgk/A/IftYovopQ3dFINq/5GkoD4g19ez11c6fLhhugBTiVaQoozSV/fwPq6byQ==)
+            client-secret: ENC(zreVAIULHjMCk79liaGxncqsD8SKU5UU20mJDYTx9fHwYv6FRT6BB4yx2HfnESJgvWxfvJq9xRaPFbh1yA2/wcD9KTfPTMFOWy8fYjhzjdE=)
 
 jasypt:
   encryptor:

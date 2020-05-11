@@ -1,4 +1,8 @@
+[![Build Status](https://travis-ci.org/kshashov/TimeTracker.svg?branch=master)](https://travis-ci.org/kshashov/TimeTracker) [![codecov](https://codecov.io/gh/kshashov/timetracker/branch/master/graph/badge.svg)](https://codecov.io/gh/kshashov/timetracker)
+
 # TimeTracker
+
+[Online demo](https://time-tracker1.herokuapp.com)
 
 {PIC gif some use cases}
 
@@ -20,6 +24,17 @@ The goal was to try to create a project from scratch using Vaadin 14+ and Spring
 * JUnit 5 + Mockito (Tests cover only complex database manipulations in `com.github.kshashov.timetracker.data.service` package.
 
 ### Database scheme
+
+{PIC scheme}
+
+There are two options for initializing the scheme:
+* *test* profile: uses in-memory H2 with `hibernate.ddl-auto = create` flag
+* *dev* profile: uses remote PostgreSQL with Flyway migrations
+
+### CI/CD
+
+* _Travis CI_ - buids, tests, sending jacoco reports to _Codecov_
+* _Heroku_ - deploing. Uses `npm` and `production` maven profiles to install node.js and enable Vaadin's production mode
 
 ## Pages
 ### Projects Management
@@ -118,3 +133,5 @@ Users with the `view_project_logs` permissions can view all project's work logs 
 #### Users
 
 {PIC users page} 
+
+[xz]: https://time-tracker1.herokuapp.com

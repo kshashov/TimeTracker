@@ -1,0 +1,1 @@
+web: java -Dserver.port=$PORT -Dspring.profiles.active=$TIMETRACKER_PROFILE -jar timetracker-web/target/*.jar
