@@ -58,25 +58,6 @@
   min-width: 0;
 }
 
-/* Rail navigation */
-/*.navi-drawer[rail]:not([open]) .navi-drawer__content {
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  transition: width var(--transition-duration-s);
-  width: var(--navi-drawer-rail-width);
-}
-
-.navi-drawer[rail]:not([open]):hover .navi-drawer__content {
-  width: var(--navi-drawer-width);
-}
-
-/* Push the content in rail mode. */
-/*.navi-drawer[rail]:not([open]) + .root__column {
-  padding-left: var(--navi-drawer-rail-width);
-}*/
-
 @media (max-width: 1023px) {
   /* Show scrim when drawer is open */
   .navi-drawer[open] .navi-drawer__scrim {
@@ -108,26 +89,7 @@
 }
 
 @media (min-width: 1024px) {
-    /*.navi-drawer[rail]:not([open]):not(:hover) .account-switcher__avatar,
-    .navi-drawer[rail]:not([open]):not(:hover) .navi-item__link iron-icon {
-      margin-left: auto;
-      margin-right: auto;
-    }
 
-    .navi-drawer[rail]:not([open]):not(:hover) .account-switcher__title,
-    .navi-drawer[rail]:not([open]):not(:hover) .account-switcher__email,
-    .navi-drawer[rail]:not([open]):not(:hover) .brand-expression__title,
-    .navi-drawer[rail]:not([open]):not(:hover) .navi-item[level],
-    .navi-drawer[rail]:not([open]):not(:hover) .navi-item__link span,
-    .navi-drawer[rail]:not([open]):not(:hover) .navi-item vaadin-button {
-      display: none;
-    }
-
-    .navi-drawer[rail]:not([open]):not(:hover) .navi-drawer__footer iron-icon {
-      margin-left: 0.25em;
-      margin-right: -0.25em;
-      width: var(--navi-drawer-rail-width);
-    }*/
 }
 
 /* === IE 11 workarounds === */

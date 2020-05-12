@@ -27,7 +27,7 @@ The goal was to try to create a project from scratch using Vaadin 14+ and Spring
 
 There are two options for initializing the scheme:
 * _test_ profile: uses in-memory **H2** with `hibernate.ddl-auto = create` flag
-* _dev_ profile: uses remote **PostgreSQL** with Flyway migrations
+* _dev_ profile: uses remote **PostgreSQL** with **Flyway** migrations
 
 ### CI/CD
 
