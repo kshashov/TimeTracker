@@ -1,4 +1,7 @@
 INSERT INTO projects (id, title, active) VALUES (2, 'deleteOrDeactivateProject_HasClosedEntries', true);
+
+INSERT INTO closed_days (project_id, obs) VALUES (2, '2020-01-5');
+
 INSERT INTO actions (id, project_id, title, active) VALUES (1, 2, 'action1', true);
 INSERT INTO actions (id, project_id, title, active) VALUES (2, 2, 'action2', true);
 

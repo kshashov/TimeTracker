@@ -6,6 +6,7 @@ import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Entry;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
+import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.EntriesRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
@@ -31,6 +32,8 @@ public class ProjectsServiceTest extends BaseUserTest {
     private EntriesRepository entriesRepository;
     @Autowired
     private ActionsRepository actionsRepository;
+    @Autowired
+    private ClosedDaysRepository closedDaysRepository;
 
     @Test
     void createProject_Ok() {
@@ -171,6 +174,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(0);
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(1);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
@@ -180,6 +184,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(0);
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(0);
     }
 
     @Test
@@ -192,6 +197,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(2);
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(2);
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(1);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
@@ -201,6 +207,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(0);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(0);
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(0);
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(0);
     }
 
     @Test
@@ -213,6 +220,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(projectRolesRepository.findWithUserByProjectOrderByUserName(project).size()).isEqualTo(1);
         assertThat(entriesRepository.findByActionProject(project).size()).isEqualTo(2);
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).size()).isEqualTo(2);
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(1);
 
         boolean isDeleted = projectsService.deleteOrDeactivateProject(project.getId());
 
@@ -228,6 +236,7 @@ public class ProjectsServiceTest extends BaseUserTest {
         assertThat(actionsRepository.findWithProjectByProjectOrderByTitleAsc(project).stream()
                 .noneMatch(Action::getIsActive)
         ).isTrue();
+        assertThat(closedDaysRepository.findByProject(project).size()).isEqualTo(1);
     }
 
     ProjectInfo correctProjectInfo(String title) {

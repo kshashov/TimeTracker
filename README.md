@@ -4,8 +4,6 @@
 
 [Online demo](https://time-tracker1.herokuapp.com)
 
-{PIC gif some use cases}
-
 ## Summary
 The application is a simple time tracker.
 All users can create projects, bind other users with specific roles to them.
@@ -21,27 +19,27 @@ The goal was to try to create a project from scratch using Vaadin 14+ and Spring
     * Data
     * Test
     * OAuth2 Client (For Google OpenID)
-* JUnit 5 + Mockito (Tests cover only complex database manipulations in `com.github.kshashov.timetracker.data.service` package.
+* JUnit 5 + Mockito (Integration tests cover complex database manipulations in `com.github.kshashov.timetracker.data.service` package.
 
 ### Database scheme
 
-{PIC scheme}
+![scheme](images/scheme.png "scheme")
 
 There are two options for initializing the scheme:
-* *test* profile: uses in-memory H2 with `hibernate.ddl-auto = create` flag
-* *dev* profile: uses remote PostgreSQL with Flyway migrations
+* _test_ profile: uses in-memory **H2** with `hibernate.ddl-auto = create` flag
+* _dev_ profile: uses remote **PostgreSQL** with Flyway migrations
 
 ### CI/CD
 
-* _Travis CI_ - buids, tests, sending jacoco reports to _Codecov_
-* _Heroku_ - deploing. Uses `npm` and `production` maven profiles to install node.js and enable Vaadin's production mode
+* **Travis CI** - buids, tests, sending jacoco reports to **Codecov**
+* **Heroku** - deploing with additional `npm` and `production` maven profiles to install node.js and enable Vaadin's production mode
 
 ## Pages
 ### Projects Management
 
 The central entity here is the project. Project containы several actions - types of work (development, code review, meeting, etc) and can be used by several users, depending on their roles. 
 
-{PIC my projects page} 
+![projects admin](images/admin_projects.png "projects admin")
 
 It is a classic master-detail interface with four widgets:
 * Projects list
@@ -54,7 +52,7 @@ Each 'list' component is a classic Vaadin Grid with crud functionality. Dependin
 #### Inactive state
 Since the working logs at some point can be commited (aka closed), they should not be changed or deleted in any way. This complicates the process of deleting a project or an action, to which such logs relate - we cannot delete them! 
 
-{PIC message after deactivating} 
+![deactivate](images/deactivate.png "deactivate")
 
 In such cases, an action (or a project with all actions) instead of deleting moves into a 'inactive' state. Such inactive entities are only suitable for viewing existing closed work logs and can't be updated in any way.
 
@@ -98,40 +96,42 @@ Users with the `view_project_logs` permissions can:
 * оpen or close (prohibits the creation of new work logs) the day
 * open or close (prohibits the updating and removing) work logs for specific dates interval. Logs related to inactive actions, projects or user roles will not be open, however.
 
-{PIC dates}
+![dates](images/dates.png "dates")
 
 The beginning of the week is determined based on the user's settings.
 ### Daily Work Logs
 
 Users can create work logs if the day is open. The working log can be changed or deleted at any time until it is closed.
 
-{PIC daily page}
+![daily](images/daily.png "daily")
 
 ### Reports
 
 Users with the `view_project_logs` permissions can view all project's work logs for specified date range. The beginning of the week is determined based on the user's settings.
 
-{PIC reports page}
+![reports](images/reports.png "reports")
 
 ### Other
 #### Login page
 
-{PIC login page}
+![login](images/oauth_login.png "login")
+
+#### Sign Up page
+
+![sign up](images/registration.png "sign up")
 
 #### Home page
 
-{PIC home page}
+![home](images/home.png "home")
 
 #### Current User
 
-{PIC current user page}
+![current user](images/user.png "current user")
 
-#### Projects
+#### Project
 
-{PIC projects page}
+![project](images/projects.png "project")
 
-#### Users
+#### User
 
-{PIC users page} 
-
-[xz]: https://time-tracker1.herokuapp.com
+![user](images/users.png "user") 

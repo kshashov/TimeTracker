@@ -16,8 +16,13 @@ public interface ClosedDaysRepository extends JpaRepository<ClosedDay, ClosedDay
 
     List<ClosedDay> findByIdentityObsBetween(LocalDate from, LocalDate to);
 
+    List<ClosedDay> findByProject(Project project);
+
     Long countByProjectAndIdentityObsBetween(Project project, LocalDate from, LocalDate to);
 
     @Transactional(propagation = Propagation.REQUIRED)
     Long deleteByProjectAndIdentityObsBetween(Project project, LocalDate from, LocalDate to);
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    long deleteByProject(Project project);
 }

@@ -4,6 +4,7 @@ import com.github.kshashov.timetracker.core.errors.IncorrectArgumentException;
 import com.github.kshashov.timetracker.data.entity.Action;
 import com.github.kshashov.timetracker.data.entity.Project;
 import com.github.kshashov.timetracker.data.repo.ActionsRepository;
+import com.github.kshashov.timetracker.data.repo.ClosedDaysRepository;
 import com.github.kshashov.timetracker.data.repo.ProjectsRepository;
 import com.github.kshashov.timetracker.data.repo.user.ProjectRolesRepository;
 import com.github.kshashov.timetracker.data.service.admin.actions.ProjectActionsService;
@@ -25,17 +26,20 @@ public class ProjectsServiceImpl implements ProjectsService {
     private final ProjectActionsService projectActionsService;
     private final ActionsRepository actionsRepository;
     private final ProjectRolesRepository projectRolesRepository;
+    private final ClosedDaysRepository closedDaysRepository;
 
     @Autowired
     public ProjectsServiceImpl(
             ProjectsRepository projectsRepository,
             ProjectActionsService projectActionsService,
             ActionsRepository actionsRepository,
-            ProjectRolesRepository projectRolesRepository) {
+            ProjectRolesRepository projectRolesRepository,
+            ClosedDaysRepository closedDaysRepository) {
         this.projectsRepository = projectsRepository;
         this.projectActionsService = projectActionsService;
         this.actionsRepository = actionsRepository;
         this.projectRolesRepository = projectRolesRepository;
+        this.closedDaysRepository = closedDaysRepository;
     }
 
     @Override
@@ -164,6 +168,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         }
 
         // Delete project with roles
+        closedDaysRepository.deleteByProject(project);
         projectRolesRepository.deleteByProject(project);
         projectsRepository.deleteById(project.getId());
         return true;
