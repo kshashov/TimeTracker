@@ -29,7 +29,7 @@
     </springProfile>
 
     <springProfile name="dev">
-        <root level="debug">
+        <root level="warn">
             <appender-ref ref="STDOUT"/>
         </root>
 
